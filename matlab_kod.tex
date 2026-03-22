@@ -1,0 +1,76 @@
+clc; clear; close all;
+
+%% ===== CZAS =====
+t = 0:23;
+time_labels = string(t) + ":00";
+
+%% ===== DANE =====
+
+temp_gt_1 = [10 10 9 9 8 8 9 11 13 15 17 18 19 19 18 17 16 15 14 13 12 11 11 10];
+
+temp_local_1 = [10.5 9.6 9.3 8.5 8.4 7.9 9.7 11.2 12.6 15.8 16.2 18.5 19.8 18.4 17.5 17.9 15.4 15.9 13.6 13.8 11.8 11.5 10.7 10.9];
+
+temp_gfs_1 = [11.2 10.7 10.1 9.8 9.2 9.3 10.5 12.5 14.7 16.5 18.9 20.1 20.8 20.2 19.6 18.2 17.8 16.3 15.5 14.2 13.6 12.8 12.3 11.5];
+
+temp_um_1 = [9.8 10.3 9.0 9.4 8.1 8.6 9.2 11.6 13.9 14.7 17.3 17.9 19.2 19.5 18.1 17.0 16.9 14.8 14.1 13.0 12.4 11.2 11.6 10.4];
+
+%% ===== WYKRES TEMPERATURY =====
+
+figure
+plot(t, temp_gt_1, 'k', 'LineWidth', 2); hold on;
+plot(t, temp_local_1, 'g', 'LineWidth', 1.5);
+plot(t, temp_gfs_1, 'r--', 'LineWidth', 1.5);
+plot(t, temp_um_1, 'b-.', 'LineWidth', 1.5);
+
+xticks(0:3:23)
+xticklabels(time_labels(1:3:end))
+
+xlabel('Czas [godzina]')
+ylabel('Temperatura [°C]')
+title('Warszawa-Okęcie – temperatura (24h)')
+legend('Ground truth', 'Lokalna stacja', 'GFS', 'UM')
+grid on
+
+%% ===== BŁĘDY =====
+
+error_gfs   = temp_gfs_1   - temp_gt_1;
+error_um    = temp_um_1    - temp_gt_1;
+error_local = temp_local_1 - temp_gt_1;
+
+%% ===== METRYKI =====
+
+ME_gfs = mean(error_gfs);
+RMSE_gfs = sqrt(mean(error_gfs.^2));
+
+ME_um = mean(error_um);
+RMSE_um = sqrt(mean(error_um.^2));
+
+ME_local = mean(error_local);
+RMSE_local = sqrt(mean(error_local.^2));
+
+%% ===== WYKRES BŁĘDÓW =====
+
+figure
+plot(t, error_gfs, 'r--', 'LineWidth', 1.5); hold on;
+plot(t, error_um, 'b-.', 'LineWidth', 1.5);
+plot(t, error_local, 'g', 'LineWidth', 1.5);
+
+yline(0,'k','LineWidth',1)
+
+xticks(0:3:23)
+xticklabels(time_labels(1:3:end))
+
+xlabel('Czas [godzina]')
+ylabel('Błąd [°C]')
+title('Błąd prognozy temperatury – Warszawa-Okęcie')
+
+legend('GFS', 'UM', 'Lokalna stacja', 'Location', 'best')
+grid on
+
+%% ===== WYNIKI =====
+
+disp('--- WYNIKI (Okęcie) ---')
+
+fprintf('GFS     -> ME = %.2f, RMSE = %.2f\n', ME_gfs, RMSE_gfs);
+fprintf('UM      -> ME = %.2f, RMSE = %.2f\n', ME_um, RMSE_um);
+fprintf('Lokalna -> ME = %.2f, RMSE = %.2f\n', ME_local, RMSE_local);

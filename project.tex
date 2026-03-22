@@ -24,8 +24,8 @@
 }
 
 \author{
-    Imię Nazwisko 1 \\ Imię Nazwisko 2 \\ Imię Nazwisko 3 \\
-    Imię Nazwisko 4 \\ Imię Nazwisko 5 \\ Imię Nazwisko 6 \\ Imię Nazwisko 7
+    Maciek Chotkowski \\ Martsin Lazouski \\ Nadia Ziecina \\
+    Michał Kasznia \\ Kasińska Zuzanna  \\ Volodymyr Kamenchuk \\ Usevalad Nikalaichuk 
 }
 
 \date{20 marca 2026}
@@ -38,44 +38,195 @@
 \tableofcontents
 \newpage
 
+%------------------------------------ETAP1-----------------------------------------------------
 \section{Wstęp}
 
 \subsection{Charakterystyka problemu}
 Każdy z nas sprawdza prognozę pogody, żeby wiedzieć, jak się ubrać albo czy będzie padać. Problem w tym, że różne aplikacje często pokazują coś innego.Nie wiemy, której prognozie ufać. Jedna mówi deszcz, druga słońce — a rzeczywistość bywa jeszcze inna. Chcemy sprawdzić, jak bardzo prognozy się mylą i która z nich jest najbardziej trafna.
 
 \subsection{Nasze Cele}
-W ramach projektu postawiliśmy przed sobą następujące cele:
+Celem projektu jest ilościowa ocena wiarygodności prognoz meteorologicznych poprzez porównanie danych prognostycznych z rzeczywistymi pomiarami.
+
+W szczególności:
 \begin{itemize}
-    \item cel nr 1 
-    \item cel nr 2 
-    \item cel nr 3
+    \item wyznaczenie błędów prognoz dla wybranych parametrów (temperatura, opady, wiatr),
+    \item porównanie jakości prognoz różnych modeli (GFS, ECMWF, UM),
+    \item analiza wpływu horyzontu czasowego prognozy na dokładność.
+\end{itemize}
+\subsection{Analiza teoretyczna i metryki}
+Do oceny jakości prognoz wykorzystano następujące miary:
+
+\begin{itemize}
+    \item \textbf{Błąd średni (ME)} – określa systematyczne odchylenie prognozy od wartości rzeczywistej,
+    \item \textbf{Błąd średniokwadratowy (MSE)} – mierzy ogólną wielkość błędu,
+    \item \textbf{Pierwiastek z MSE (RMSE)} – interpretowalna miara błędu w jednostkach fizycznych,
+    \item \textbf{Dokładność klasyfikacji opadów} – zgodność prognozy wystąpienia opadów z rzeczywistością.
 \end{itemize}
 
-\subsection{Analiza teoretyczna i metryki}
-Do oceny sygnału wykorzystamy pojęcia z zakresu PTI:
+Zastosowanie tych metryk pozwala przejść od oceny jakościowej do ilościowej analizy błędów.
+
+\subsection{Wykorzystane narzędzia}
+
+W projekcie wykorzystano następujące narzędzia oraz źródła danych:
+
 \begin{itemize}
-    \item \textbf{Nazwa}
-    \item \textbf{Nazwa}
-    \item \textbf{Nazwa}
+    \item \textbf{MATLAB} – środowisko do przetwarzania danych, realizacji obliczeń numerycznych oraz generowania wizualizacji,
+    \item \textbf{Open-Meteo API} – źródło danych prognostycznych (modele GFS, ECMWF),
+    \item \textbf{Meteo.pl (ICM UW)} – dane modelu UM o wysokiej rozdzielczości przestrzennej,
+    \item \textbf{Dane SYNOP (IMGW)} – referencyjne pomiary meteorologiczne (ground truth).
 \end{itemize}
+
+Zastosowanie powyższych narzędzi umożliwiło automatyzację procesu pozyskiwania danych, ich normalizację oraz przygotowanie do dalszej analizy ilościowej.
+
+%-------------------------------------ETAP2 ---------------------------------------------
+
+
+
 
 \section{Wstępne pomiary}
 
 \subsection{Pozyskiwanie danych}
-Podobnie jak w projekcie o bilardzie kluczowe było pozyskanie zdjęć, tutaj kluczowe jest pozyskanie logów pogodowych. Dane pobieramy z:
-\begin{itemize}
-    \item \textbf{Open-Meteo API:} Modele GFS i ECMWF (dane globalne).
-    \item \textbf{Meteo.pl (ICM UW):} Model UM (dane wysokiej rozdzielczości dla Polski).
-    \item \textbf{Dane SYNOP:} Rzeczywiste pomiary ze stacji meteorologicznych jako „Ground Truth”.
-\end{itemize}
+W analizie wykorzystano dane prognostyczne oraz pomiarowe dla stacji Warszawa-Okęcie.
 
-\subsection{Problemy pomiaru}
-W trakcie zbierania danych zidentyfikowano problemy analogiczne do zakłóceń obrazu:
-\begin{itemize}
-    \item \textbf{Aliasing czasowy:} Różnice w godzinach publikacji „runów” modeli (00Z, 06Z, 12Z, 18Z).
-    \item \textbf{Szum lokalizacyjny:} Różnica między punktem siatki modelu a fizycznym położeniem stacji (np. wpływ wysokości n.p.m.).
-    \item \textbf{Błędy normalizacji:} Konieczność ujednolicenia jednostek (np. m/s na km/h).
-\end{itemize}
+Dane referencyjne (ground truth) odpowiadają rzeczywistym pomiarom temperatury, natomiast dane prognostyczne reprezentują wyniki modeli numerycznych (GFS, UM).
+
+W celu przeprowadzenia analizy dane zostały zestawione w postaci szeregów czasowych o rozdzielczości godzinowej.
+
+\subsection{Normalizacja i wstępna analiza}
+
+Dane prognostyczne oraz pomiarowe zostały wczytane i przetworzone w środowisku MATLAB. W szczególności dokonano synchronizacji czasowej oraz ujednolicenia jednostek.
+
+Na podstawie przetworzonych danych wyznaczono błędy prognoz dla wybranych modeli.
+
+\subsection{Zestawienie danych pomiarowych}
+W celu zobrazowania różnic pomiędzy danymi referencyjnymi a prognozami modeli przedstawiono wybrane wartości temperatury dla stacji Warszawa-Okęcie. Dane obejmują pomiary co 3 godziny, co pozwala na czytelne porównanie przebiegów bez nadmiernego zagęszczenia informacji.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}ccccc@{}}
+\toprule
+Czas & Ground truth & Lokalna & GFS & UM \\ \midrule
+00:00 & 10 & 10.5 & 11.2 & 9.8 \\
+03:00 & 9  & 8.5  & 9.8  & 9.4 \\
+06:00 & 9  & 9.7  & 10.5 & 9.2 \\
+09:00 & 13 & 12.6 & 14.7 & 13.9 \\
+12:00 & 19 & 19.8 & 20.8 & 19.2 \\
+15:00 & 17 & 17.9 & 18.2 & 17.0 \\
+18:00 & 14 & 13.6 & 15.5 & 14.1 \\
+21:00 & 11 & 10.7 & 12.3 & 11.6 \\ \bottomrule
+\end{tabular}
+\caption{Wybrane wartości temperatury dla stacji Warszawa-Okęcie (co 3 godziny).}
+\end{table}
+
+Na podstawie przedstawionych danych można zauważyć, że modele prognostyczne różnią się względem wartości referencyjnych, szczególnie w godzinach południowych i popołudniowych. Widoczne są również rozbieżności między modelami, co wskazuje na niepewność prognoz oraz wpływ zastosowanego modelu numerycznego na wynik.
+\subsection{Wizualizacja danych}
+
+Do analizy wykorzystano środowisko MATLAB. Poniżej przedstawiono fragment kodu użytego do wizualizacji danych temperatury dla stacji Warszawa-Okęcie.
+
+\begin{verbatim}
+t = 0:23;
+time_labels = string(t) + ":00";
+
+% dane (24 pomiary godzinowe)
+temp_gt_1 = [...];
+temp_local_1 = [...];
+temp_gfs_1 = [...];
+temp_um_1 = [...];
+
+plot(t, temp_gt_1, 'k'); hold on;
+plot(t, temp_local_1, 'g');
+plot(t, temp_gfs_1, 'r--');
+plot(t, temp_um_1, 'b-.');
+
+xlabel('Czas [godzina]');
+ylabel('Temperatura [°C]');
+legend('Ground truth', 'Lokalna stacja', 'GFS', 'UM');
+grid on;
+\end{verbatim}
+
+Na podstawie powyższego kodu wygenerowano wykres przedstawiający przebieg temperatury w czasie dla różnych źródeł danych.
+
+Na podstawie powyższego kodu wygenerowano wykres przedstawiający przebieg temperatury w czasie.
+
+
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.8\textwidth]{Figure_1.png}
+\caption{Porównanie prognozy temperatury i danych referencyjnych dla stacji Warszawa-Okęcie.}
+\end{figure}
+
+\subsection{Analiza błędów prognozy}
+
+W celu ilościowej oceny dokładności prognoz wyznaczono podstawowe miary błędu na podstawie różnicy między wartościami prognozowanymi a danymi referencyjnymi (ground truth).
+
+\begin{verbatim}
+error_gfs   = temp_gfs_1   - temp_gt_1;
+error_um    = temp_um_1    - temp_gt_1;
+error_local = temp_local_1 - temp_gt_1;
+
+%% ===== METRYKI =====
+
+ME_gfs = mean(error_gfs);
+RMSE_gfs = sqrt(mean(error_gfs.^2));
+
+ME_um = mean(error_um);
+RMSE_um = sqrt(mean(error_um.^2));
+
+ME_local = mean(error_local);
+RMSE_local = sqrt(mean(error_local.^2));
+
+%% ===== WYKRES BŁĘDÓW =====
+
+figure
+plot(t, error_gfs, 'r--', 'LineWidth', 1.5); hold on;
+plot(t, error_um, 'b-.', 'LineWidth', 1.5);
+plot(t, error_local, 'g', 'LineWidth', 1.5);
+
+yline(0,'k','LineWidth',1)
+
+xticks(0:3:23)
+xticklabels(time_labels(1:3:end))
+
+xlabel('Czas [godzina]')
+ylabel('Błąd [°C]')
+title('Błąd prognozy temperatury – Warszawa-Okęcie')
+
+legend('GFS', 'UM', 'Lokalna stacja', 'Location', 'best')
+grid on
+\end{verbatim}
+
+
+
+\subsection{Wizualizacja błędów}
+
+W celu oceny dokładności modeli prognostycznych przedstawiono wykres błędów, zdefiniowanych jako różnica pomiędzy wartościami prognozowanymi a danymi referencyjnymi (ground truth).
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.8\textwidth]{Figure_2.png}
+\caption{Porównanie błędów prognozy temperatury dla modeli GFS, UM oraz lokalnej stacji pomiarowej.}
+\end{figure}
+
+Na wykresie można zauważyć, że model GFS wykazuje większe odchylenia od wartości referencyjnych niż model UM. Lokalna stacja pomiarowa również wykazuje różnice względem ground truth, co wskazuje na obecność błędów pomiarowych oraz wpływ warunków lokalnych.
+
+
+
+
+\subsection{Problemy pomiaru i analizy błędów}
+
+Analiza dokładności prognoz temperatury obarczona jest kilkoma istotnymi ograniczeniami, które wpływają na interpretację wyników.
+
+Po pierwsze, dane referencyjne (ground truth) pochodzące ze stacji meteorologicznych mogą zawierać błędy pomiarowe wynikające z niedokładności aparatury oraz warunków środowiskowych. W konsekwencji punkt odniesienia nie jest idealnie dokładny.
+
+Po drugie, zauważalne różnice pomiędzy lokalną stacją pomiarową a danymi referencyjnymi wskazują na wpływ czynników lokalnych, takich jak zabudowa, ukształtowanie terenu czy mikroklimat. Oznacza to, że nawet poprawna prognoza może różnić się od rzeczywistego pomiaru w konkretnej lokalizacji.
+
+Kolejnym problemem jest obecność systematycznych odchyleń modeli prognostycznych (bias), które prowadzą do zawyżania lub zaniżania temperatury. Dodatkowo modele mogą wykazywać sprzeczne tendencje w tych samych momentach czasowych, co utrudnia jednoznaczną ocenę ich jakości.
+
+Należy również zauważyć, że zastosowane miary błędu, takie jak RMSE, agregują informacje w czasie i mogą maskować krótkotrwałe, lokalne odchylenia. W związku z tym pełna ocena jakości prognoz powinna uwzględniać zarówno analizę globalnych metryk, jak i przebieg błędu w czasie.
+
+
+
 
 \section{Przetwarzanie sygnałów (Etap I)}
 
