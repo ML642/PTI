@@ -28,7 +28,7 @@
     Michał Kasznia \\ Kasińska Zuzanna  \\ Volodymyr Kamenchuk \\ Usevalad Nikalaichuk 
 }
 
-\date{20 marca 2026}
+\date{23 marca 2026}
 
 \begin{document}
 
@@ -226,36 +226,182 @@ Kolejnym problemem jest obecność systematycznych odchyleń modeli prognostyczn
 Należy również zauważyć, że zastosowane miary błędu, takie jak RMSE, agregują informacje w czasie i mogą maskować krótkotrwałe, lokalne odchylenia. W związku z tym pełna ocena jakości prognoz powinna uwzględniać zarówno analizę globalnych metryk, jak i przebieg błędu w czasie.
 
 
+\section{Problemy pomiaru i analizy błędów}
 
+Błąd prognozy definiujemy jako różnicę między wartością modelu a pomiarem:
+\[
+e_i = T_{model,i} - T_{gt,i}
+\]
 
-\section{Przetwarzanie sygnałów (Etap I)}
+Znak błędu określa charakter odchylenia:
+\[
+e_i > 0 \Rightarrow \text{zawyżenie}, \quad
+e_i < 0 \Rightarrow \text{zaniżenie}
+\]
 
-\subsection{Normalizacja i wstępna analiza}
-Wstępne przetwarzanie polega na sprowadzeniu prognoz z różnych źródeł do wspólnej skali czasowej i przestrzennej. Poniżej przedstawiono przykładową strukturę danych pomiarowych.
+Średni błąd pozwala wykryć systematyczne przesunięcie modelu:
+\[
+ME = \frac{1}{n} \sum_{i=1}^{n} e_i
+\]
 
-\begin{table}[h]
+Jeżeli:
+\[
+ME \neq 0
+\]
+to model wykazuje bias.
+
+Całkowitą wielkość błędu opisuje miara:
+\[
+RMSE = \sqrt{\frac{1}{n} \sum_{i=1}^{n} e_i^2}
+\]
+
+Różnice pomiędzy pomiarem lokalnym a referencyjnym:
+\[
+\Delta T_i = T_{local,i} - T_{gt,i}
+\]
+
+oznaczają wpływ warunków lokalnych.
+
+Na podstawie wykresu błędów można zauważyć niestabilność modeli:
+\[
+\max |e_i| \uparrow
+\]
+
+oraz sprzeczność prognoz:
+\[
+e_i^{GFS} \cdot e_i^{UM} < 0
+\]
+
+\begin{figure}[htbp]
 \centering
-\begin{tabular}{@{}lcccc@{}}
-\toprule
-Model & Parametr & Prognoza (T+24h) & Pomiar (IMGW) & Błąd \\ \midrule
-GFS   & Temperatura & 14.5$^\circ$C & 15.2$^\circ$C & -0.7 \\
-UM    & Temperatura & 15.0$^\circ$C & 15.2$^\circ$C & -0.2 \\
-ECMWF & Opady & Brak & Brak & Sukces \\ \bottomrule
-\end{tabular}
-\caption{Przykładowe zestawienie sygnałów dla stacji Warszawa-Okęcie.}
-\end{table}
+\includegraphics[width=0.8\textwidth]{Figure_2.png}
+\caption{Wykres błędów prognozy temperatury.}
+\end{figure}
 
-\section{Wnioski (Etap I)}
+\subsection{Proponowane usprawnienia}
 
-%-- tu wklejamy wnioski
-Etap 1 pozwolił nam przygotować wszystko do zbierania i sprawdzania prognoz. Zauważyliśmy, że każda aplikacja pokazuje co innego, co potwierdza, że nasz projekt jest potrzebny, żeby w końcu znaleźć tę prawdziwą. Najtrudniejsze było połączenie danych z różnych serwisów, bo każdy podaje je w inny sposób, ale udało nam się to ogarnąć. Mamy jasny plan na dalszą pracę i jesteśmy w pełni gotowi, żeby w kolejnym etapie policzyć, kto kłamie najmniej.
+W celu redukcji błędów prognozy zastosowano korekcję bias oraz uśrednianie modeli.
 
+Korekcja błędu systematycznego:
+\[
+T_{corr} = T_{model} - ME
+\]
+
+gdzie:
+\[
+ME = \frac{1}{n} \sum_{i=1}^{n} (T_{model,i} - T_{gt,i})
+\]
+
+Uśrednianie modeli:
+\[
+T_{avg} = \frac{T_{GFS} + T_{UM}}{2}
+\]
+
+Kod MATLAB:
+\begin{verbatim}
+% korekcja bias
+temp_gfs_corr = temp_gfs_1 - ME_gfs;
+temp_um_corr  = temp_um_1  - ME_um;
+
+% średnia modeli
+temp_avg = (temp_gfs_1 + temp_um_1)/2;
+
+% błąd nowego modelu
+error_avg = temp_avg - temp_gt_1;
+RMSE_avg = sqrt(mean(error_avg.^2));
+\end{verbatim}
+
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.8\textwidth]{Figure_3.png}
+\caption{Porównanie prognozy przed i po korekcji oraz modelu uśrednionego.}
+\end{figure}
+
+\[
+RMSE_{new} < RMSE_{old}
+\]
+
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.8\textwidth]{Figure_4.png}
+\caption{Porównanie błędów prognozy przed i po korekcji oraz dla modelu uśrednionego.}
+\label{fig:errors_corrected}
+\end{figure}
+co oznacza poprawę jakości prognozy.
+
+
+\section{Wnioski}
+
+Na podstawie przeprowadzonej analizy stwierdzono, że jakość prognoz meteorologicznych zależy zarówno od zastosowanego modelu, jak i warunków lokalnych.
+
+Model GFS wykazuje dodatni bias:
+\[
+ME_{GFS} > 0
+\]
+co oznacza systematyczne zawyżanie temperatury.
+
+Model UM charakteryzuje się mniejszym błędem:
+\[
+RMSE_{UM} < RMSE_{GFS}
+\]
+
+co wskazuje na większą dokładność.
+
+Lokalna stacja pomiarowa również wykazuje odchylenia:
+\[
+\Delta T_i \neq 0
+\]
+co potwierdza wpływ czynników lokalnych.
+
+Zastosowanie korekcji bias prowadzi do zmniejszenia błędu:
+\[
+|e_i^{corr}| < |e_i|
+\]
+
+Uśrednianie modeli dodatkowo poprawia jakość prognozy:
+\[
+RMSE_{avg} < RMSE_{GFS}
+\]
+
+co wskazuje, że połączenie modeli daje bardziej stabilne wyniki niż pojedynczy model.
+
+Ostatecznie:
+\[
+\text{dokładność} \uparrow \Rightarrow \text{korekcja + model ensemble}
+\]
+
+\subsection{Wykorzystane źródła}
+
+W projekcie wykorzystano definicje miar błędu oraz dokumentację techniczną narzędzi użytych do analizy danych.
+
+\begin{itemize}
+    \item Definicje miar błędu (RMSE, ME): \\
+    \url{https://en.wikipedia.org/wiki/Root-mean-square_deviation}
+
+    \item Dokumentacja MATLAB (obliczenia i wizualizacja): \\
+    \url{https://www.mathworks.com/help/matlab/}
+
+    \item Funkcja plot w MATLAB: \\
+    \url{https://www.mathworks.com/help/matlab/ref/plot.html}
+
+    \item Dane meteorologiczne (modele numeryczne): \\
+    \url{https://open-meteo.com/}
+\end{itemize}
+
+Wszystkie obliczenia oraz implementacja metod zostały wykonane samodzielnie w środowisku MATLAB..
 \section{Podział pracy}
 
 \begin{itemize}
-    \item osoba1 
-    \item osoba2
-    \item osoba3
+    \item Maciek Chotkowski
+    \item Martsin Lazouski  implementacja kodu MATLAB , analiza błędów,generowanie wykresów (temperatura, błędy, poprawa)
+    analiza błędów,struktura raportu
+    \item  Nadia Ziecina
+    \item  Michał Kasznia
+    \item Kasińska Zuzanna
+    \item Volodymyr Kamenchuk
+    \item Usevalad Nikalaichuk 
 \end{itemize}
 
-\end{document}
+\end{document} 
