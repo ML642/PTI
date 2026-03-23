@@ -57,11 +57,15 @@ się najwyższą sprawdzalnością w lokalnych warunkach
 Celem projektu jest ilościowa ocena wiarygodności prognoz meteorologicznych 
 poprzez porównanie danych prognostycznych z rzeczywistymi pomiarami 
 (referencyjnymi).
+\\
 
+\noindent
 Analiza ma na celu określenie stopnia zgodności pomiędzy wartościami 
 prognozowanymi a obserwowanymi oraz identyfikację zarówno systematycznych, 
 jak i losowych błędów prognoz.
+\\
 
+\noindent
 W szczególności analizie poddano:
 \begin{itemize}
     \item błędy prognoz dla wybranych parametrów meteorologicznych 
@@ -96,38 +100,43 @@ Rozważamy prognozę parametrów meteorologicznych jako funkcję czasu:
 \[
 X_{model}(t)
 \]
-
 oraz odpowiadające jej wartości referencyjne (pomiary rzeczywiste):
 \[
 X_{gt}(t)
 \]
-
 gdzie $X$ oznacza analizowany parametr (np. temperatura, opady, prędkość wiatru).
+\\
 
+\noindent
 Błąd prognozy definiujemy jako:
 \[
 e(t) = X_{model}(t) - X_{gt}(t)
 \]
+\\
 
+\noindent
 Dla dyskretnych chwil czasowych $t_i$:
 \[
 e_i = X_{model,i} - X_{gt,i}
 \]
+\\
 
+\noindent
 Celem analizy jest ocena jakości prognozy poprzez badanie właściwości ciągu błędów $\{e_i\}$.
+\\
 
+\noindent
 W szczególności analizowane są:
 \begin{itemize}
     \item wartość średnia błędu (bias),
     \item zmienność błędu w czasie,
     \item wielkość błędu opisana miarami globalnymi (RMSE).
 \end{itemize}
-
+\noindent
 Problem można również interpretować jako zadanie estymacji funkcji:
 \[
 X_{model}(t) \approx X_{gt}(t)
 \]
-
 w którym dąży się do minimalizacji różnicy pomiędzy prognozą a rzeczywistym przebiegiem zjawiska.
 \subsection{Wykorzystane narzędzia i źródła danych}
 
