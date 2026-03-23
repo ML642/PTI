@@ -96,7 +96,7 @@ W celu przeprowadzenia analizy dane zostały zestawione w postaci szeregów czas
 \subsection{Normalizacja i wstępna analiza}
 
 Dane prognostyczne oraz pomiarowe zostały wczytane i przetworzone w środowisku MATLAB. W szczególności dokonano synchronizacji czasowej oraz ujednolicenia jednostek.
-
+\noindent
 Na podstawie przetworzonych danych wyznaczono błędy prognoz dla wybranych modeli.
 
 \subsection{Zestawienie danych pomiarowych}
@@ -118,7 +118,7 @@ Czas & Ground truth & Lokalna & GFS & UM \\ \midrule
 \end{tabular}
 \caption{Wybrane wartości temperatury dla stacji Warszawa-Okęcie (co 3 godziny).}
 \end{table}
-
+\noindent
 Na podstawie przedstawionych danych można zauważyć, że modele prognostyczne różnią się względem wartości referencyjnych, szczególnie w godzinach południowych i popołudniowych. Widoczne są również rozbieżności między modelami, co wskazuje na niepewność prognoz oraz wpływ zastosowanego modelu numerycznego na wynik.
 \subsection{Wizualizacja danych}
 
@@ -144,10 +144,8 @@ ylabel('Temperatura [°C]');
 legend('Ground truth', 'Lokalna stacja', 'GFS', 'UM');
 grid on;
 \end{verbatim}
-
+\noindent
 Na podstawie powyższego kodu wygenerowano wykres przedstawiający przebieg temperatury w czasie dla różnych źródeł danych.
-
-Na podstawie powyższego kodu wygenerowano wykres przedstawiający przebieg temperatury w czasie.
 
 
 
@@ -209,6 +207,7 @@ W celu oceny dokładności modeli prognostycznych przedstawiono wykres błędów
 \caption{Porównanie błędów prognozy temperatury dla modeli GFS, UM oraz lokalnej stacji pomiarowej.}
 \end{figure}
 
+\noindent
 Na wykresie można zauważyć, że model GFS wykazuje większe odchylenia od wartości referencyjnych niż model UM. Lokalna stacja pomiarowa również wykazuje różnice względem ground truth, co wskazuje na obecność błędów pomiarowych oraz wpływ warunków lokalnych.
 
 
@@ -217,13 +216,21 @@ Na wykresie można zauważyć, że model GFS wykazuje większe odchylenia od war
 \subsection{Problemy pomiaru i analizy błędów}
 
 Analiza dokładności prognoz temperatury obarczona jest kilkoma istotnymi ograniczeniami, które wpływają na interpretację wyników.
-
+\\
+\\
+\noindent
 Po pierwsze, dane referencyjne (ground truth) pochodzące ze stacji meteorologicznych mogą zawierać błędy pomiarowe wynikające z niedokładności aparatury oraz warunków środowiskowych. W konsekwencji punkt odniesienia nie jest idealnie dokładny.
-
+\\
+\\
+\noindent
 Po drugie, zauważalne różnice pomiędzy lokalną stacją pomiarową a danymi referencyjnymi wskazują na wpływ czynników lokalnych, takich jak zabudowa, ukształtowanie terenu czy mikroklimat. Oznacza to, że nawet poprawna prognoza może różnić się od rzeczywistego pomiaru w konkretnej lokalizacji.
-
+\\
+\\
+\noindent
 Kolejnym problemem jest obecność systematycznych odchyleń modeli prognostycznych (bias), które prowadzą do zawyżania lub zaniżania temperatury. Dodatkowo modele mogą wykazywać sprzeczne tendencje w tych samych momentach czasowych, co utrudnia jednoznaczną ocenę ich jakości.
-
+\\
+\\
+\noindent
 Należy również zauważyć, że zastosowane miary błędu, takie jak RMSE, agregują informacje w czasie i mogą maskować krótkotrwałe, lokalne odchylenia. W związku z tym pełna ocena jakości prognoz powinna uwzględniać zarówno analizę globalnych metryk, jak i przebieg błędu w czasie.
 
 
