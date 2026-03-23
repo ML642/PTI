@@ -72,8 +72,8 @@ W szczególności analizie poddano:
 Celem dalszej analizy jest nie tylko minimalizacja błędu, ale również 
 określenie jego charakteru (bias oraz zmienność losowa) oraz ocena 
 stabilności modeli prognostycznych w czasie.
+\newpage
 \subsection{Analiza teoretyczna i metryki oceny}
-
 Uzyskane wyniki pozwalają na ocenę przydatności poszczególnych modeli 
 w praktycznych zastosowaniach oraz wskazanie metod poprawy jakości prognoz, 
 takich jak korekcja błędu systematycznego (bias) czy wykorzystanie podejścia 
@@ -90,6 +90,7 @@ ensemble.
     
     \item \textbf{Metryki klasyfikacji opadów (Tablica pomyłek):} Zjawisko opadu traktowane jest binarnie (pada/nie pada). Zastosowane zostaną miary takie jak POD (Probability of Detection - prawdopodobieństwo wykrycia) oraz FAR (False Alarm Ratio - wskaźnik fałszywych alarmów), co pozwoli ocenić zgodność prognozy wystąpienia opadów z rzeczywistością.
 \end{itemize}
+\newpage
 \subsection{Formalizacja problemu}
 
 Rozważamy prognozę parametrów meteorologicznych jako funkcję czasu:
@@ -129,6 +130,7 @@ X_{model}(t) \approx X_{gt}(t)
 \]
 
 w którym dąży się do minimalizacji różnicy pomiędzy prognozą a rzeczywistym przebiegiem zjawiska.
+\newpage
 \subsection{Wykorzystane narzędzia i źródła danych}
 
 W celu realizacji projektu połączono narzędzia programistyczne z rzetelnymi źródłami danych meteorologicznych:
@@ -159,7 +161,7 @@ e_i = X_{model,i} - X_{gt,i}
 \end{itemize}
 
 %-------------------------------------ETAP2 ---------------------------------------------
-
+\newpage
 \section{Wstępne pomiary}
 
 \subsection{Pozyskiwanie danych}
@@ -196,6 +198,7 @@ Czas & Ground truth & Lokalna & GFS & UM \\ \midrule
 \end{table}
 \noindent
 Na podstawie przedstawionych danych można zauważyć, że modele prognostyczne różnią się względem wartości referencyjnych, szczególnie w godzinach południowych i popołudniowych. Widoczne są również rozbieżności między modelami, co wskazuje na niepewność prognoz oraz wpływ zastosowanego modelu numerycznego na wynik.
+\newpage
 \subsection{Wizualizacja danych}
 
 Do analizy wykorzystano środowisko MATLAB. Poniżej przedstawiono fragment kodu użytego do wizualizacji danych temperatury dla stacji Warszawa-Okęcie.
@@ -272,7 +275,7 @@ grid on
 \end{verbatim}
 
 
-
+\newpage
 \subsection{Wizualizacja błędów}
 
 W celu oceny dokładności modeli prognostycznych przedstawiono wykres błędów, zdefiniowanych jako różnica pomiędzy wartościami prognozowanymi a danymi referencyjnymi (ground truth).
