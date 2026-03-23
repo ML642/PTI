@@ -385,22 +385,27 @@ e_i^{GFS} \cdot e_i^{UM} < 0
 \subsection{Proponowane usprawnienia}
 
 W celu redukcji błędów prognozy zastosowano korekcję bias oraz uśrednianie modeli.
+\\
 
+\noindent
 Korekcja błędu systematycznego:
 \[
 T_{corr} = T_{model} - ME
 \]
-
 gdzie:
 \[
 ME = \frac{1}{n} \sum_{i=1}^{n} (T_{model,i} - T_{gt,i})
 \]
+\\
 
+\noindent
 Uśrednianie modeli:
 \[
 T_{avg} = \frac{T_{GFS} + T_{UM}}{2}
 \]
+\\
 
+\noindent
 Kod MATLAB:
 \begin{verbatim}
 % korekcja bias
@@ -433,44 +438,55 @@ RMSE_{new} < RMSE_{old}
 \caption{Porównanie błędów prognozy przed i po korekcji oraz dla modelu uśrednionego.}
 \label{fig:errors_corrected}
 \end{figure}
+\noindent
 co oznacza poprawę jakości prognozy.
 
 
 \section{Wnioski}
 
 Na podstawie przeprowadzonej analizy stwierdzono, że jakość prognoz meteorologicznych zależy zarówno od zastosowanego modelu, jak i warunków lokalnych.
+\\
 
+\noindent
 Model GFS wykazuje dodatni bias:
 \[
 ME_{GFS} > 0
 \]
 co oznacza systematyczne zawyżanie temperatury.
+\\
 
+\noindent
 Model UM charakteryzuje się mniejszym błędem:
 \[
 RMSE_{UM} < RMSE_{GFS}
 \]
-
 co wskazuje na większą dokładność.
+\\
 
+\noindent
 Lokalna stacja pomiarowa również wykazuje odchylenia:
 \[
 \Delta T_i \neq 0
 \]
 co potwierdza wpływ czynników lokalnych.
+\\
 
+\noindent
 Zastosowanie korekcji bias prowadzi do zmniejszenia błędu:
 \[
 |e_i^{corr}| < |e_i|
 \]
+\\
 
+\noindent
 Uśrednianie modeli dodatkowo poprawia jakość prognozy:
 \[
 RMSE_{avg} < RMSE_{GFS}
 \]
-
 co wskazuje, że połączenie modeli daje bardziej stabilne wyniki niż pojedynczy model.
+\\
 
+\noindent
 Ostatecznie:
 \[
 \text{dokładność} \uparrow \Rightarrow \text{korekcja + model ensemble}
@@ -493,8 +509,8 @@ W projekcie wykorzystano definicje miar błędu oraz dokumentację techniczną n
     \item Dane meteorologiczne (modele numeryczne): \\
     \url{https://open-meteo.com/}
 \end{itemize}
-
-Wszystkie obliczenia oraz implementacja metod zostały wykonane samodzielnie w środowisku MATLAB..
+\noindent
+Wszystkie obliczenia oraz implementacja metod zostały wykonane samodzielnie w środowisku MATLAB.
 \subsection{Podział pracy}
 
 \begin{itemize}
