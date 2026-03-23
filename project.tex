@@ -240,41 +240,49 @@ Błąd prognozy definiujemy jako różnicę między wartością modelu a pomiare
 \[
 e_i = T_{model,i} - T_{gt,i}
 \]
-
+\\
+\noindent
 Znak błędu określa charakter odchylenia:
 \[
 e_i > 0 \Rightarrow \text{zawyżenie}, \quad
 e_i < 0 \Rightarrow \text{zaniżenie}
 \]
-
+\\
+\noindent
 Średni błąd pozwala wykryć systematyczne przesunięcie modelu:
 \[
 ME = \frac{1}{n} \sum_{i=1}^{n} e_i
 \]
-
+\\
+\noindent
 Jeżeli:
 \[
 ME \neq 0
 \]
 to model wykazuje bias.
+\\
 
+\noindent
 Całkowitą wielkość błędu opisuje miara:
 \[
 RMSE = \sqrt{\frac{1}{n} \sum_{i=1}^{n} e_i^2}
 \]
-
+\\
+\noindent
 Różnice pomiędzy pomiarem lokalnym a referencyjnym:
 \[
 \Delta T_i = T_{local,i} - T_{gt,i}
 \]
-
 oznaczają wpływ warunków lokalnych.
+\\
 
+\noindent
 Na podstawie wykresu błędów można zauważyć niestabilność modeli:
 \[
 \max |e_i| \uparrow
 \]
-
+\\
+\noindent
 oraz sprzeczność prognoz:
 \[
 e_i^{GFS} \cdot e_i^{UM} < 0
