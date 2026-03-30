@@ -23,7 +23,7 @@ jobs:
         root_file: raport_2/raport_2.tex
 
     - name: Upload PDFs
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: pdfs
         path: |
