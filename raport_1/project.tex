@@ -427,9 +427,7 @@ RMSE_avg = sqrt(mean(error_avg.^2));
 \caption{Porównanie prognozy przed i po korekcji oraz modelu uśrednionego.}
 \end{figure}
 
-\[
-RMSE_{new} < RMSE_{old}
-\]
+
 
 
 \begin{figure}[htbp]
@@ -437,10 +435,14 @@ RMSE_{new} < RMSE_{old}
 \includegraphics[width=0.8\textwidth]{Figure_4.png}
 \caption{Porównanie błędów prognozy przed i po korekcji oraz dla modelu uśrednionego.}
 \label{fig:errors_corrected}
+\[
+RMSE_{new} < RMSE_{old}
+\]
+co oznacza poprawę jakości prognozy.
 \end{figure}
 \\
 \noindent
-co oznacza poprawę jakości prognozy.
+
 
 
 \section{Wnioski}
@@ -492,7 +494,7 @@ Ostatecznie:
 \[
 \text{dokładność} \uparrow \Rightarrow \text{korekcja + model ensemble}
 \]
-
+\newpage
 \subsection{Wykorzystane źródła}
 
 W projekcie wykorzystano definicje miar błędu oraz dokumentację techniczną narzędzi użytych do analizy danych.
@@ -515,14 +517,13 @@ Wszystkie obliczenia oraz implementacja metod zostały wykonane samodzielnie w �
 \subsection{Podział pracy}
 
 \begin{itemize}
-    \item Maciek Chotkowski
-    \item Martsin Lazouski  implementacja kodu MATLAB, analiza błędów, generowanie wykresów (temperatura, błędy, poprawa)
-    analiza błędów, struktura raportu
-    \item  Nadia Ziecina  prowadzenie pomiarów temperatury, kierunku wiatru i obecności opadów, rozwijanie koncepcji projektu
-    \item  Michał Kasznia
-    \item Kasiński Julian  prowadzenie pomiarów temperatury, ujednolicenie wyglądu raportu, małe zmiany w raporcie, kontakt z Profesorem, rozwijanie koncepcji projektu
-    \item Volodymyr Kamenchuk
-    \item Usevalad Nikalaichuk 
+    \item Maciek Chotkowski -- wsparcie w opracowaniu wyników oraz dopracowanie raportu
+    \item Martsin Lazouski -- implementacja kodu MATLAB, analiza błędów, generowanie wykresów (temperatura, błędy, poprawa), współtworzenie struktury raportu
+    \item Nadia Ziecina -- prowadzenie pomiarów temperatury, kierunku wiatru i opadów, rozwijanie koncepcji projektu
+    \item Michał Kasznia -- wsparcie w analizie danych oraz redakcja raportu
+    \item Kasiński Julian -- prowadzenie pomiarów temperatury, ujednolicenie wyglądu raportu, kontakt z prowadzącym, rozwijanie koncepcji projektu
+    \item Volodymyr Kamenchuk -- wsparcie implementacyjne, weryfikacja wyników oraz praca nad wstępem raportu
+    \item Usevalad Nikalaichuk -- wsparcie w opracowaniu wyników oraz końcowe dopracowanie raportu
 \end{itemize}
 
 \end{document}  
