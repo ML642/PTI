@@ -1,0 +1,120 @@
+\documentclass[a4paper,12pt]{article}
+
+% --- Pakiety ---
+\usepackage[polish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[top=2.5cm,bottom=2.5cm,left=3cm,right=3cm]{geometry}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+
+% --- Tytuł ---
+\title{
+    \vspace{1.5cm}
+    \textbf{PODSTAWY TEORII INFORMACJI}\\
+    \vspace{1.5cm}
+    Laboratorium 2\\
+    Analiza stanu wiedzy\\
+    \vspace{1.5cm}
+    \huge \textbf{Analiza informacji i wiarygodności prognoz meteorologicznych}\\
+    \vspace{1cm}
+}
+
+\author{
+    Maciek Chotkowski \\ Martsin Lazouski \\ Nadia Ziecina \\
+    Michał Kasznia \\ Kasiński Julian \\ Volodymyr Kamenchuk \\ Usevalad Nikalaichuk 
+}
+
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\newpage
+
+\tableofcontents
+\newpage
+
+%--------------------------------------------------
+\section{Wprowadzenie}
+
+Prognozy meteorologiczne stanowią istotne źródło informacji wykorzystywanej w codziennym podejmowaniu decyzji. Pomimo szerokiej dostępności danych, różne modele numeryczne często generują rozbieżne wyniki, co prowadzi do niepewności użytkownika.
+
+Celem niniejszego etapu jest analiza problemu nie tylko jako zadania numerycznego, lecz przede wszystkim jako problemu informacji oraz jej użyteczności.
+
+%--------------------------------------------------
+\section{Informacja w prognozach meteorologicznych}
+
+\subsection{Poziom syntaktyczny}
+Na poziomie syntaktycznym prognoza jest zbiorem danych liczbowych, takich jak temperatura, opady czy prędkość wiatru.
+
+\subsection{Poziom semantyczny}
+Na poziomie semantycznym dane te nabierają znaczenia, np. temperatura może być interpretowana jako „zimno” lub „ciepło”.
+
+\subsection{Poziom pragmatyczny}
+Na poziomie pragmatycznym informacja wpływa na decyzje użytkownika, np. wybór ubioru lub planowanie aktywności.
+
+%--------------------------------------------------
+\section{Model użytkownika}
+
+Użytkownik końcowy nie analizuje wartości liczbowych ani miar błędu, lecz oczekuje informacji pozwalającej na podjęcie decyzji.
+
+Najważniejsze dla użytkownika są:
+\begin{itemize}
+    \item wystąpienie opadów,
+    \item przekroczenie progów temperatury,
+    \item ogólna wiarygodność prognozy.
+\end{itemize}
+
+%--------------------------------------------------
+\section{Analiza istniejących rozwiązań}
+
+\subsection{Metryki statystyczne}
+Najczęściej stosowane są miary błędu takie jak MAE, MSE oraz RMSE.
+
+\subsection{Podejścia probabilistyczne}
+Prognozy probabilistyczne pozwalają uwzględnić niepewność danych.
+
+\subsection{Analiza zdarzeń}
+Często analizuje się konkretne zdarzenia, takie jak wystąpienie opadów.
+
+\subsection{Modele prognostyczne}
+Do najczęściej stosowanych modeli należą GFS, ECMWF oraz UM.
+
+%--------------------------------------------------
+\section{Reprezentacja informacji}
+
+Dane meteorologiczne reprezentowane są jako szeregi czasowe.
+
+Istotnym zagadnieniem jest selekcja informacji, czyli odrzucenie nieistotnych różnic (np. różnicy rzędu 0.5°C).
+
+%--------------------------------------------------
+\section{Metryki i kryteria oceny}
+
+Oprócz klasycznych miar błędu należy uwzględnić metryki użytkowe:
+\begin{itemize}
+    \item trafność przewidywania opadów,
+    \item błędy przekroczenia progów,
+    \item stabilność prognoz.
+\end{itemize}
+
+%--------------------------------------------------
+\section{Wyzwania i ograniczenia}
+
+\begin{itemize}
+    \item chaotyczny charakter pogody,
+    \item błędy pomiarowe,
+    \item wpływ warunków lokalnych,
+    \item różnice między modelami.
+\end{itemize}
+
+%--------------------------------------------------
+\section{Wnioski}
+
+Prognoza meteorologiczna nie jest jedynie zbiorem danych, lecz informacją, której wartość zależy od kontekstu oraz użytkownika.
+
+Ocena jakości prognozy powinna uwzględniać nie tylko dokładność numeryczną, ale również jej użyteczność w praktyce.
+
+\end{document}
