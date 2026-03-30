@@ -1,0 +1,31 @@
+name: Compile LaTeX
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Compile raport 1
+      uses: xu-cheng/latex-action@v2
+      with:
+        root_file: raport_1/project.tex
+
+    - name: Compile raport 2
+      uses: xu-cheng/latex-action@v2
+      with:
+        root_file: raport_2/raport_2.tex
+
+    - name: Upload PDFs
+      uses: actions/upload-artifact@v3
+      with:
+        name: pdfs
+        path: |
+          raport_1/project.pdf
+          raport_2/raport_2.pdf
