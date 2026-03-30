@@ -1,0 +1,231 @@
+# 📘 README – Jak pracować z tym repozytorium (PTI)
+
+## 📌 Cel repozytorium
+
+Repo służy do wspólnej pracy nad raportami LaTeX (PTI) oraz automatycznej kompilacji PDF przez GitHub Actions.
+
+---
+
+# 🧑‍💻 Jak pracować z repo (workflow)
+
+## 1. Pobranie repo
+
+```bash
+git clone <link-do-repo>
+cd PTI
+```
+
+---
+
+## 2. Praca na plikach
+
+Każdy pracuje na:
+
+* `raport_1/` – etap 1
+* `raport_2/` – etap 2
+
+👉 Edytujemy pliki `.tex` oraz ewentualnie obrazy `.png`
+
+---
+
+## 3. Dodawanie zmian
+
+```bash
+git add .
+git commit -m "opis zmian"
+git push
+```
+
+👉 Po `push` automatycznie uruchamia się kompilacja
+
+---
+
+## 4. Gdzie znaleźć PDF
+
+1. GitHub → zakładka **Actions**
+2. Kliknij ostatni workflow
+3. Sekcja **Artifacts → pdfs**
+
+---
+
+# ⚙️ Jak działa GitHub Actions
+
+* kompiluje LaTeX automatycznie
+* działa jak „czysty komputer” (nic nie widzi poza repo)
+* nie wybacza błędów
+
+👉 jeśli build nie przejdzie → PDF się nie wygeneruje
+
+---
+
+# ⚠️ Najczęstsze problemy
+
+## 🔴 1. „U mnie działa, a na GitHub nie”
+
+### Przyczyna:
+
+* Overleaf ignoruje błędy
+* GitHub zatrzymuje się na błędzie
+
+👉 Rozwiązanie:
+
+* sprawdź log w **Actions**
+
+---
+
+## 🔴 2. Brak obrazków
+
+### Problem:
+
+```latex
+\includegraphics{Figure_1.png}
+```
+
+👉 ale plik NIE jest w repo
+
+### Rozwiązanie:
+
+```bash
+git add raport_1/Figure_1.png
+```
+
+---
+
+## 🔴 3. Zła ścieżka
+
+Repo:
+
+```
+raport_1/images/figure.png
+```
+
+LaTeX:
+
+```latex
+\includegraphics{figure.png} ❌
+```
+
+Powinno być:
+
+```latex
+\includegraphics{images/figure.png} ✔️
+```
+
+---
+
+## 🔴 4. Wielkość liter (Linux)
+
+GitHub:
+
+```
+Figure_1.png ≠ figure_1.png
+```
+
+👉 musi się zgadzać 1:1
+
+---
+
+## 🔴 5. Błędy LaTeX (najczęstsze)
+
+### ❌ używanie `\\` do akapitów
+
+```latex
+tekst
+\\
+kolejny tekst
+```
+
+### ❌ `\noindent` w złym miejscu
+
+### ❌ brak `\documentclass`
+
+👉 Rozwiązanie:
+
+* pisać „czysty” LaTeX
+
+---
+
+## 🔴 6. Pusty plik `.tex`
+
+```text
+Emergency stop
+```
+
+👉 oznacza brak:
+
+```latex
+\documentclass
+\begin{document}
+```
+
+---
+
+## 🔴 7. Pliki pomocnicze
+
+Pliki typu:
+
+```
+.aux
+.log
+.toc
+```
+
+👉 ignorujemy (nie commitujemy)
+
+---
+
+# 🧠 Overleaf vs GitHub
+
+## Overleaf
+
+* bardziej tolerancyjny
+* ignoruje błędy
+* „jakoś działa”
+
+## GitHub
+
+* restrykcyjny
+* zatrzymuje build
+* wymaga poprawnego kodu
+
+👉 **GitHub = źródło prawdy**
+
+---
+
+# 📌 Dobre praktyki
+
+* commituj często
+* opisuj zmiany
+* dodawaj wszystkie pliki (obrazy!)
+* sprawdzaj Actions po pushu
+* nie używaj `\\` do formatowania
+
+---
+
+# 💡 Tipy
+
+## Minimalny test
+
+Jeśli nie jesteś pewny:
+
+```bash
+pdflatex project.tex
+```
+
+---
+
+## Debug
+
+Jeśli build padnie:
+
+1. Actions
+2. kliknij błąd
+3. szukaj:
+
+```
+! LaTeX Error
+```
+
+---
+
+
