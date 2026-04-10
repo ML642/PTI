@@ -9,6 +9,12 @@
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{amssymb}
+
+\usepackage{titlesec}
+\titlespacing*{\subsection}{0pt}{12pt}{6pt}
+\setlength{\parindent}{15pt}
+\setlength{\parskip}{6pt}
 
 % --- Tytuł ---
 \title{
@@ -37,7 +43,37 @@
 \tableofcontents
 \newpage
 
+\setcounter{section}{-1}
+\section{Dodatek do pierwszego raportu}
+
+\subsection{Modele prognostyczne i źródła danych}
+
+W analizie wykorzystano numeryczne modele prognozowania pogody (NWP), w szczególności modele GFS oraz UM. Modele te różnią się charakterem: GFS jest modelem globalnym, natomiast UM zapewnia wyższą rozdzielczość przestrzenną i lepsze odwzorowanie zjawisk lokalnych. Różnice te wynikają z odmiennej parametryzacji procesów fizycznych oraz sposobu dyskretyzacji przestrzeni, co prowadzi do odmiennych wyników prognoz w tych samych warunkach.
+
+Wybór modeli nie jest przypadkowy – stanowi próbę porównania różnych reprezentacji tej samej rzeczywistości fizycznej. Zgodnie z podejściem teorii informacji, model stanowi jedynie określoną reprezentację informacji o stanie atmosfery, a jego jakość należy oceniać w kontekście użyteczności dla użytkownika.
+
+Zagadnienie to zostało szczegółowo rozwinięte w niniejszym raporcie.
+
+
+\subsection{Zakres analizy i wybór temperatury}
+
+W poprzednim raporcie zakres analizy został ograniczony do temperatury, co wynikało z braku jednoznacznie zdefiniowanego modelu użytkownika. Bez określenia potrzeb oraz kryteriów decyzyjnych użytkownika trudno jest wskazać, które komponenty informacji meteorologicznej są istotne z punktu widzenia zastosowania.
+
+Temperatura została przyjęta jako podstawowy parametr analizy, ponieważ stanowi kluczowy i ciągły składnik prognozy pogody, umożliwiający przeprowadzenie formalnej analizy oraz zastosowanie klasycznych miar błędu.
+
+Po zdefiniowaniu modelu użytkownika (opracowanego w niniejszym raporcie) możliwe jest doprecyzowanie, które wielkości meteorologiczne mają największe znaczenie w kontekście podejmowanych decyzji. W szczególności pozwala to na rozszerzenie analizy o inne parametry, takie jak opady czy wiatr, których istotność zależy od konkretnego zastosowania i oczekiwań użytkownika.
+
+
+
+\subsection{Interpretacja danych lokalnych}
+ 
+Określenie danych lokalnych odnosi się do prognoz oraz pomiarów
+przypisanych do konkretnej lokalizacji (Warszawa-Okęcie). Reprezentacja ta nie jest jednoznaczna, ponieważ w obrębie jednego miasta występuje zróżnicowanie warunków wynikające z lokalnych czynników środowiskowych, takich jak zabudowa czy efekt miejskiej wyspy ciepła.
+
+Modele numeryczne operują na uśrednionej reprezentacji przestrzennej (siatce obliczeniowej), co oznacza, że prognoza odnosi się do pewnego obszaru, a nie do konkretnego punktu pomiarowego. W konsekwencji porównanie prognozy z danymi referencyjnymi stanowi zestawienie dwóch różnych reprezentacji tej samej informacji, co wprowadza dodatkową niejednoznaczność interpretacyjną.
+
 %--------------------------------------------------
+\newpage
 \section{Wprowadzenie}
 
 Prognozy meteorologiczne stanowią istotne źródło informacji wykorzystywanej w codziennym podejmowaniu decyzji. Pomimo szerokiej dostępności danych, różne modele numeryczne często generują rozbieżne wyniki, co prowadzi do niepewności użytkownika.
@@ -45,18 +81,266 @@ Prognozy meteorologiczne stanowią istotne źródło informacji wykorzystywanej 
 Celem niniejszego etapu jest analiza problemu nie tylko jako zadania numerycznego, lecz przede wszystkim jako problemu informacji oraz jej użyteczności.
 
 %--------------------------------------------------
+\newpage
 \section{Informacja w prognozach meteorologicznych}
 
-\subsection{Poziom syntaktyczny}
-Na poziomie syntaktycznym prognoza jest zbiorem danych liczbowych, takich jak temperatura, opady czy prędkość wiatru.
+Analiza prognoz meteorologicznych w ujęciu teorii informacji wymaga odejścia
+od bezpośredniego traktowania danych jako wiernego opisu rzeczywistości.
+Zgodnie z podejściem prezentowanym na wykładach, informacja nie jest tożsama
+z danymi, lecz stanowi abstrakcyjną wielkość, która ujawnia się dopiero poprzez
+swoją reprezentację.
 
-\subsection{Poziom semantyczny}
-Na poziomie semantycznym dane te nabierają znaczenia, np. temperatura może być interpretowana jako „zimno” lub „ciepło”.
 
-\subsection{Poziom pragmatyczny}
-Na poziomie pragmatycznym informacja wpływa na decyzje użytkownika, np. wybór ubioru lub planowanie aktywności.
+Prognozy meteorologiczne stanowią szczególny przypadek systemów przetwarzania informacji,
+w których rzeczywisty stan atmosfery nie jest bezpośrednio dostępny, lecz jedynie
+reprezentowany poprzez modele numeryczne oraz pomiary.
+
+Niech:
+\[
+X(t) = \text{rzeczywisty stan atmosfery}
+\]
+
+Dostępne są jedynie jego reprezentacje:
+\[
+X_{model}(t), \quad X_{obs}(t)
+\]
+
+Analiza jakości prognoz nie dotyczy zatem bezpośrednio rzeczywistości,
+lecz relacji pomiędzy różnymi reprezentacjami tej samej informacji.
+
+Zgodnie z teorią informacji, analiza ta powinna być prowadzona na trzech poziomach:
+syntaktycznym, semantycznym oraz pragmatycznym.
 
 %--------------------------------------------------
+\newpage
+\subsection{Poziom syntaktyczny}
+
+Poziom syntaktyczny odnosi się do formalnej struktury danych, bez uwzględnienia ich znaczenia.
+
+W kontekście prognoz meteorologicznych dane można zapisać jako ciąg:
+
+\[
+X = \{x_1, x_2, ..., x_n\}, \quad x_i \in \mathbb{R}
+\]
+
+gdzie $x_i$ oznacza wartość parametru meteorologicznego (np. temperatury)
+w chwili $t_i$.
+
+Na tym poziomie analizujemy:
+\begin{itemize}
+    \item poprawność formatów danych,
+    \item spójność jednostek,
+    \item kompletność zbioru danych,
+    \item rozdzielczość czasową i przestrzenną.
+\end{itemize}
+
+Prognoza modelu może być zapisana jako:
+\[
+X_{model} = \{x^{model}_1, ..., x^{model}_n\}
+\]
+
+natomiast dane referencyjne:
+\[
+X_{gt} = \{x^{gt}_1, ..., x^{gt}_n\}
+\]
+
+Różnica pomiędzy nimi:
+\[
+e_i = x^{model}_i - x^{gt}_i
+\]
+
+stanowi podstawę klasycznej analizy błędów.
+
+Typowe miary syntaktyczne:
+\[
+RMSE = \sqrt{\frac{1}{n}\sum_{i=1}^{n} e_i^2}
+\]
+
+\[
+ME = \frac{1}{n}\sum_{i=1}^{n} e_i
+\]
+
+Na poziomie syntaktycznym prognoza może być uznana za „dokładną”,
+jeśli wartości liczbowe są bliskie danym referencyjnym.
+
+Jednak poziom ten nie uwzględnia znaczenia ani użyteczności informacji.
+
+%--------------------------------------------------
+\subsection{Poziom semantyczny}
+
+Poziom semantyczny odnosi się do interpretacji danych, czyli ich znaczenia
+w kontekście opisywanej rzeczywistości fizycznej.
+
+Temperatura nie jest jedynie liczbą:
+\[
+x_i = 15^\circ C
+\]
+
+lecz reprezentuje stan atmosfery, który wynika z procesów fizycznych
+(opisanych równaniami dynamiki atmosfery).
+
+Modele numeryczne (np. GFS, UM) stanowią różne aproksymacje funkcji:
+\[
+X_{model}(t) \approx X(t)
+\]
+
+Różnice między modelami wynikają z:
+\begin{itemize}
+    \item dyskretyzacji przestrzeni (siatka obliczeniowa),
+    \item parametryzacji procesów fizycznych,
+    \item warunków początkowych.
+\end{itemize}
+
+Na poziomie semantycznym kluczowe jest, że:
+
+\begin{quote}
+Porównujemy nie dane, lecz ich interpretacje jako reprezentacje rzeczywistości.
+\end{quote}
+
+W szczególności:
+\begin{itemize}
+    \item prognoza odnosi się do obszaru (komórki siatki),
+    \item pomiar odnosi się do punktu,
+\end{itemize}
+
+co oznacza, że:
+\[
+X_{model} \neq X_{obs}
+\]
+
+nawet przy idealnym modelu.
+
+Dodatkowo, w obrębie jednej lokalizacji (np. miasta) mogą występować
+znaczne różnice temperatur wynikające z:
+\begin{itemize}
+    \item efektu miejskiej wyspy ciepła,
+    \item zabudowy,
+    \item ukształtowania terenu.
+\end{itemize}
+
+Oznacza to, że dane referencyjne nie są jednoznacznym odwzorowaniem rzeczywistości.
+
+%--------------------------------------------------
+\subsection{Poziom pragmatyczny}
+
+Poziom pragmatyczny odnosi się do użyteczności informacji w kontekście
+konkretnego użytkownika i jego decyzji.
+
+Zgodnie z teorią informacji:
+\[
+\text{Informacja jest tym, co jest użyteczne dla użytkownika}
+\]
+
+Wprowadzamy model użytkownika:
+\[
+U : X \rightarrow \mathbb{R}
+\]
+
+gdzie $U$ oznacza funkcję użyteczności.
+
+Przykładowo:
+\begin{itemize}
+    \item dla turysty istotna jest temperatura odczuwalna,
+    \item dla kierowcy — opady i oblodzenie,
+    \item dla rolnika — suma opadów.
+\end{itemize}
+
+Oznacza to, że błąd:
+\[
+e_i = 2^\circ C
+\]
+
+może być:
+\begin{itemize}
+    \item nieistotny (dla spaceru),
+    \item krytyczny (dla rolnictwa).
+\end{itemize}
+
+W związku z tym klasyczne miary błędu nie są wystarczające.
+
+Lepszym podejściem jest ocena decyzji:
+
+\[
+D = f(X_{model})
+\]
+
+oraz jej zgodności z decyzją optymalną:
+
+\[
+D^* = f(X_{gt})
+\]
+
+Miara jakości:
+\[
+Q = P(D = D^*)
+\]
+
+Na poziomie pragmatycznym:
+\begin{itemize}
+    \item nie analizujemy dokładności liczbowej,
+    \item analizujemy skuteczność działania.
+\end{itemize}
+
+%--------------------------------------------------
+\subsection{Podsumowanie poziomów}
+
+Analiza informacji w prognozach meteorologicznych prowadzi do wyróżnienia
+trzech komplementarnych poziomów opisu:
+
+\begin{itemize}
+    \item \textbf{Syntaktyka} — odnosi się do struktury danych oraz ich formalnej poprawności.
+    Na tym poziomie prognoza jest traktowana jako zbiór liczb:
+    \[
+    X = \{x_1, x_2, ..., x_n\}
+    \]
+    Analiza obejmuje miary błędu, zgodność jednostek oraz kompletność danych.
+
+    \item \textbf{Semantyka} — dotyczy interpretacji danych jako reprezentacji
+    rzeczywistości fizycznej. W tym ujęciu prognoza nie jest jedynie ciągiem liczb,
+    lecz odwzorowaniem stanu atmosfery:
+    \[
+    X_{model}(t) \approx X(t)
+    \]
+    gdzie jakość odwzorowania zależy od modelu, jego parametrów oraz warunków początkowych.
+
+    \item \textbf{Pragmatyka} — odnosi się do użyteczności informacji w kontekście
+    konkretnego użytkownika i jego decyzji. Informacja jest wartościowa tylko wtedy,
+    gdy prowadzi do poprawnego działania:
+    \[
+    D = f(X_{model})
+    \]
+\end{itemize}
+
+Poziomy te nie są niezależne, lecz tworzą hierarchiczną strukturę:
+poprawność syntaktyczna jest warunkiem koniecznym, lecz niewystarczającym
+dla uzyskania poprawności semantycznej, a poprawność semantyczna nie gwarantuje
+użyteczności pragmatycznej.
+
+W szczególności możliwa jest sytuacja, w której:
+\begin{itemize}
+    \item dane są dokładne numerycznie (niski błąd RMSE),
+    \item model poprawnie odwzorowuje ogólne zjawiska atmosferyczne,
+    \item jednak prognoza nie wspiera właściwych decyzji użytkownika.
+\end{itemize}
+
+Formalnie można to zapisać jako:
+\[
+RMSE \rightarrow 0 \;\;\not\Rightarrow\;\; D = D^*
+\]
+
+gdzie $D$ oznacza decyzję podjętą na podstawie prognozy,
+a $D^*$ decyzję optymalną względem rzeczywistego stanu atmosfery.
+
+Oznacza to, że klasyczne podejście oparte wyłącznie na miarach błędu
+nie jest wystarczające do oceny jakości informacji meteorologicznej.
+Pełna ocena wymaga uwzględnienia kontekstu użytkownika, jego celów
+oraz konsekwencji podejmowanych decyzji.
+
+W konsekwencji analiza prognoz powinna być prowadzona nie tylko
+w przestrzeni danych, lecz przede wszystkim w przestrzeni ich zastosowań,
+co stanowi podstawę podejścia pragmatycznego w teorii informacji.
+%--------------------------------------------------
+\newpage
 \section{Model użytkownika}
 
 Użytkownik końcowy nie analizuje wartości liczbowych ani miar błędu, lecz oczekuje informacji pozwalającej na podjęcie decyzji.
@@ -69,7 +353,9 @@ Najważniejsze dla użytkownika są:
 \end{itemize}
 
 %--------------------------------------------------
+\newpage
 \section{Analiza istniejących rozwiązań}
+
 
 \subsection{Metryki statystyczne}
 Najczęściej stosowane są miary błędu takie jak MAE, MSE oraz RMSE.
