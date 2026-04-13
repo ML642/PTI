@@ -439,8 +439,26 @@ Redukcja wymiarowości i odrzucenie nieistotnych wahań pozwala skompresować te
 \[
 H(X_{user}) < H(X_{full})
 \]
-co oznacza pożądane zmniejszenie redundancji i złożoności systemu bez utraty wartości pragmatycznej.
+\paragraph{}
+Niech $p_i$ oznacza prawdopodobieństwo wystąpienia wartości $x_i$
+w analizowanym zbiorze temperatur.
 
+Dla danych:
+\[
+T = \{10, 9, 9, 13, 19, 17, 14, 11\}
+\]
+
+otrzymujemy rozkład:
+\[
+p(9)=\frac{2}{8}, \quad p(10)=\frac{1}{8}, \quad p(11)=\frac{1}{8}, \dots
+\]
+
+Na tej podstawie entropia wyznaczona jest jako:
+\[
+H(X) = - \sum p(x)\log_2 p(x)
+\]
+co oznacza pożądane zmniejszenie redundancji i złożoności systemu bez utraty wartości pragmatycznej.
+\newpage
 \subsection{Krzywa Rate-Distortion (R-D) dla danych pomiarowych}
 
 Teoretyczny problem reprezentacji informacji można sformułować jako zagadnienie optymalizacji:
@@ -459,6 +477,11 @@ Aby udowodnić słuszność koncepcji pomijania nieistotnych wahań temperatury 
 \end{figure}
 
 Wykres ten stanowi matematyczne potwierdzenie wyników ankiety: pozwalając na minimalne, nieodczuwalne dla użytkownika zniekształcenie sygnału (wzrost MSE), zyskujemy znaczący spadek ilości wymaganych bitów informacji (entropii). Oznacza to, że optymalna reprezentacja ($R \downarrow$ przy braku odczuwalnych negatywnych konsekwencji decyzyjnych) jest w pełni uzasadniona z perspektywy teorii informacji.
+\subsection{Sygnałowa interpretacja danych (Kwantyzacja pragmatyczna)}
+
+Powyższa optymalizacja R-D pozwala spojrzeć na dane meteorologiczne jak na klasyczne szeregi czasowe (sygnały). Zgodnie z paradygmatem teorii informacji, surowe sygnały zawierają szum, który należy odrzucić poprzez ekstrakcję cech. 
+
+Z perspektywy użytkownika, zignorowanie nieistotnych wahań (np. różnicy temperatur rzędu $0.5^\circ C$) nie jest utratą jakości, lecz formą celowej \textbf{kwantyzacji z powiększonym przedziałem zerowym} (analogicznie do odszumiania sygnału metodą progowania). Traktując drobne różnice jako szum decycyjny, drastycznie redukujemy redundancję przekazu. Dzięki temu odbiorca otrzymuje skompresowaną, wysoce użyteczną informację, wolną od szumu, co bezpośrednio wspiera jego proces decyzyjny.
 \subsection{Optymalizacja reprezentacji – podejście R(D)}
 
 Problem reprezentacji informacji można sformułować jako zagadnienie
@@ -525,17 +548,27 @@ Zamiast generować jedną, niepewną ścieżkę ewolucji atmosfery, modele uruch
 
 
 \newpage
-\subsection{Analiza zdarzeń i weryfikacja kategoryczna}
+\subsection{Weryfikacja pragmatyczna — analiza zdarzeń (Hit Rate i FAR)}
 
-Jak wykazały badania ankietowe z poprzedniego rozdziału, dla odbiorcy kluczowe jest wystąpienie konkretnych zdarzeń (np. faktu wystąpienia opadu). W tym celu stosuje się weryfikację kategoryczną opartą na tablicach kontyngencji (macierzach pomyłek). 
+Aby przejść od oceny syntaktycznej (RMSE) do oceny pragmatycznej, przeprowadzono analizę binarną przewidywania zdarzeń. Przyjęto pragmatyczny próg temperatury $T < 12^\circ C$ (moment wymagający od użytkownika zmiany ubioru lub przygotowania pojazdu). 
 
-Zamiast ciągłych miar błędu, bada się wartości dyskretne (prawda/fałsz) za pomocą wskaźników takich jak:
-\begin{itemize}
-    \item \textbf{Hit Rate (HR)} -- wskaźnik trafień,
-    \item \textbf{False Alarm Ratio (FAR)} -- wskaźnik fałszywych alarmów.
-\end{itemize}
-Jest to forma silnej \textbf{kompresji semantycznej}, która redukuje wielowymiarowy sygnał fizyczny modelu do pojedynczego binarnego komunikatu, posiadającego najwyższą wartość pragmatyczną dla użytkownika końcowego.
+W tabeli \ref{tab:metrics} zestawiono wyniki weryfikacji kategorycznej dla modeli GFS i UM na podstawie danych pomiarowych.
 
+\begin{table}[h]
+    \centering
+    \begin{tabular}{lccccc}
+    \toprule
+    Model & Hits & Misses & False Alarms & Hit Rate (HR) & FAR \\
+    \midrule
+    GFS & 4 & 1 & 0 & 0.80 & 0.00 \\
+    UM  & 5 & 0 & 1 & 1.00 & 0.17 \\
+    \bottomrule
+    \end{tabular}
+    \caption{Metryki pragmatyczne dla progu $T < 12^\circ C$.}
+    \label{tab:metrics}
+\end{table}
+
+Analiza wykazuje, że mimo wyższego błędu RMSE w modelu GFS (aspekt syntaktyczny), model ten cechuje się zerowym wskaźnikiem fałszywych alarmów (FAR = 0) dla wybranego progu. Z kolei model UM, mimo lepszego dopasowania punktowego, wygenerował jeden fałszywy alarm. Dowodzi to, że wybór „lepszego” modelu zależy od kosztu pomyłki użytkownika (np. czy gorszy jest brak ostrzeżenia, czy fałszywy alarm).
 \subsection{State-of-the-art w modelach prognostycznych}
 
 Jakość informacji na wejściu jest ściśle uzależniona od architektury modelu numerycznego. Do najczęściej stosowanych systemów należą:
@@ -555,22 +588,24 @@ Wybór modelu definiuje gęstość i jakość informacji. Modele lokalne dostarc
 
 \newpage
 
-\section{Reprezentacja informacji}
-
-Dane meteorologiczne, pozyskiwane zarówno z modeli numerycznych, jak i pomiarów referencyjnych, są z natury zjawiskami zmiennymi w czasie. W ujęciu formalnym reprezentuje się je jako dyskretne szeregi czasowe, gdzie każda próbka odpowiada wartości danego parametru (np. temperatury) w określonej chwili. Taka forma zapisu pozwala na traktowanie danych pogodowych jako sygnałów informacyjnych, co umożliwia zastosowanie aparatury pojęciowej z zakresu analizy sygnałów.
-
-Zgodnie z paradygmatem teorii informacji, surowe sygnały zawierają ogromną ilość danych, z których nie wszystkie niosą użyteczną treść. Kluczowym zagadnieniem staje się zatem selekcja informacji (ekstrakcja cech). W procesie tym dąży się do wyodrębnienia ,,istoty'' sygnału przy jednoczesnym odrzuceniu szumu informacyjnego oraz fluktuacji o niskim znaczeniu.
-
-Z perspektywy pragmatycznej konieczne jest odrzucenie nieistotnych różnic, które nie wpływają na ostateczne decyzje podejmowane przez użytkownika. Klasycznym przykładem jest różnica temperatur rzędu $0.5^\circ C$. Z punktu widzenia syntaktyki (precyzji numerycznej) jest to mierzalny błąd pomiędzy modelem a rzeczywistością. Jednak na poziomie pragmatycznym zmiana ta leży zazwyczaj poniżej progu ludzkiej percepcji i nie niesie żadnej wartości decyzyjnej (np. nie zmienia decyzji o doborze ubioru czy planowaniu prac).
-
-Proces ignorowania tak drobnych, nieistotnych wahań można interpretować jako formę celowej kwantyzacji z powiększonym przedziałem zerowym lub progowania (analogicznie do odszumiania sygnałów). Pozwala to na znaczną redukcję nadmiarowości (redundancji) reprezentacji. Dzięki temu użytkownik otrzymuje skompresowaną, ale wysoce użyteczną informację, co pozwala skupić się na rzeczywistych trendach oraz istotnych zdarzeniach meteorologicznych.
 %--------------------------------------------------
 
 %--------------------------------------------------
-\section{Wnioski}
 
-Prognoza meteorologiczna nie jest jedynie zbiorem danych, lecz informacją, której wartość zależy od kontekstu oraz użytkownika.
+\section{Podsumowanie i wnioski końcowe}
 
-Ocena jakości prognozy powinna uwzględniać nie tylko dokładność numeryczną, ale również jej użyteczność w praktyce.
+Realizacja niniejszego etapu projektu pozwoliła na pełną syntezę teoretycznych aspektów teorii informacji z praktyczną analizą wiarygodności prognoz meteorologicznych. W toku prac udowodniono, że ocena jakości informacji nie może ograniczać się wyłącznie do miar statystycznych, lecz musi uwzględniać kontekst decyzyjny użytkownika.
 
+Główne wnioski płynące z przeprowadzonej analizy to:
+
+\begin{enumerate}
+    \item \textbf{Hierarchia informacji:} Wykazano, że poprawność syntaktyczna (niski błąd RMSE) jest warunkiem koniecznym, ale niewystarczającym dla użyteczności informacji. Prawdziwa wartość prognozy ujawnia się na poziomie pragmatycznym, gdzie kluczowe jest wsparcie trafnych decyzji użytkownika ($P(D=D^*)$).
+    
+    \item \textbf{Optymalizacja reprezentacji:} Dzięki wyznaczeniu krzywej Rate-Distortion (R-D) na podstawie danych rzeczywistych z modelu MATLAB, matematycznie potwierdzono, że dopuszczenie minimalnego błędu (np. zaokrąglenie do pełnych stopni) pozwala na znaczną redukcję redundancji i ентропії sygnału ($R \downarrow$). Jest to w pełni spójne z wynikami badania ankietowego (N=35), w którym użytkownicy intuicyjnie deklarowali potrzebę otrzymywania informacji skompresowanej i przefiltrowanej z szumu informacyjnego.
+    \item \textbf{Weryfikacja kategoryczna vs punktowa:} Analiza wskaźników Hit Rate (HR) i False Alarm Ratio (FAR) pokazała, że model UM, mimo lepszego dopasowania syntaktycznego, może generować więcej fałszywych alarmów niż model GFS w określonych warunkach progowych ($T < 12^\circ C$). Potwierdza to tezę, że wybór ,,lepszego'' modelu jest relatywny i zależy od indywidualnej funkcji użyteczności użytkownika oraz kosztu ewentualnej pomyłki.
+    
+    \item \textbf{Rola modelu użytkownika:} Zdefiniowanie formalnej funkcji użyteczności $U$ pozwoliło na przejście od surowych danych meteo do inteligentnego systemu wspomagania decyzji. Wykazano, że odrzucenie nieistotnych różnic (np. $0.5^\circ C$) stanowi formę celowej kwantyzacji sygnału, która zwiększa efektywność komunikacji człowiek-maszyna.
+\end{enumerate}
+
+Konkludując, podejście oparte na teorii informacji i wiedzy pozwala na znacznie głębsze zrozumienie natury prognozowania niż klasyczna metrologia. Wyniki projektu wskazują, że przyszłość systemów meteorologicznych leży nie tylko w zwiększaniu rozdzielczości modeli, ale przede wszystkim w inteligentnej ekstrakcji cech istotnych semantycznie i dostarczaniu informacji w formie dopasowanej do pragmatyki ludzkiego działania.
 \end{document}
