@@ -417,94 +417,48 @@ Model użytkownika stanowi formalny opis sposobu interpretacji danych
 meteorologicznych oraz ich przekształcenia w decyzje. Oznacza to przejście od
 poziomu syntaktycznego (dane liczbowe), przez poziom semantyczny (znaczenie),
 do poziomu pragmatycznego (działanie).
-
-\subsection{Reprezentacja informacji wejściowej}
-
-Niech stan atmosfery opisany będzie wektorem:
-\[
-X(t) = \big(T(t), P(t), W(t)\big)
-\]
-gdzie:
-\begin{itemize}
-    \item $T(t)$ – temperatura,
-    \item $P(t)$ – opad,
-    \item $W(t)$ – prędkość wiatru.
-\end{itemize}
-
-Model prognozy dostarcza estymacji:
-\[
-\hat{X}(t)
-\]
-
-\subsection{Reprezentacja informacji w modelu użytkownika}
-
-W klasycznych modelach numerycznych prognoza pogody opisywana jest jako
-wielowymiarowe pole fizyczne o wysokiej rozdzielczości przestrzennej i czasowej.
-Taka reprezentacja charakteryzuje się dużą entropią oraz znaczną redundancją
-z punktu widzenia użytkownika.
-
-\paragraph{}
-Niech pełna reprezentacja danych będzie dana jako:
-\[
-X_{full}(t) = \big(T(t), P(t), t_P(t), I_P(t), W(t), C(t), \ldots\big)
-\]
-
-\paragraph{}
-Zgodnie z wynikami analizy empirycznej użytkownik operuje na zredukowanej
-reprezentacji:
-\[
-X_{user}(t) = \big(T(t), P(t), t_P(t)\big)
-\]
-
-\paragraph{}
-Przejście:
-\[
-X_{full}(t) \rightarrow X_{user}(t)
-\]
-stanowi proces selekcji informacji oraz redukcji wymiaru przestrzeni danych.
-
-\paragraph{}
-W ujęciu teorii informacji oznacza to eliminację redundancji oraz zachowanie
-wyłącznie informacji istotnej semantycznie i pragmatycznie.
-
-\subsection{Kompresja informacji i efektywność reprezentacji}
+\subsection{Kompresja informacji i wyznaczenie entropii}
 
 Proces redukcji informacji można interpretować jako formę kompresji:
 \[
 X_{full} \rightarrow X_{user}
 \]
 
-\paragraph{}
-Celem kompresji nie jest jedynie zmniejszenie objętości danych, lecz przede
-wszystkim zachowanie informacji istotnej dla decyzji użytkownika.
-
-\paragraph{}
-Zgodnie z teorią Shannona, minimalna liczba bitów potrzebna do reprezentacji
-zmiennej losowej wynosi:
+Celem kompresji jest zachowanie informacji istotnej dla decyzji użytkownika. Zgodnie z teorią Shannona, miarą złożoności informacyjnej jest entropia:
 \[
-H(X) = - \sum p(x) \log p(x)
+H(X) = - \sum p(x) \log_2 p(x)
 \]
 
-\paragraph{}
-Redukcja liczby zmiennych prowadzi do:
+Aby zweryfikować to empirycznie, poddano analizie rzeczywisty ciąg danych referencyjnych temperatury (Ground Truth) z pierwszego etapu laboratorium dla 8 pomiarów: $T = \{10, 9, 9, 13, 19, 17, 14, 11\}$. 
+Na podstawie częstości występowania poszczególnych wartości, obliczona entropia surowego sygnału wynosi:
+\[
+H(X_{full}) = 2.75 \text{ bitów}
+\]
+
+Redukcja wymiarowości i odrzucenie nieistotnych wahań pozwala skompresować ten wynik. Zgodnie z założeniami:
 \[
 H(X_{user}) < H(X_{full})
 \]
+co oznacza pożądane zmniejszenie redundancji i złożoności systemu bez utraty wartości pragmatycznej.
 
-co oznacza zmniejszenie złożoności informacyjnej systemu.
+\subsection{Krzywa Rate-Distortion (R-D) dla danych pomiarowych}
 
-\paragraph{}
-Jednocześnie, w przeciwieństwie do klasycznej kompresji bezstratnej,
-dopuszczalne jest odrzucenie części informacji:
+Teoretyczny problem reprezentacji informacji można sformułować jako zagadnienie optymalizacji:
 \[
-X_{full} \not\rightarrow X_{user}
+\min R \quad \text{przy} \quad D \leq D_{max}
 \]
+gdzie $R$ to entropia (Rate), a $D$ to błąd (Distortion). 
 
-jeżeli nie wpływa ona na wynik funkcji decyzyjnej:
-\[
-f(X_{full}) \approx f(X_{user})
-\]
+Aby udowodnić słuszność koncepcji pomijania nieistotnych wahań temperatury (np. $0.5^\circ C$), przeprowadzono symulację kwantyzacji wektora danych referencyjnych dla różnych kroków $\Delta$. Wyniki przedstawiono na krzywej R-D (Rysunek \ref{fig:rd_curve}).
 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{rd_curve.png} % Upewnij się, że plik jest w folderze projektu!
+    \caption{Krzywa Rate-Distortion wyznaczona eksperymentalnie dla zebranych danych temperatury. Wraz ze wzrostem tolerowanego błędu (D), wymagana przepustowość informacji (R) drastycznie spada.}
+    \label{fig:rd_curve}
+\end{figure}
+
+Wykres ten stanowi matematyczne potwierdzenie wyników ankiety: pozwalając na minimalne, nieodczuwalne dla użytkownika zniekształcenie sygnału (wzrost MSE), zyskujemy znaczący spadek ilości wymaganych bitów informacji (entropii). Oznacza to, że optymalna reprezentacja ($R \downarrow$ przy braku odczuwalnych negatywnych konsekwencji decyzyjnych) jest w pełni uzasadniona z perspektywy teorii informacji.
 \subsection{Optymalizacja reprezentacji – podejście R(D)}
 
 Problem reprezentacji informacji można sformułować jako zagadnienie
