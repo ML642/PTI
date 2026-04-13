@@ -74,11 +74,37 @@ Modele numeryczne operują na uśrednionej reprezentacji przestrzennej (siatce o
 
 %--------------------------------------------------
 \newpage
+
 \section{Wprowadzenie}
 
-Prognozy meteorologiczne stanowią istotne źródło informacji wykorzystywanej w codziennym podejmowaniu decyzji. Pomimo szerokiej dostępności danych, różne modele numeryczne często generują rozbieżne wyniki, co prowadzi do niepewności użytkownika.
+Prognozy meteorologiczne stanowią szczególny przypadek systemów przetwarzania informacji, w których dane empiryczne oraz modele fizyczne są przekształcane w przewidywania przyszłego stanu atmosfery. W ujęciu teorii informacji prognoza nie jest jedynie zbiorem wartości liczbowych, lecz reprezentacją informacji o stanie rzeczywistości, obarczoną niepewnością oraz zależną od przyjętego modelu.
 
-Celem niniejszego etapu jest analiza problemu nie tylko jako zadania numerycznego, lecz przede wszystkim jako problemu informacji oraz jej użyteczności.
+Proces prognozowania można interpretować jako odwzorowanie:
+\[
+X(t) \rightarrow \hat{X}(t+\Delta t),
+\]
+gdzie $X(t)$ oznacza rzeczywisty stan atmosfery, natomiast $\hat{X}(t+\Delta t)$ jego estymację w przyszłości. Dokładność tego odwzorowania zależy zarówno od jakości danych wejściowych, jak i od właściwości zastosowanego modelu numerycznego.
+
+W klasycznym ujęciu syntaktycznym prognoza ma postać ciągów liczbowych:
+\[
+\{x_1, x_2, \dots, x_n\}, \quad x_i \in \mathbb{R},
+\]
+które opisują zmienne meteorologiczne, takie jak temperatura, opady czy prędkość wiatru. Jednak sama poprawność syntaktyczna danych nie przesądza o ich wartości informacyjnej.
+
+Na poziomie semantycznym dane te stanowią model rzeczywistości fizycznej, wynikający z przybliżeń równań dynamiki atmosfery oraz ich numerycznej dyskretyzacji. Oznacza to, że prognoza jest zawsze uproszczoną reprezentacją rzeczywistości, zależną od przyjętych założeń modelowych.
+
+Najistotniejszy z punktu widzenia zastosowań jest poziom pragmatyczny, w którym informacja oceniana jest poprzez swoją użyteczność dla użytkownika. W tym ujęciu kluczowe nie jest dokładne odwzorowanie wartości liczbowych, lecz zdolność prognozy do wspierania decyzji.
+
+Z perspektywy teorii informacji można zatem wyróżnić trzy poziomy opisu prognozy:
+\begin{itemize}
+    \item poziom syntaktyczny -- opis danych jako struktur liczbowych,
+    \item poziom semantyczny -- interpretacja danych jako modelu rzeczywistości,
+    \item poziom pragmatyczny -- ocena użyteczności informacji w kontekście decyzji.
+\end{itemize}
+
+Istotnym problemem badawczym jest fakt, że wysoka zgodność syntaktyczna prognozy z danymi referencyjnymi nie gwarantuje jej użyteczności pragmatycznej. Może wystąpić sytuacja, w której prognoza jest numerycznie poprawna, lecz nie dostarcza informacji istotnej dla użytkownika.
+
+Celem niniejszego etapu projektu jest analiza prognoz meteorologicznych jako systemu informacji, obejmująca przegląd stosowanych metod, sposobów reprezentacji danych oraz kryteriów oceny ich jakości. Szczególny nacisk położono na rozróżnienie pomiędzy dokładnością numeryczną a użytecznością informacji, zgodnie z podejściem prezentowanym w ramach teorii informacji i wiedzy.
 
 %--------------------------------------------------
 \newpage
@@ -341,60 +367,250 @@ w przestrzeni danych, lecz przede wszystkim w przestrzeni ich zastosowań,
 co stanowi podstawę podejścia pragmatycznego w teorii informacji.
 %--------------------------------------------------
 \newpage
-\section{Model użytkownika}
 
-Użytkownik końcowy nie analizuje wartości liczbowych ani miar błędu, lecz oczekuje informacji pozwalającej na podjęcie decyzji.
+\section{Model użytkownika na podstawie badań  ankietowych}
 
-Najważniejsze dla użytkownika są:
+W ujęciu pragmatycznym teorii informacji, wartość danych meteorologicznych jest determinowana przez ich użyteczność dla odbiorcy. Aby precyzyjnie zdefiniować optymalny model użytkownika i określić jego funkcję użyteczności, przeprowadzono dedykowane badanie ankietowe na grupie 35 respondentów.
+
+\subsection{Analiza potrzeb informacyjnych}
+
+Wyniki ankiety jednoznacznie wskazują, że preferencje użytkowników skupiają się wokół zaledwie kilku kluczowych parametrów. Potwierdza to konieczność silnej \textbf{kompresji semantycznej} surowych danych modelowych – odbiorca nie potrzebuje pełnej siatki danych (np. setek megabajtów plików GRIB), lecz wyselekcjonowanej informacji punktowej.
+
+Zdecydowana większość badanych (97.1\%) preferuje prognozy \textbf{krótkoterminowe}, co jest spójne z pragmatyką podejmowania bieżących decyzji (np. wyjście z domu, dobór ubioru). Z kolei regularność sprawdzania pogody (80\% respondentów sprawdza prognozę codziennie lub kilka razy w tygodniu) dowodzi, że informacja meteorologiczna jest krytycznym elementem ich codziennej rutyny.
+
+\subsection{Infografika wyników: Priorytety informacyjne}
+
+Poniższa tabela przedstawia procentowy rozkład cech uznawanych za kluczowe przez ankietowanych. Długość paska wizualizuje wagę (istotność) danego parametru w modelu decyzyjnym przeciętnego użytkownika.
+
+\begin{table}[h]
+    \centering
+    \renewcommand{\arraystretch}{1.5}
+    \begin{tabular}{@{}llrl@{}}
+    \toprule
+    \textbf{Parametr} & \textbf{Waga w informacji} & \textbf{\%} & \textbf{Wizualizacja} \\ 
+    \midrule
+    Temperatura & Krytyczna & 100.0\% & {\color{blue}\rule{5.0cm}{8pt}} \\
+    Obecność opadów & Wysoka & 65.7\% & {\color{blue}\rule{3.28cm}{8pt}} \\
+    Godzina opadów & Wysoka & 60.0\% & {\color{blue}\rule{3.0cm}{8pt}} \\
+    Intensywność opadów & Średnia & 22.9\% & {\color{blue}\rule{1.14cm}{8pt}} \\
+    Intensywność wiatru & Niska & 14.3\% & {\color{blue}\rule{0.71cm}{8pt}} \\
+    Zachmurzenie & Niska & 11.4\% & {\color{blue}\rule{0.57cm}{8pt}} \\
+    Wschód/zachód słońca & Minimalna & 8.6\% & {\color{blue}\rule{0.43cm}{8pt}} \\
+    Poziom wilgotności & Pomijalna & 2.9\% & {\color{blue}\rule{0.14cm}{8pt}} \\
+    \bottomrule
+    \end{tabular}
+    \caption{Hierarchia potrzeb informacyjnych w prognozie pogody na podstawie ankiety (N=35).}
+    \label{tab:ankieta}
+\end{table}
+
+\subsection{Wnioski dla funkcji użyteczności}
+
+Na podstawie powyższych danych można stwierdzić, że optymalna reprezentacja informacji meteorologicznej dla standardowego odbiorcy opiera się na dwóch wymiarach:
+\begin{enumerate}
+    \item \textbf{Ciągłym} – wartość temperatury (stanowiąca bazę dla każdego użytkownika).
+    \item \textbf{Dyskretnym/Zdarzeniowym} – binarne określenie faktu wystąpienia opadów oraz ich rozkład w czasie (godzina).
+\end{enumerate}
+
+Jak widać, klasyczne podejście do oceny błędów (np. błąd numeryczny prognozy ciśnienia czy wilgotności) ma znikome znaczenie pragmatyczne, gdyż parametry te są wprost ignorowane przez 97\% użytkowników. Idealny system przekazywania informacji powinien kompresować pozostałe parametry fizyczne, wydobywając i eksponując wyłącznie temperaturę i predykcję deszczu.
+\paragraph{}
+Model użytkownika stanowi formalny opis sposobu interpretacji danych
+meteorologicznych oraz ich przekształcenia w decyzje. Oznacza to przejście od
+poziomu syntaktycznego (dane liczbowe), przez poziom semantyczny (znaczenie),
+do poziomu pragmatycznego (działanie).
+
+\subsection{Reprezentacja informacji wejściowej}
+
+Niech stan atmosfery opisany będzie wektorem:
+\[
+X(t) = \big(T(t), P(t), W(t)\big)
+\]
+gdzie:
 \begin{itemize}
-    \item wystąpienie opadów,
-    \item przekroczenie progów temperatury,
-    \item ogólna wiarygodność prognozy.
+    \item $T(t)$ – temperatura,
+    \item $P(t)$ – opad,
+    \item $W(t)$ – prędkość wiatru.
 \end{itemize}
 
+Model prognozy dostarcza estymacji:
+\[
+\hat{X}(t)
+\]
+
+\subsection{Reprezentacja informacji w modelu użytkownika}
+
+W klasycznych modelach numerycznych prognoza pogody opisywana jest jako
+wielowymiarowe pole fizyczne o wysokiej rozdzielczości przestrzennej i czasowej.
+Taka reprezentacja charakteryzuje się dużą entropią oraz znaczną redundancją
+z punktu widzenia użytkownika.
+
+\paragraph{}
+Niech pełna reprezentacja danych będzie dana jako:
+\[
+X_{full}(t) = \big(T(t), P(t), t_P(t), I_P(t), W(t), C(t), \ldots\big)
+\]
+
+\paragraph{}
+Zgodnie z wynikami analizy empirycznej użytkownik operuje na zredukowanej
+reprezentacji:
+\[
+X_{user}(t) = \big(T(t), P(t), t_P(t)\big)
+\]
+
+\paragraph{}
+Przejście:
+\[
+X_{full}(t) \rightarrow X_{user}(t)
+\]
+stanowi proces selekcji informacji oraz redukcji wymiaru przestrzeni danych.
+
+\paragraph{}
+W ujęciu teorii informacji oznacza to eliminację redundancji oraz zachowanie
+wyłącznie informacji istotnej semantycznie i pragmatycznie.
+
+\subsection{Kompresja informacji i efektywność reprezentacji}
+
+Proces redukcji informacji można interpretować jako formę kompresji:
+\[
+X_{full} \rightarrow X_{user}
+\]
+
+\paragraph{}
+Celem kompresji nie jest jedynie zmniejszenie objętości danych, lecz przede
+wszystkim zachowanie informacji istotnej dla decyzji użytkownika.
+
+\paragraph{}
+Zgodnie z teorią Shannona, minimalna liczba bitów potrzebna do reprezentacji
+zmiennej losowej wynosi:
+\[
+H(X) = - \sum p(x) \log p(x)
+\]
+
+\paragraph{}
+Redukcja liczby zmiennych prowadzi do:
+\[
+H(X_{user}) < H(X_{full})
+\]
+
+co oznacza zmniejszenie złożoności informacyjnej systemu.
+
+\paragraph{}
+Jednocześnie, w przeciwieństwie do klasycznej kompresji bezstratnej,
+dopuszczalne jest odrzucenie części informacji:
+\[
+X_{full} \not\rightarrow X_{user}
+\]
+
+jeżeli nie wpływa ona na wynik funkcji decyzyjnej:
+\[
+f(X_{full}) \approx f(X_{user})
+\]
+
+\subsection{Optymalizacja reprezentacji – podejście R(D)}
+
+Problem reprezentacji informacji można sformułować jako zagadnienie
+optymalizacji typu Rate-Distortion:
+\[
+\min R \quad \text{przy} \quad D \leq D_{max}
+\]
+
+gdzie:
+\begin{itemize}
+    \item $R$ – liczba bitów (złożoność reprezentacji),
+    \item $D$ – zniekształcenie informacji,
+    \item $D_{max}$ – dopuszczalny poziom błędu.
+\end{itemize}
+
+\paragraph{}
+W kontekście modelu użytkownika zniekształcenie nie jest mierzone błędem
+numerycznym, lecz błędem decyzyjnym:
+\[
+D = \mathbb{P}\big(f(\hat{X}) \neq f(X)\big)
+\]
+
+\paragraph{}
+Oznacza to, że optymalna reprezentacja minimalizuje ilość danych przy zachowaniu
+poprawności decyzji.
+
+\paragraph{}
+W konsekwencji:
+\[
+R \downarrow \quad \text{przy} \quad D \approx 0
+\]
+
+co odpowiada maksymalnej efektywności informacyjnej systemu.
+
+\paragraph{}
+Oznacza to odejście od pełnej reprezentacji fizycznej na rzecz modelu
+zredukowanego, w którym kluczowe znaczenie mają temperatura oraz opady.
+
+\paragraph{}
+Takie podejście prowadzi do istotnego zmniejszenia złożoności informacyjnej przy
+zachowaniu użyteczności prognozy, co jest zgodne z fundamentalnymi założeniami
+teorii informacji.
+%--------------------------------------------------
+\newpage
 %--------------------------------------------------
 \newpage
 \section{Analiza istniejących rozwiązań}
 
+Współczesna meteorologia operuje ogromnymi zbiorami danych, których przetworzenie i weryfikacja wymaga zastosowania odpowiednich metod analitycznych. Weryfikację prognoz można podzielić na kilka nurtów, z których każdy odpowiada innemu ujęciu informacji.
 
-\subsection{Metryki statystyczne}
-Najczęściej stosowane są miary błędu takie jak MAE, MSE oraz RMSE.
+\subsection{Metryki statystyczne w ocenie syntaktycznej}
 
-\subsection{Podejścia probabilistyczne}
-Prognozy probabilistyczne pozwalają uwzględnić niepewność danych.
+W klasycznym ujęciu weryfikacji prognoz (np. temperatury) najczęściej stosowane są deterministyczne miary błędu, takie jak średni błąd bezwzględny (MAE) oraz pierwiastek błędu średniokwadratowego (RMSE):
 
-\subsection{Analiza zdarzeń}
-Często analizuje się konkretne zdarzenia, takie jak wystąpienie opadów.
+$$ RMSE = \sqrt{\frac{1}{n}\sum_{i=1}^{n} (x^{model}_i - x^{obs}_i)^2} $$
 
-\subsection{Modele prognostyczne}
-Do najczęściej stosowanych modeli należą GFS, ECMWF oraz UM.
+Metryki te doskonale sprawdzają się na poziomie \textbf{syntaktycznym}, określając dystans między sygnałem prognozowanym a obserwowanym. Z punktu widzenia pragmatyki mają one jednak istotną wadę: traktują każdy błąd o tej samej wartości bezwzględnej jako równoważny. W rzeczywistości różnica między 20°C a 22°C niesie dla użytkownika znikomą zmianę informacji użytecznej, podczas gdy błąd rzędu 2°C w okolicach zera (np. -1°C a 1°C) drastycznie zmienia kontekst semantyczny (zamarzanie, gołoledź).
+
+\subsection{Podejścia probabilistyczne i modelowanie niepewności}
+
+Zgodnie z aktualnym stanem wiedzy (state-of-the-art), prognozowanie pogody odchodzi od pojedynczych wyników deterministycznych na rzecz systemów prognoz wiązkowych (EPS -- \textit{Ensemble Prediction Systems}). 
+
+Zamiast generować jedną, niepewną ścieżkę ewolucji atmosfery, modele uruchamiane są kilkadziesiąt razy z lekko zaburzonymi warunkami początkowymi. Podejście to pozwala na określenie rozkładu prawdopodobieństwa $P(x)$ wystąpienia danego zjawiska. W kontekście teorii informacji, EPS umożliwia bezpośrednie szacowanie niepewności układu (entropii) oraz pozwala użytkownikowi na podjęcie decyzji w oparciu o akceptowalny poziom ryzyka.
+
+
+\newpage
+\subsection{Analiza zdarzeń i weryfikacja kategoryczna}
+
+Jak wykazały badania ankietowe z poprzedniego rozdziału, dla odbiorcy kluczowe jest wystąpienie konkretnych zdarzeń (np. faktu wystąpienia opadu). W tym celu stosuje się weryfikację kategoryczną opartą na tablicach kontyngencji (macierzach pomyłek). 
+
+Zamiast ciągłych miar błędu, bada się wartości dyskretne (prawda/fałsz) za pomocą wskaźników takich jak:
+\begin{itemize}
+    \item \textbf{Hit Rate (HR)} -- wskaźnik trafień,
+    \item \textbf{False Alarm Ratio (FAR)} -- wskaźnik fałszywych alarmów.
+\end{itemize}
+Jest to forma silnej \textbf{kompresji semantycznej}, która redukuje wielowymiarowy sygnał fizyczny modelu do pojedynczego binarnego komunikatu, posiadającego najwyższą wartość pragmatyczną dla użytkownika końcowego.
+
+\subsection{State-of-the-art w modelach prognostycznych}
+
+Jakość informacji na wejściu jest ściśle uzależniona od architektury modelu numerycznego. Do najczęściej stosowanych systemów należą:
+\begin{itemize}
+    \item \textbf{GFS (Global Forecast System)} -- model globalny, charakteryzujący się bardzo dobrą dostępnością danych, lecz oferujący nieco niższą rozdzielczość przestrzenną.
+    \item \textbf{ECMWF (European Centre for Medium-Range Weather Forecasts)} -- powszechnie uznawany za najskuteczniejszy model globalny, przodujący w asymilacji danych satelitarnych i prognozach wiązkowych.
+    \item \textbf{UM (Unified Model)} -- model mezoskalowy (regionalny), oferujący bardzo wysoką rozdzielczość przestrzenną (rzędu 1.5 - 4 km). Pozwala na znacznie precyzyjniejsze odwzorowanie zjawisk lokalnych, co drastycznie zwiększa informatywność prognozy w trudnym terenie.
+\end{itemize}
+
+Wybór modelu definiuje gęstość i jakość informacji. Modele lokalne dostarczają więcej szczegółów przestrzennych, co jednak wymaga wielokrotnie większych nakładów obliczeniowych, stanowiąc klasyczny kompromis między kosztem przetworzenia danych a uzyskanym zyskiem informacyjnym.
+
+
 
 %--------------------------------------------------
+%--------------------------------------------------
+
+
+\newpage
+
 \section{Reprezentacja informacji}
 
-Dane meteorologiczne reprezentowane są jako szeregi czasowe.
+Dane meteorologiczne, pozyskiwane zarówno z modeli numerycznych, jak i pomiarów referencyjnych, są z natury zjawiskami zmiennymi w czasie. W ujęciu formalnym reprezentuje się je jako dyskretne szeregi czasowe, gdzie każda próbka odpowiada wartości danego parametru (np. temperatury) w określonej chwili. Taka forma zapisu pozwala na traktowanie danych pogodowych jako sygnałów informacyjnych, co umożliwia zastosowanie aparatury pojęciowej z zakresu analizy sygnałów.
 
-Istotnym zagadnieniem jest selekcja informacji, czyli odrzucenie nieistotnych różnic (np. różnicy rzędu 0.5°C).
+Zgodnie z paradygmatem teorii informacji, surowe sygnały zawierają ogromną ilość danych, z których nie wszystkie niosą użyteczną treść. Kluczowym zagadnieniem staje się zatem selekcja informacji (ekstrakcja cech). W procesie tym dąży się do wyodrębnienia ,,istoty'' sygnału przy jednoczesnym odrzuceniu szumu informacyjnego oraz fluktuacji o niskim znaczeniu.
 
+Z perspektywy pragmatycznej konieczne jest odrzucenie nieistotnych różnic, które nie wpływają na ostateczne decyzje podejmowane przez użytkownika. Klasycznym przykładem jest różnica temperatur rzędu $0.5^\circ C$. Z punktu widzenia syntaktyki (precyzji numerycznej) jest to mierzalny błąd pomiędzy modelem a rzeczywistością. Jednak na poziomie pragmatycznym zmiana ta leży zazwyczaj poniżej progu ludzkiej percepcji i nie niesie żadnej wartości decyzyjnej (np. nie zmienia decyzji o doborze ubioru czy planowaniu prac).
+
+Proces ignorowania tak drobnych, nieistotnych wahań można interpretować jako formę celowej kwantyzacji z powiększonym przedziałem zerowym lub progowania (analogicznie do odszumiania sygnałów). Pozwala to na znaczną redukcję nadmiarowości (redundancji) reprezentacji. Dzięki temu użytkownik otrzymuje skompresowaną, ale wysoce użyteczną informację, co pozwala skupić się na rzeczywistych trendach oraz istotnych zdarzeniach meteorologicznych.
 %--------------------------------------------------
-\section{Metryki i kryteria oceny}
-
-Oprócz klasycznych miar błędu należy uwzględnić metryki użytkowe:
-\begin{itemize}
-    \item trafność przewidywania opadów,
-    \item błędy przekroczenia progów,
-    \item stabilność prognoz.
-\end{itemize}
-
-%--------------------------------------------------
-\section{Wyzwania i ograniczenia}
-
-\begin{itemize}
-    \item chaotyczny charakter pogody,
-    \item błędy pomiarowe,
-    \item wpływ warunków lokalnych,
-    \item różnice między modelami.
-\end{itemize}
 
 %--------------------------------------------------
 \section{Wnioski}
