@@ -544,6 +544,45 @@ teorii informacji.
 
 Współczesna meteorologia operuje ogromnymi zbiorami danych, których przetworzenie i weryfikacja wymaga zastosowania odpowiednich metod analitycznych. Weryfikację prognoz można podzielić na kilka nurtów, z których każdy odpowiada innemu ujęciu informacji.
 
+
+\subsection{Rys historyczny}
+
+
+Można przypuszczać, że człowiek zapragnął przewidywać pogodę, gdy tylko wykształcił umiejętność myślenia o przyszłości. Czynniki takie jak zmiana temperatury czy opady miały kluczowe znaczenie dla przetrwania, pozyskiwania pożywienia czy ochrony przed nieprzyjaznym środowiskiem. Zaskakująco daleko w owych przewidywaniach można posunąć się, wykorzystując wyłącznie metody empiryczne w połączeniu ze znakomitą ludzką umiejętnością rozpoznawania schematów. Najbardziej oczywistym przykładem jest cykliczność pewnych zjawisk, takich jak cykl dnia i nocy tudzież pory roku. Oczywiście zwłaszcza te ostatnie miały bezpośredni wpływ na pogodę, wykazując bezpośrednią korelację z temperaturą i opadami (a także migracjami zwierzyny łownej).
+
+Tego rodzaju obserwacje zapewne szybko obrastały w mnemotechniki, przysłowia, rymowanki, które ułatwiały zapamiętywanie i przekazywanie zgromadzonej przez pokolenia wiedzy. W języku polskim (w przeciwieństwie do wielu innych języków europejskich) tego rodzaju wskazówki zachowały się chociażby w nazwach niektórych miesięcy. Przykładem niech będzie „luty”, co w staropolskim znaczyło tyle co „srogi”. Innym barwnym przykładem jest funkcjonująca w społeczności żeglarskiej rymowanka: „Gdy czerwone słońce wschodzi, w marynarzu bojaźń rodzi, lecz gdy czerwień o zachodzie, wie marynarz o pogodzie.” Żeglarz nie musi znać fizycznego uzasadnienia wspomnianych w niej zjawisk, aby, bazując na zakumulowanej wiedzy przeszłych pokoleń, ekstrapolować z zaobserwowanych w przyrodzie wskazówek spodziewany stan pogody na dzień następny.
+
+Prawdziwy przełom zaszedł jednak dopiero w epoce nowożytnej, gdy człowiek zaczął sięgać umysłem do leżących u podstaw zjawisk pogodowych praw przyrody. Wynalezienie termometru i barometru pozwoliło na obiektywne określanie związanych z pogodą wartości. Wraz z dalszym rozwojem chemii, fizyki i aparatu matematycznego koniecznego do ich ścisłego opisu wzrosła popularność koncepcji determinizmu. Laplace opisał obecnie powszechnie znany eksperyment myślowy, zwany demonem Laplace’a. Stwierdził, że gdyby jakiś hipotetyczny byt o ogromnej, ale skończonej pamięci i inteligencji mógł poznać dokładny stan każdej cząsteczki systemu, mógłby na tej podstawie dokładnie przepowiedzieć, jak ten system będzie się dalej zmieniał w czasie. Choć obecnie wiemy, że rzeczywistość nie do końca tak wygląda, wówczas kuszące stało się podjęcie próby zastosowania takiego podejścia do opisu ruchów płynu, jakim jest atmosfera, i tym samym określenia jej przyszłych ruchów, przekładających się na zjawiska takie jak wiatr, zmiana temperatury czy opady.
+
+Natychmiast pojawiły się jednak oczywiste problemy. Warto przytoczyć przykład Lewisa Fry’a Richardsona, który po poświęceniu kilku tygodni na ręczne przeprowadzenie obliczeń pozwalających na prognozę pogody spotkał się z przytłaczającą porażką, gdy okazało się, że jego wyniki były nie tylko drastycznie spóźnione, ale również całkowicie błędne, a wręcz niemożliwe. Oczywiste stało się, że kluczowe jest rozwiązanie dwóch zasadniczych problemów. Po pierwsze należało zwiększyć dokładność pomiarów oraz szybkość ich transmisji. Po drugie obliczenia należało drastycznie przyspieszyć, a najlepiej zautomatyzować.
+
+Rozwiązanie pierwszego problemu nadeszło wraz z pojawieniem się szybkiej komunikacji na odległość. Najpierw telegraf, później telefon umożliwiły natychmiastowe przekazywanie uzyskanych z pomiarów danych na znaczne odległości. To pozwoliło na rozpoczęcie kreślenia tak zwanych map synoptycznych (z greckiego „widoczny razem”), które przedstawiały rozkład temperatury lub ciśnienia na znacznym obszarze w tym samym momencie i wyraźnie wskazywały fronty atmosferyczne oraz linie izobaryczne.
+
+Drugi problem miał szansę zostać rozwiązany dopiero w XX wieku, wraz z rozwojem elektroniki, a następnie cyfrowych maszyn liczących. Wartą wspomnienia i zbieżną z zagadnieniem przetwarzania sygnałów ciekawostką jest polski wynalazek Jacka Karpińskiego, jakim jest analogowy analizator harmonicznych. Była to maszyna, która poprzez rozbicie danych, na przykład w formie wykresów, na ich składowe harmoniczne umożliwiała wykrycie cyklicznych wzorców i wspomaganie długoterminowej prognozy pogody. Maszyna dawała wyniki „dostatecznie dobre” i stanowiła ważny krok w kierunku automatyzacji prognoz.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.8\textwidth]{aaa.jpg}
+\caption{Analizator harmonicznych służący do przewidywania pogody.}
+\end{figure}
+
+Równolegle rozwijały się metody cyfrowe oparte na ogół na rozbijaniu dwuwymiarowej mapy na siatkę punktów, dla których stosowne obliczenia miały być wykonane. Wzrost mocy obliczeniowej umożliwiał zwiększanie rozdzielczości i zmniejszanie kroku metod numerycznych wykorzystywanych obliczeń. Stopniowo malała rola meteorologów ręcznie analizujących mapy pogodowe.
+
+Pomimo tego nie udało się rozwiązać fundamentalnego problemu wynikającego z tak zwanego efektu motyla, sprowadzającego się do skrajnej wrażliwości obliczeń na wartości początkowe, wynikającej z ich nieliniowej zależności. Narzucającym się rozwiązaniem tego problemu jest dalsze zwiększanie dokładności pomiarów, co jednak okazuje się od pewnego progu nieosiągalne w najbliższej (jak i dalszej) przyszłości.
+Powszechnie stosowanym kompromisem jest przeprowadzanie stosownych symulacji wielokrotnie z wprowadzonymi niewielkimi zaburzeniami danych wejściowych. Po uśrednieniu otrzymanych wyników można w przybliżeniu stwierdzić zarówno spodziewany wynik, jak i jego niepewność.
+
+Wszechobecna w ostatnich latach sztuczna inteligencja oparta na uczeniu maszynowym z powodzeniem znajduje zastosowanie również w meteorologii. Metoda ta, oparta na wykrywaniu w obszernych zbiorach danych wzorców często niedostrzegalnych dla człowieka, jest w oczywisty sposób podobna do organicznych metod przepowiadania pogody stosowanych od tysięcy lat. Ekstrapolacja z posiadanych danych otrzymanych empirycznie nie cechuje się opartą na prawach fizycznych dokładną poprawnością wyników uzyskiwanych poprzez obliczenia i symulacje, jednak z wyłączeniem ewentualnych nagłych, gwałtownych zdarzeń można na niej z dużą dokładnością polegać.
+
+Na chwilę obecną uczenie maszynowe nie wypiera dawniejszych metod, stanowiąc wyłącznie ich uzupełnienie umożliwiające zmniejszenie niepewności uzyskanych wyników, jednakże obserwacja ostatnich trendów pozwala sądzić, że jego rola będzie w przyszłości rosła. Czas pokaże, w jakim stopniu metody automatyczne i nieinterpretowalne będą w stanie zastąpić, tudzież wyprzeć z meteorologii element ludzki.
+
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.8\textwidth]{aaa(1).jpg}
+\caption{Krzywa wykresu danych barometrycznych zakładana na bęben analizatora harmonicznych.}
+\end{figure}
+
+
 \subsection{Metryki statystyczne w ocenie syntaktycznej}
 
 W klasycznym ujęciu weryfikacji prognoz (np. temperatury) najczęściej stosowane są deterministyczne miary błędu, takie jak średni błąd bezwzględny (MAE) oraz pierwiastek błędu średniokwadratowego (RMSE):
