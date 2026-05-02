@@ -1,0 +1,274 @@
+\documentclass[a4paper,12pt]{article}
+
+% --- Pakiety ---
+\usepackage[polish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[top=2.5cm,bottom=2.5cm,left=3cm,right=3cm]{geometry}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{amssymb}
+\usepackage{listings}
+
+\usepackage{titlesec}
+\titlespacing*{\subsection}{0pt}{12pt}{6pt}
+\setlength{\parindent}{15pt}
+\setlength{\parskip}{6pt}
+
+% --- Tytuł ---
+\title{
+    \vspace{1.5cm}
+    \textbf{PODSTAWY TEORII INFORMACJI}\\
+    \vspace{1.5cm}
+    Laboratorium 3\\
+    Syntaktyczna analiza danych\\
+    \vspace{1.5cm}
+    \huge \textbf{Ekstrakcja i redukcja informacji w danych meteorologicznych}\\
+    \vspace{1cm}
+}
+
+\author{
+    Maciek Chotkowski \\ Martsin Lazouski \\ Nadia Ziecina \\
+    Michał Kasznia \\ Kasiński Julian \\ Volodymyr Kamenchuk \\ Usevalad Nikalaichuk 
+}
+
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\newpage
+
+\tableofcontents
+\newpage
+
+%--------------------------------------------------
+
+\section{Wprowadzenie}
+
+W poprzednim etapie projektu konieczne było sprowadzenie analizowanego problemu do uproszczonej postaci, umożliwiającej dalsze przetwarzanie danych. Ograniczono się do wybranych parametrów meteorologicznych oraz ich reprezentacji w postaci ciągów liczbowych.
+
+Dopiero w niniejszym etapie wprowadzamy konkretne rozwiązanie obliczeniowe. Oznacza to przejście od opisu problemu do jego realizacji w postaci narzędzia przetwarzającego dane.
+
+Celem ćwiczenia jest analiza syntaktyczna danych, polegająca na ich przetwarzaniu i ocenie przy użyciu formalnych kryteriów obliczeniowych.
+
+%--------------------------------------------------
+
+\section{Etap 1: Narzędzie pozyskiwania danych}
+
+Pierwszym etapem opracowanego systemu jest moduł automatycznego pobierania prognoz temperatury na kilka dni do przodu.
+
+Wykorzystano API serwisu Open-Meteo, które umożliwia pobieranie danych prognozowanych w postaci szeregów czasowych.
+
+Wejściem do modułu są:
+\begin{itemize}
+    \item współrzędne geograficzne,
+    \item horyzont prognozy (liczba dni).
+\end{itemize}
+
+Wyjściem jest uporządkowany sygnał:
+\[
+T = \{T_1, T_2, \dots, T_n\}
+\]
+
+Dane są zapisywane do pliku CSV oraz przekazywane do dalszych etapów analizy.
+\newpage
+\subsection{Implementacja narzędzia}
+
+
+\begin{lstlisting}[language=Python]
+import requests, pandas as pd
+
+LAT, LON = 52.23, 21.01
+
+# Open-Meteo
+om = requests.get(
+    "https://api.open-meteo.com/v1/forecast",
+    params={
+        "latitude": LAT,
+        "longitude": LON,
+        "hourly": "temperature_2m,precipitation,windspeed_10m",
+        "forecast_days": 3
+    }
+).json()
+
+df_om = pd.DataFrame({
+    "time": om["hourly"]["time"],
+    "temp_om": om["hourly"]["temperature_2m"],
+    "precip_om": om["hourly"]["precipitation"],
+    "wind_om": om["hourly"]["windspeed_10m"]
+})
+
+# yr.no
+yr = requests.get(
+    "https://api.met.no/weatherapi/locationforecast/2.0/compact",
+    headers={"User-Agent": "pti"},
+    params={"lat": LAT, "lon": LON}
+).json()
+
+df_yr = pd.DataFrame([{
+    "time": x["time"],
+    "temp_yr": x["data"]["instant"]["details"]["air_temperature"],
+    "wind_yr": x["data"]["instant"]["details"]["wind_speed"],
+    "precip_yr": x["data"].get("next_1_hours", {}).get("details", {}).get("precipitation_amount", 0)
+} for x in yr["properties"]["timeseries"]])
+
+# merge + zapis
+df = pd.merge(df_om, df_yr, on="time")
+df.to_csv("weather.csv", index=False)
+
+print(df.head())
+\end{lstlisting}
+\newpage
+\subsection{Zakres i postać pobieranych danych}
+
+W ramach narzędzia pobierane są prognozowane dane meteorologiczne
+dla lokalizacji Warszawa (52.23N, 21.01E).
+
+Uwzględniono następujące parametry:
+\begin{itemize}
+    \item temperatura powietrza (°C),
+    \item opady (mm),
+    \item prędkość wiatru (m/s).
+\end{itemize}
+
+Dane pobierane są z API w formacie JSON, który ma strukturę
+hierarchiczną (zagnieżdżone pola i listy). Poszczególne wartości
+odczytywane są z odpowiednich pól, np.:
+
+\begin{verbatim}
+Open-Meteo: hourly -> temperature_2m
+yr.no: properties -> timeseries -> instant -> details
+\end{verbatim}
+
+Po ekstrakcji dane przekształcane są do postaci tabelarycznej
+oraz wektorowej:
+
+\[
+T(t), \quad P(t), \quad W(t)
+\]
+
+gdzie:
+\begin{itemize}
+    \item $T(t)$ – temperatura,
+    \item $P(t)$ – opady,
+    \item $W(t)$ – prędkość wiatru.
+\end{itemize}
+
+Ostatecznie dane zapisywane są w pliku CSV, w którym każda kolumna
+odpowiada jednemu parametrowi oraz źródłu prognozy, co umożliwia
+ich bezpośrednią analizę i porównanie.
+\section{Etap 2: Przetwarzanie i analiza danych}
+
+W drugim etapie przeprowadzono przetwarzanie danych oraz ich analizę syntaktyczną.
+
+Dane zapisane w formacie CSV zostały wczytane do środowiska MATLAB,
+a następnie poddane operacjom filtracji oraz porównania pomiędzy źródłami.
+
+%--------------------------------------------------
+\subsection{Implementacja w MATLAB}
+
+\begin{lstlisting}[language=Matlab]
+model = readtable('weather.csv');     % prognozy
+real  = readtable('real_data.csv');   % rzeczywiste dane (ground truth)
+
+% --- Konwersja czasu ---
+model.time = datetime(model.time);
+real.time  = datetime(real.time);
+
+% --- Dopasowanie danych (łączenie po czasie) ---
+T = innerjoin(model, real, 'Keys', 'time');
+
+% --- Wektory ---
+temp_model = T.temp_om;
+temp_real  = T.temp_real;
+
+wind_model = T.wind_om;
+wind_real  = T.wind_real;
+
+precip_model = T.precip_om;
+precip_real  = T.precip_real;
+
+% --- RMSE ---
+rmse = @(a,b) sqrt(mean((a - b).^2));
+
+rmse_temp   = rmse(temp_model, temp_real);
+rmse_wind   = rmse(wind_model, wind_real);
+rmse_precip = rmse(precip_model, precip_real);
+
+% --- Wyniki ---
+fprintf('RMSE temperatura (vs real): %.2f\n', rmse_temp);
+fprintf('RMSE wiatr (vs real): %.2f\n', rmse_wind);
+fprintf('RMSE opady (vs real): %.2f\n', rmse_precip);
+
+% --- Wykres temperatury ---
+figure
+plot(temp_model, 'b')
+hold on
+plot(temp_real, 'r')
+legend('Prognoza','Rzeczywiste')
+title('Temperatura: model vs rzeczywistość')
+
+% --- Różnica ---
+figure
+plot(temp_model - temp_real)
+title('Błąd temperatury')
+
+\end{lstlisting}
+
+\subsection{Analiza z wykorzystaniem danych rzeczywistych}
+
+Dane prognozowane zostały zestawione z rzeczywistymi pomiarami
+meteorologicznymi zapisanymi w pliku CSV.
+
+Po dopasowaniu danych względem czasu przeprowadzono analizę
+różnic pomiędzy prognozą a rzeczywistością.
+
+Na tej podstawie obliczono błąd RMSE, który stanowi miarę
+dokładności prognozy.
+
+
+%--------------------------------------------------
+\subsection{Wyniki}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lc}
+\toprule
+Parametr & RMSE \\
+\midrule
+Temperatura & X \\
+Temperatura (po filtracji) & Y \\
+Wiatr & Z \\
+Opady & W \\
+\bottomrule
+\end{tabular}
+\caption{Błąd RMSE przed i po filtracji}
+\end{table}
+
+%--------------------------------------------------
+\subsection{Interpretacja}
+
+Filtracja danych przy użyciu średniej ruchomej prowadzi do redukcji
+lokalnych fluktuacji sygnału.
+
+W przypadku temperatury obserwuje się zmniejszenie błędu RMSE
+po zastosowaniu filtracji, co wskazuje na obecność szumu w danych.
+
+Dla wiatru oraz opadów różnice pozostają większe,
+co wynika z ich bardziej dynamicznego i nieregularnego charakteru.
+
+%--------------------------------------------------
+\subsection{Wnioski}
+
+Zastosowane metody przetwarzania pozwalają na poprawę jakości
+reprezentacji danych poprzez redukcję szumu.
+
+Jednocześnie wyniki pokazują, że skuteczność metod zależy
+od charakteru analizowanej zmiennej.
+
+Temperatura jest najlepiej przewidywalna,
+natomiast opady pozostają najbardziej niestabilne.
+\end{document}
