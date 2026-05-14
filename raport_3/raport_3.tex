@@ -11,8 +11,14 @@
 \usepackage[colorlinks=true, allcolors=blue]{hyperref}
 \usepackage{amssymb}
 \usepackage{listings}
-
 \usepackage{titlesec}
+
+\lstset{
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    columns=fullflexible
+}
+
 \titlespacing*{\subsection}{0pt}{12pt}{6pt}
 \setlength{\parindent}{15pt}
 \setlength{\parskip}{6pt}
@@ -160,28 +166,250 @@ gdzie:
 Ostatecznie dane zapisywane są w pliku CSV, w którym każda kolumna
 odpowiada jednemu parametrowi oraz źródłu prognozy, co umożliwia
 ich bezpośrednią analizę i porównanie.
+
+\subsection{Rozszerzenie: pobieranie i wektoryzacja danych z modeli GraphCast, GenCast i WeatherNext}
+
+Oprócz klasycznych serwisów pogodowych można wykorzystać prognozy tworzone
+przez modele uczenia maszynowego: GraphCast, GenCast oraz WeatherNext.
+W raporcie traktujemy je jako dodatkowe źródła danych, ale po pobraniu
+muszą one zostać sprowadzone do dokładnie takiej samej postaci jak dane
+z Open-Meteo i yr.no. Oznacza to, że końcowym wynikiem nie jest duży plik
+z globalną prognozą, tylko proste wektory wartości dla wybranej lokalizacji:
+\[
+temp = [temp_1, temp_2, \dots, temp_n]
+\]
+\[
+precip = [precip_1, precip_2, \dots, precip_n]
+\]
+\[
+wind = [wind_1, wind_2, \dots, wind_n]
+\]
+
+GraphCast jest modelem deterministycznym, więc dla jednego czasu startu
+zwraca jedną prognozę. GenCast jest modelem zespołowym, dlatego może zwrócić
+wiele wariantów tej samej prognozy. WeatherNext udostępnia natomiast gotowe
+operacyjne prognozy w usługach Google, między innymi przez BigQuery, Earth
+Engine oraz pliki Zarr w Google Cloud Storage. Z punktu widzenia naszego
+kodu wszystkie te źródła powinny jednak przejść przez ten sam etap
+standaryzacji.
+
+W praktyce przyjmujemy następujący układ plików:
+\begin{itemize}
+    \item \texttt{weather.csv} -- dane z klasycznych źródeł, czyli Open-Meteo i yr.no,
+    \item \texttt{ai\_graphcast\_vectors.csv} -- wektory wyciągnięte z prognozy GraphCast,
+    \item \texttt{ai\_gencast\_vectors.csv} -- wektory wyciągnięte z prognozy GenCast,
+    \item \texttt{ai\_weathernext\_vectors.csv} -- wektory wyciągnięte z prognozy WeatherNext,
+    \item \texttt{weather\_ai\_vectors.csv} -- wspólny plik, w którym znajdują się wszystkie źródła AI,
+    \item \texttt{weather\_all\_vectors.csv} -- opcjonalny plik łączący dane klasyczne i dane AI.
+\end{itemize}
+
+Najważniejsze jest to, że każdy plik z danymi AI ma tę samą strukturę
+kolumn:
+\begin{verbatim}
+time, source, member, temp_c, precip_mm, wind_ms, pressure_hpa
+\end{verbatim}
+
+Kolumna \texttt{source} przechowuje nazwę źródła, np. \texttt{GraphCast},
+\texttt{GenCast} albo \texttt{WeatherNext}. Kolumna \texttt{member} jest
+potrzebna głównie dla GenCast, ponieważ model zespołowy może wygenerować
+kilka wariantów prognozy. Dla GraphCast i pojedynczej średniej prognozy
+WeatherNext można wpisać wartość \texttt{0}. Dzięki temu w dalszej analizie
+nie tworzymy osobnego kodu dla każdego modelu, tylko filtrujemy dane po
+kolumnie \texttt{source}.
+
+\subsubsection{Przekształcenie danych globalnych na proste wektory}
+
+Modele AI nie zwracają od razu pojedynczej tabeli dla Warszawy. Ich dane
+mają postać pól meteorologicznych na siatce geograficznej. Dlatego przed
+zapisaniem CSV wykonujemy kilka stałych kroków:
+\begin{enumerate}
+    \item wybieramy czas startu prognozy oraz horyzont, np. 72 godziny,
+    \item wybieramy najbliższy punkt siatki dla Warszawy \((52.23N, 21.01E)\),
+    \item odczytujemy potrzebne zmienne meteorologiczne,
+    \item przeliczamy jednostki na takie same jak w pozostałych plikach,
+    \item z komponentów wiatru wyliczamy jedną prędkość wiatru,
+    \item zapisujemy wynik jako zwykłą tabelę CSV.
+\end{enumerate}
+
+Najważniejsze konwersje są następujące:
+\begin{itemize}
+    \item temperatura: z kelwinów na stopnie Celsjusza, czyli \texttt{temp\_c} = \texttt{temp\_k} - 273.15,
+    \item opady: z metrów na milimetry, czyli \texttt{precip\_mm} = \texttt{precip\_m} $\cdot$ 1000,
+    \item wiatr: z dwóch składowych na prędkość, czyli \texttt{wind\_ms} = $\sqrt{u^2 + v^2}$,
+    \item ciśnienie: z paskali na hektopaskale, czyli \texttt{pressure\_hpa} = \texttt{pressure\_pa} / 100.
+\end{itemize}
+
+Po takim przekształceniu dane AI są używane w raporcie tak samo jak dane
+z klasycznych API. Różnica polega tylko na tym, że źródłem wartości jest
+model globalny, a nie endpoint zwracający prognozę od razu dla jednego
+miasta.
+
+\subsubsection{Parametry modeli wykorzystywane w projekcie}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{p{3.0cm}p{4.3cm}p{6.1cm}}
+\toprule
+Parametr w raporcie & Nazwa w danych AI & Wykorzystanie w kodzie \\
+\midrule
+Temperatura & \texttt{2m\_temperature} & Wektor \texttt{temp\_c}; porównanie z pomiarami rzeczywistymi i obliczanie RMSE. \\
+Opady & \texttt{total\_precipitation\_6hr} lub \texttt{total\_precipitation} & Wektor \texttt{precip\_mm}; analiza sum opadów oraz błędu prognozy. \\
+Wiatr & \texttt{10m\_u\_component\_of\_wind}, \texttt{10m\_v\_component\_of\_wind} & Wektor \texttt{wind\_ms}; prędkość liczona z dwóch składowych kierunkowych. \\
+Ciśnienie & \texttt{mean\_sea\_level\_pressure} & Wektor \texttt{pressure\_hpa}; parametr dodatkowy, przydatny przy rozszerzeniu analizy. \\
+Wilgotność & \texttt{specific\_humidity} & Parametr opcjonalny; może pomóc wyjaśniać błędy temperatury i opadów. \\
+Geopotencjał & \texttt{geopotential} & Parametr opcjonalny; opisuje strukturę atmosfery na poziomach ciśnienia. \\
+\bottomrule
+\end{tabular}
+\caption{Parametry modeli AI i sposób ich użycia w projekcie}
+\end{table}
+
+GraphCast i GenCast udostępniają modele oraz przykładowe dane przez
+repozytorium Google DeepMind GraphCast\footnote{\url{https://github.com/google-deepmind/graphcast}}.
+WeatherNext udostępnia prognozy jako gotowe zbiory danych, między innymi
+w BigQuery, Earth Engine oraz Google Cloud Storage/Zarr\footnote{\url{https://developers.google.com/weathernext/guides/access-forecast}}.
+W dokumentacji WeatherNext 2 podane są również nazwy zmiennych, rozdzielczość
+0.25 stopnia, horyzont do 15 dni oraz dane powierzchniowe takie jak
+\texttt{2m\_temperature}, \texttt{10m\_u\_component\_of\_wind},
+\texttt{10m\_v\_component\_of\_wind}, \texttt{total\_precipitation\_6hr}
+i \texttt{mean\_sea\_level\_pressure}\footnote{\url{https://developers.google.com/weathernext/guides/model-specs-vmg}}.
+
+\subsubsection{Przykładowa implementacja wektoryzacji}
+
+Poniższy kod pokazuje, w jaki sposób można ujednolicić dane z różnych
+modeli AI. Zakładamy, że wynik działania GraphCast i GenCast został zapisany
+do pliku Zarr lub NetCDF, a WeatherNext jest czytany bezpośrednio z Google
+Cloud Storage. Każde źródło przechodzi przez tę samą funkcję
+\texttt{vectorize\_ai\_source}, która zwraca tabelę z prostymi wektorami.
+
+\begin{lstlisting}[language=Python]
+import numpy as np
+import pandas as pd
+import xarray as xr
+
+LAT, LON = 52.23, 21.01
+
+AI_SOURCES = {
+    "GraphCast": "graphcast_forecast.zarr",
+    "GenCast": "gencast_forecast.zarr",
+    "WeatherNext": "gs://weathernext/weathernext_2_0_0_mean/zarr"
+}
+
+def open_forecast(path):
+    if path.endswith(".nc"):
+        return xr.open_dataset(path)
+    return xr.open_zarr(path, storage_options={"token": "anon"})
+
+def choose_var(ds, names):
+    for name in names:
+        if name in ds:
+            return ds[name]
+    raise KeyError(f"Brak zmiennej z listy: {names}")
+
+def vectorize_ai_source(source, path):
+    ds = open_forecast(path)
+
+    # 1. Wybor najblizszego punktu siatki dla Warszawy.
+    point = ds.sel(latitude=LAT, longitude=LON, method="nearest")
+
+    # 2. Odczyt zmiennych. Rozne zbiory moga miec lekko inne nazwy.
+    temp_k = choose_var(point, ["2m_temperature", "temperature_2m"])
+    precip_m = choose_var(point, ["total_precipitation_6hr",
+                                  "total_precipitation"])
+    wind_u = choose_var(point, ["10m_u_component_of_wind"])
+    wind_v = choose_var(point, ["10m_v_component_of_wind"])
+    pressure_pa = choose_var(point, ["mean_sea_level_pressure"])
+
+    # 3. Jezeli model ma wielu czlonkow prognozy, usredniamy je
+    # do glownego wektora. Surowe warianty mozna zapisac osobno.
+    if "member" in temp_k.dims:
+        temp_k = temp_k.mean("member")
+        precip_m = precip_m.mean("member")
+        wind_u = wind_u.mean("member")
+        wind_v = wind_v.mean("member")
+        pressure_pa = pressure_pa.mean("member")
+
+    # 4. Zamiana na proste wektory i wspolne jednostki.
+    df = pd.DataFrame({
+        "time": point["time"].values,
+        "source": source,
+        "member": 0,
+        "temp_c": temp_k.values - 273.15,
+        "precip_mm": precip_m.values * 1000,
+        "wind_ms": np.sqrt(wind_u.values**2 + wind_v.values**2),
+        "pressure_hpa": pressure_pa.values / 100
+    })
+
+    return df
+
+frames = []
+for source, path in AI_SOURCES.items():
+    df_source = vectorize_ai_source(source, path)
+    df_source.to_csv(f"ai_{source.lower()}_vectors.csv", index=False)
+    frames.append(df_source)
+
+df_ai = pd.concat(frames, ignore_index=True)
+df_ai.to_csv("weather_ai_vectors.csv", index=False)
+\end{lstlisting}
+
+Jeżeli chcemy zachować wszystkie warianty GenCast, nie należy wykonywać
+uśredniania po wymiarze \texttt{member}. Wtedy każdy członek zespołu jest
+zapisany jako osobny zestaw wektorów w tym samym pliku CSV. Daje to możliwość
+policzenia nie tylko błędu średniej prognozy, ale również rozrzutu prognoz:
+mały rozrzut oznacza dużą zgodność wariantów, a duży rozrzut oznacza większą
+niepewność modelu.
+
+\subsubsection{Jak rozszerzyć system o kolejne dane AI}
+
+Rozszerzenie kodu o następny model AI polega na dopisaniu nowego źródła do
+słownika \texttt{AI\_SOURCES} i ewentualnym uzupełnieniu list nazw zmiennych
+w funkcji \texttt{choose\_var}. Reszta programu nie musi się zmieniać,
+ponieważ każdy model zostaje przekształcony do tego samego schematu kolumn.
+
+Najbardziej praktyczne rozszerzenia to:
+\begin{itemize}
+    \item dodanie kolejnych lokalizacji i zapis kolumn \texttt{lat}, \texttt{lon},
+    \item zapis surowych członków zespołu GenCast zamiast samej średniej,
+    \item dołączenie wilgotności i ciśnienia do analizy błędów,
+    \item interpolacja danych AI do godzin wspólnych z Open-Meteo i yr.no,
+    \item automatyczne tworzenie pliku \texttt{weather\_all\_vectors.csv}, który łączy wszystkie źródła.
+\end{itemize}
+
+Wpływ na dalszy kod jest więc kontrolowany: zamiast pisać osobne skrypty
+dla GraphCast, GenCast i WeatherNext, dopisujemy jedną warstwę
+standaryzującą. MATLAB lub Python analizują później tylko pliki CSV z
+kolumnami \texttt{time}, \texttt{source}, \texttt{temp\_c},
+\texttt{precip\_mm} oraz \texttt{wind\_ms}. Dzięki temu porównanie RMSE,
+filtracja średnią ruchomą i tworzenie wykresów działają tak samo dla danych
+klasycznych oraz danych AI.
+
 \section{Etap 2: Przetwarzanie i analiza danych}
 
 W drugim etapie przeprowadzono przetwarzanie danych oraz ich analizę syntaktyczną.
 
 Dane zapisane w formacie CSV zostały wczytane do środowiska MATLAB,
 a następnie poddane operacjom filtracji oraz porównania pomiędzy źródłami.
+Po rozszerzeniu projektu o modele AI analizujemy dwa typy plików:
+\texttt{weather.csv}, czyli dane klasyczne, oraz \texttt{weather\_ai\_vectors.csv},
+czyli dane AI sprowadzone do prostych wektorów temperatury, opadów i wiatru.
 
 %--------------------------------------------------
 \subsection{Implementacja w MATLAB}
 
 \begin{lstlisting}[language=Matlab]
-model = readtable('weather.csv');     % prognozy
-real  = readtable('real_data.csv');   % rzeczywiste dane (ground truth)
+model = readtable('weather.csv');              % Open-Meteo + yr.no
+ai    = readtable('weather_ai_vectors.csv');   % GraphCast/GenCast/WeatherNext
+real  = readtable('real_data.csv');            % rzeczywiste dane
 
 % --- Konwersja czasu ---
 model.time = datetime(model.time);
+ai.time    = datetime(ai.time);
 real.time  = datetime(real.time);
 
-% --- Dopasowanie danych (łączenie po czasie) ---
+% --- Dopasowanie danych klasycznych po czasie ---
 T = innerjoin(model, real, 'Keys', 'time');
 
-% --- Wektory ---
+% --- Wektory z klasycznego API ---
 temp_model = T.temp_om;
 temp_real  = T.temp_real;
 
@@ -203,6 +431,26 @@ fprintf('RMSE temperatura (vs real): %.2f\n', rmse_temp);
 fprintf('RMSE wiatr (vs real): %.2f\n', rmse_wind);
 fprintf('RMSE opady (vs real): %.2f\n', rmse_precip);
 
+% --- RMSE dla modeli AI ---
+ai.source = string(ai.source);
+sources = unique(ai.source);
+
+for i = 1:numel(sources)
+    src = sources(i);
+
+    % member == 0 oznacza pojedyncza prognoze albo srednia zespolu.
+    S = ai(ai.source == src & ai.member == 0, :);
+    T_ai = innerjoin(S, real, 'Keys', 'time');
+
+    rmse_temp_ai = rmse(T_ai.temp_c, T_ai.temp_real);
+    rmse_wind_ai = rmse(T_ai.wind_ms, T_ai.wind_real);
+    rmse_precip_ai = rmse(T_ai.precip_mm, T_ai.precip_real);
+
+    fprintf('RMSE temperatura %s: %.2f\n', src, rmse_temp_ai);
+    fprintf('RMSE wiatr %s: %.2f\n', src, rmse_wind_ai);
+    fprintf('RMSE opady %s: %.2f\n', src, rmse_precip_ai);
+end
+
 % --- Wykres temperatury ---
 figure
 plot(temp_model, 'b')
@@ -217,6 +465,14 @@ plot(temp_model - temp_real)
 title('Błąd temperatury')
 
 \end{lstlisting}
+
+Dodanie danych AI wpływa więc na kod przede wszystkim przez zmianę warstwy
+wejściowej. Nie zmienia się sposób liczenia RMSE ani filtracji, ponieważ
+każdy model AI zostaje wcześniej sprowadzony do kolumn \texttt{temp\_c},
+\texttt{precip\_mm} i \texttt{wind\_ms}. Zamiast pisać oddzielne obliczenia
+dla GraphCast, GenCast i WeatherNext, MATLAB przechodzi po liście wartości
+w kolumnie \texttt{source} i wykonuje ten sam zestaw operacji dla każdego
+źródła.
 
 \subsection{Analiza z wykorzystaniem danych rzeczywistych}
 
