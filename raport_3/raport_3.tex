@@ -64,70 +64,104 @@ Celem ćwiczenia jest analiza syntaktyczna danych, polegająca na ich przetwarza
 
 \section{Etap 1: Narzędzie pozyskiwania danych}
 
-Pierwszym etapem opracowanego systemu jest moduł automatycznego pobierania prognoz temperatury na kilka dni do przodu.
+Pierwszym etapem opracowanego systemu jest moduł automatycznego pobierania
+danych meteorologicznych i zapisania ich w prostej strukturze plików.
+Na tym etapie nie tworzymy jeszcze rankingu ani jednego wspólnego pliku
+porównawczego. Celem jest jedynie zebranie danych i rozdzielenie ich według
+źródła oraz typu wielkości fizycznej.
 
-Wykorzystano API serwisu Open-Meteo, które umożliwia pobieranie danych prognozowanych w postaci szeregów czasowych.
+Każde źródło danych otrzymuje własny katalog. W katalogu znajdują się trzy
+pliki CSV:
+\begin{verbatim}
+nazwa_zrodla/
+    temp.csv
+    opady.csv
+    wiatr.csv
+\end{verbatim}
+
+Taki zapis jest zgodny z poziomem syntaktycznym analizy, ponieważ każdy plik
+zawiera prosty ciąg liczbowy jednej cechy. Temperatura, opady i wiatr nie są
+jeszcze interpretowane semantycznie. Są traktowane jako sygnały liczbowe,
+które można później dopasować po czasie i porównać z innymi źródłami.
 
 Wejściem do modułu są:
 \begin{itemize}
     \item współrzędne geograficzne,
-    \item horyzont prognozy (liczba dni).
+    \item horyzont prognozy,
+    \item nazwa źródła danych.
 \end{itemize}
 
-Wyjściem jest uporządkowany sygnał:
+Wyjściem są trzy uporządkowane sygnały:
 \[
-T = \{T_1, T_2, \dots, T_n\}
+T = \{T_1, T_2, \dots, T_n\}, \quad
+P = \{P_1, P_2, \dots, P_n\}, \quad
+W = \{W_1, W_2, \dots, W_n\}
 \]
 
-Dane są zapisywane do pliku CSV oraz przekazywane do dalszych etapów analizy.
+Dane są zapisywane osobno dla każdego źródła i przekazywane do dalszych
+etapów analizy.
 \newpage
 \subsection{Implementacja narzędzia}
 
+Poniższy fragment przedstawia podstawową wersję programu pozyskującego dane
+z dwóch źródeł: Open-Meteo oraz yr.no. Program pobiera z odpowiedzi API tylko
+pola potrzebne w projekcie: czas, temperaturę, opady i prędkość wiatru.
+Następnie zapisuje każdą wielkość do osobnego pliku w katalogu danego
+źródła.
+
+Wynikiem działania kodu nie jest jeden plik zbiorczy. Wynikiem jest katalog
+\texttt{open\_meteo} oraz katalog \texttt{yr\_no}. W każdym z nich znajdują
+się pliki \texttt{temp.csv}, \texttt{opady.csv} oraz \texttt{wiatr.csv}.
+Dzięki temu po etapie zbierania danych wiadomo, z którego źródła pochodzi
+każdy sygnał i jakiego parametru dotyczy.
 
 \begin{lstlisting}[language=Python]
 import requests, pandas as pd
+from pathlib import Path
 
 LAT, LON = 52.23, 21.01
 
-# Open-Meteo
 om = requests.get(
     "https://api.open-meteo.com/v1/forecast",
     params={
         "latitude": LAT,
         "longitude": LON,
-        "hourly": "temperature_2m,precipitation,windspeed_10m",
+        "hourly": "temperature_2m,precipitation,wind_speed_10m",
         "forecast_days": 3
     }
 ).json()
 
 df_om = pd.DataFrame({
     "time": om["hourly"]["time"],
-    "temp_om": om["hourly"]["temperature_2m"],
-    "precip_om": om["hourly"]["precipitation"],
-    "wind_om": om["hourly"]["windspeed_10m"]
+    "temp": om["hourly"]["temperature_2m"],
+    "opady": om["hourly"]["precipitation"],
+    "wiatr": om["hourly"]["wind_speed_10m"]
 })
 
-# yr.no
 yr = requests.get(
     "https://api.met.no/weatherapi/locationforecast/2.0/compact",
-    headers={"User-Agent": "pti"},
+    headers={"User-Agent": "pti-lab"},
     params={"lat": LAT, "lon": LON}
 ).json()
 
 df_yr = pd.DataFrame([{
-    "time": x["time"],
-    "temp_yr": x["data"]["instant"]["details"]["air_temperature"],
-    "wind_yr": x["data"]["instant"]["details"]["wind_speed"],
-    "precip_yr": x["data"].get("next_1_hours", {}).get("details", {}).get("precipitation_amount", 0)
-} for x in yr["properties"]["timeseries"]])
+    "time": item["time"][:16],
+    "temp": item["data"]["instant"]["details"]["air_temperature"],
+    "opady": item["data"].get("next_1_hours", {}).get("details", {}).get("precipitation_amount", 0),
+    "wiatr": item["data"]["instant"]["details"]["wind_speed"]
+} for item in yr["properties"]["timeseries"]])
 
-# merge + zapis
-df = pd.merge(df_om, df_yr, on="time")
-df.to_csv("weather.csv", index=False)
+def zapisz_zrodlo(nazwa, df):
+    out = Path(nazwa)
+    out.mkdir(exist_ok=True)
+    df[["time", "temp"]].to_csv(out / "temp.csv", index=False)
+    df[["time", "opady"]].to_csv(out / "opady.csv", index=False)
+    df[["time", "wiatr"]].to_csv(out / "wiatr.csv", index=False)
 
-print(df.head())
+zapisz_zrodlo("open_meteo", df_om)
+zapisz_zrodlo("yr_no", df_yr)
 \end{lstlisting}
-\newpage
+
 \subsection{Zakres i postać pobieranych danych}
 
 W ramach narzędzia pobierane są prognozowane dane meteorologiczne
@@ -163,9 +197,19 @@ gdzie:
     \item $W(t)$ – prędkość wiatru.
 \end{itemize}
 
-Ostatecznie dane zapisywane są w pliku CSV, w którym każda kolumna
-odpowiada jednemu parametrowi oraz źródłu prognozy, co umożliwia
-ich bezpośrednią analizę i porównanie.
+Ostatecznie dane nie są jeszcze łączone w jeden plik. Każdy parametr jest
+zapisywany osobno w katalogu źródła:
+\begin{verbatim}
+open_meteo/temp.csv
+open_meteo/opady.csv
+open_meteo/wiatr.csv
+yr_no/temp.csv
+yr_no/opady.csv
+yr_no/wiatr.csv
+\end{verbatim}
+Analogicznie można zapisać kolejne źródła, np. \texttt{graphcast}
+albo \texttt{stacja\_pomiarowa}. Dopiero w następnym
+etapie pliki te są dopasowywane po czasie i porównywane.
 
 \subsection{Rozszerzenie: pobieranie i wektoryzacja danych z modeli GraphCast, GenCast i WeatherNext}
 
@@ -195,7 +239,8 @@ standaryzacji.
 
 W praktyce przyjmujemy następujący układ plików:
 \begin{itemize}
-    \item \texttt{weather.csv} -- dane z klasycznych źródeł, czyli Open-Meteo i yr.no,
+    \item \texttt{open\_meteo/temp.csv}, \texttt{open\_meteo/opady.csv}, \texttt{open\_meteo/wiatr.csv} -- dane z Open-Meteo,
+    \item \texttt{yr\_no/temp.csv}, \texttt{yr\_no/opady.csv}, \texttt{yr\_no/wiatr.csv} -- dane z yr.no,
     \item \texttt{ai\_graphcast\_vectors.csv} -- wektory wyciągnięte z prognozy GraphCast,
     \item \texttt{ai\_gencast\_vectors.csv} -- wektory wyciągnięte z prognozy GenCast,
     \item \texttt{ai\_weathernext\_vectors.csv} -- wektory wyciągnięte z prognozy WeatherNext,
@@ -282,74 +327,88 @@ do pliku Zarr lub NetCDF, a WeatherNext jest czytany bezpośrednio z Google
 Cloud Storage. Każde źródło przechodzi przez tę samą funkcję
 \texttt{vectorize\_ai\_source}, która zwraca tabelę z prostymi wektorami.
 
+Opis procesu znajduje się przed listingiem, dlatego sam kod zawiera wyłącznie
+instrukcje programu. Funkcja otwiera zbiór danych, wybiera punkt najbliższy
+Warszawie, odczytuje wymagane zmienne, uśrednia warianty zespołowe oraz
+zapisuje wynik we wspólnym formacie. Ten etap jest przykładem aproksymacji:
+z wielowymiarowego pola atmosferycznego zostaje wybrany lokalny wektor cech
+potrzebny do rankingu.
+
 \begin{lstlisting}[language=Python]
-import numpy as np
+import requests
 import pandas as pd
-import xarray as xr
+from pathlib import Path
 
-LAT, LON = 52.23, 21.01
+LAT = 52.23
+LON = 21.01
 
-AI_SOURCES = {
-    "GraphCast": "graphcast_forecast.zarr",
-    "GenCast": "gencast_forecast.zarr",
-    "WeatherNext": "gs://weathernext/weathernext_2_0_0_mean/zarr"
+DATA_START = "2026-05-10"
+DATA_END = "2026-05-13"
+
+MODELS = {
+    "graphcast": "gfs_graphcast025",
+    "aifs": "ecmwf_aifs025_single"
+
 }
 
-def open_forecast(path):
-    if path.endswith(".nc"):
-        return xr.open_dataset(path)
-    return xr.open_zarr(path, storage_options={"token": "anon"})
+for source_name, model_name in MODELS.items():
 
-def choose_var(ds, names):
-    for name in names:
-        if name in ds:
-            return ds[name]
-    raise KeyError(f"Brak zmiennej z listy: {names}")
+    url = "https://api.open-meteo.com/v1/forecast"
 
-def vectorize_ai_source(source, path):
-    ds = open_forecast(path)
+    params = {
+        "latitude": LAT,
+        "longitude": LON,
+        "start_date": DATA_START,
+        "end_date": DATA_END,
+        "hourly": (
+            "temperature_2m,"
+            "precipitation,"
+            "wind_speed_10m"
+        )
+    }
 
-    # 1. Wybor najblizszego punktu siatki dla Warszawy.
-    point = ds.sel(latitude=LAT, longitude=LON, method="nearest")
+    if model_name is not None:
+        params["models"] = model_name
 
-    # 2. Odczyt zmiennych. Rozne zbiory moga miec lekko inne nazwy.
-    temp_k = choose_var(point, ["2m_temperature", "temperature_2m"])
-    precip_m = choose_var(point, ["total_precipitation_6hr",
-                                  "total_precipitation"])
-    wind_u = choose_var(point, ["10m_u_component_of_wind"])
-    wind_v = choose_var(point, ["10m_v_component_of_wind"])
-    pressure_pa = choose_var(point, ["mean_sea_level_pressure"])
+    response = requests.get(
+        url,
+        params=params
+    )
 
-    # 3. Jezeli model ma wielu czlonkow prognozy, usredniamy je
-    # do glownego wektora. Surowe warianty mozna zapisac osobno.
-    if "member" in temp_k.dims:
-        temp_k = temp_k.mean("member")
-        precip_m = precip_m.mean("member")
-        wind_u = wind_u.mean("member")
-        wind_v = wind_v.mean("member")
-        pressure_pa = pressure_pa.mean("member")
+    data = response.json()
 
-    # 4. Zamiana na proste wektory i wspolne jednostki.
+    if "hourly" not in data:
+
+        print(f"Błąd dla {source_name}")
+        print(data)
+        continue
+
     df = pd.DataFrame({
-        "time": point["time"].values,
-        "source": source,
-        "member": 0,
-        "temp_c": temp_k.values - 273.15,
-        "precip_mm": precip_m.values * 1000,
-        "wind_ms": np.sqrt(wind_u.values**2 + wind_v.values**2),
-        "pressure_hpa": pressure_pa.values / 100
+        "time": data["hourly"]["time"],
+        "temp": data["hourly"]["temperature_2m"],
+        "opady": data["hourly"]["precipitation"],
+        "wiatr": data["hourly"]["wind_speed_10m"]
     })
 
-    return df
+    out = Path(source_name)
+    out.mkdir(exist_ok=True)
 
-frames = []
-for source, path in AI_SOURCES.items():
-    df_source = vectorize_ai_source(source, path)
-    df_source.to_csv(f"ai_{source.lower()}_vectors.csv", index=False)
-    frames.append(df_source)
+    df[["time", "temp"]].to_csv(
+        out / "temp.csv",
+        index=False
+    )
 
-df_ai = pd.concat(frames, ignore_index=True)
-df_ai.to_csv("weather_ai_vectors.csv", index=False)
+    df[["time", "opady"]].to_csv(
+        out / "opady.csv",
+        index=False
+    )
+
+    df[["time", "wiatr"]].to_csv(
+        out / "wiatr.csv",
+        index=False
+    )
+
+    print(f"Zapisano dane dla: {source_name}")
 \end{lstlisting}
 
 Jeżeli chcemy zachować wszystkie warianty GenCast, nie należy wykonywać
@@ -387,58 +446,69 @@ klasycznych oraz danych AI.
 
 W drugim etapie przeprowadzono przetwarzanie danych oraz ich analizę syntaktyczną.
 
-Dane zapisane w formacie CSV zostały wczytane do środowiska MATLAB,
-a następnie poddane operacjom filtracji oraz porównania pomiędzy źródłami.
-Po rozszerzeniu projektu o modele AI analizujemy dwa typy plików:
-\texttt{weather.csv}, czyli dane klasyczne, oraz \texttt{weather\_ai\_vectors.csv},
+Dane zapisane w katalogach źródeł zostały wczytane do środowiska MATLAB,
+a następnie połączone po kolumnie \texttt{time}. Dopiero w tym etapie
+oddzielne pliki \texttt{temp.csv}, \texttt{opady.csv} i \texttt{wiatr.csv}
+są składane w jedną tabelę roboczą. Dzięki temu etap pozyskiwania danych
+pozostaje prosty, a etap porównywania może dowolnie wybierać źródła.
+
+Po rozszerzeniu projektu o modele AI analizujemy dwa typy reprezentacji:
+katalogi źródeł klasycznych oraz plik \texttt{weather\_ai\_vectors.csv},
 czyli dane AI sprowadzone do prostych wektorów temperatury, opadów i wiatru.
 
 %--------------------------------------------------
 \subsection{Implementacja w MATLAB}
 
+Kod w MATLAB-ie realizuje etap porządkowania i oceny informacji. Program
+wczytuje trzy typy danych: prognozy klasyczne, dane AI oraz dane rzeczywiste.
+Następnie wszystkie znaczniki czasu są konwertowane do formatu
+\texttt{datetime}, co umożliwia wykonanie złączenia tabel po kolumnie
+\texttt{time}. Po takim dopasowaniu porównywane są wartości odnoszące się do
+tych samych chwil.
+
+W pierwszej części liczony jest błąd dla klasycznego źródła prognozy.
+Następnie program przechodzi po kolejnych modelach AI zapisanych w kolumnie
+\texttt{source}. Każde źródło jest oceniane tym samym wzorem RMSE, dzięki
+czemu porównanie ma charakter formalny i obliczeniowy. Na końcu tworzone są
+wykresy, które pokazują zarówno wartości prognozowane, jak i różnicę między
+prognozą a danymi referencyjnymi.
+
 \begin{lstlisting}[language=Matlab]
-model = readtable('weather.csv');              % Open-Meteo + yr.no
-ai    = readtable('weather_ai_vectors.csv');   % GraphCast/GenCast/WeatherNext
-real  = readtable('real_data.csv');            % rzeczywiste dane
+model = [
+    wczytaj_zrodlo('open_meteo', 'Open-Meteo');
+    wczytaj_zrodlo('yr_no', 'yr.no')
+];
+ai = readtable('weather_ai_vectors.csv');
+real = readtable('real_data.csv');
 
-% --- Konwersja czasu ---
+model.source = string(model.source);
 model.time = datetime(model.time);
-ai.time    = datetime(ai.time);
-real.time  = datetime(real.time);
-
-% --- Dopasowanie danych klasycznych po czasie ---
-T = innerjoin(model, real, 'Keys', 'time');
-
-% --- Wektory z klasycznego API ---
-temp_model = T.temp_om;
-temp_real  = T.temp_real;
-
-wind_model = T.wind_om;
-wind_real  = T.wind_real;
-
-precip_model = T.precip_om;
-precip_real  = T.precip_real;
-
-% --- RMSE ---
+ai.source = string(ai.source);
+ai.time = datetime(ai.time);
+real.time = datetime(real.time);
 rmse = @(a,b) sqrt(mean((a - b).^2));
 
-rmse_temp   = rmse(temp_model, temp_real);
-rmse_wind   = rmse(wind_model, wind_real);
-rmse_precip = rmse(precip_model, precip_real);
-
-% --- Wyniki ---
-fprintf('RMSE temperatura (vs real): %.2f\n', rmse_temp);
-fprintf('RMSE wiatr (vs real): %.2f\n', rmse_wind);
-fprintf('RMSE opady (vs real): %.2f\n', rmse_precip);
-
-% --- RMSE dla modeli AI ---
-ai.source = string(ai.source);
-sources = unique(ai.source);
+sources = unique(model.source);
 
 for i = 1:numel(sources)
     src = sources(i);
+    S = model(model.source == src, :);
+    T = innerjoin(S, real, 'Keys', 'time');
 
-    % member == 0 oznacza pojedyncza prognoze albo srednia zespolu.
+    rmse_temp = rmse(T.temp, T.temp_real);
+    rmse_wind = rmse(T.wiatr, T.wind_real);
+    rmse_opady = rmse(T.opady, T.precip_real);
+
+    fprintf('RMSE temperatura %s: %.2f\n', src, rmse_temp);
+    fprintf('RMSE wiatr %s: %.2f\n', src, rmse_wind);
+    fprintf('RMSE opady %s: %.2f\n', src, rmse_opady);
+end
+
+ai_sources = unique(ai.source);
+
+for i = 1:numel(ai_sources)
+    src = ai_sources(i);
+
     S = ai(ai.source == src & ai.member == 0, :);
     T_ai = innerjoin(S, real, 'Keys', 'time');
 
@@ -451,18 +521,15 @@ for i = 1:numel(sources)
     fprintf('RMSE opady %s: %.2f\n', src, rmse_precip_ai);
 end
 
-% --- Wykres temperatury ---
-figure
-plot(temp_model, 'b')
-hold on
-plot(temp_real, 'r')
-legend('Prognoza','Rzeczywiste')
-title('Temperatura: model vs rzeczywistość')
+function T = wczytaj_zrodlo(folder, source)
+    temp = readtable(fullfile(folder, 'temp.csv'));
+    opady = readtable(fullfile(folder, 'opady.csv'));
+    wiatr = readtable(fullfile(folder, 'wiatr.csv'));
 
-% --- Różnica ---
-figure
-plot(temp_model - temp_real)
-title('Błąd temperatury')
+    T = innerjoin(temp, opady, 'Keys', 'time');
+    T = innerjoin(T, wiatr, 'Keys', 'time');
+    T.source = repmat(string(source), height(T), 1);
+end
 
 \end{lstlisting}
 
