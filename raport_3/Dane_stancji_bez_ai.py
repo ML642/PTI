@@ -2,6 +2,7 @@ from pathlib import Path
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 import argparse
+from datetime import date, timedelta
 import json
 
 import pandas as pd
@@ -20,78 +21,54 @@ def main():
     parser.add_argument(
         "--source",
         choices=["ground_truth", "open_meteo", "yr_no", "all"],
-        default="ground_truth",
+        default="all",
     )
     parser.add_argument("--out-dir", default=BASE_DIR)
     args = parser.parse_args()
 
     out_dir = Path(args.out_dir)
+    frames = {}
 
     if args.source in ("ground_truth", "all"):
-        start_date, end_date = get_ground_truth_dates(
-            out_dir,
-            args.start_date,
-            args.end_date,
-        )
-        df = read_ground_truth(args.lat, args.lon, start_date, end_date)
-        write_source(out_dir / "default_model", df)
-        print(f"Zapisano ground truth w: {out_dir / 'default_model'}")
-        print(f"Zakres ground truth: {start_date} - {end_date}")
+        if args.start_date or args.end_date:
+            start_date, end_date = get_ground_truth_dates(
+                out_dir,
+                args.start_date,
+                args.end_date,
+                args.days,
+            )
+            df = read_ground_truth(args.lat, args.lon, start_date, end_date)
+        else:
+            df = read_open_meteo_forecast(args.lat, args.lon, args.days)
+        frames["default_model"] = df
 
     if args.source in ("open_meteo", "all"):
-        write_source(
-            out_dir / "open_meteo",
-            read_open_meteo_forecast(args.lat, args.lon, args.days),
-        )
+        frames["open_meteo"] = read_open_meteo_forecast(args.lat, args.lon, args.days)
 
     if args.source in ("yr_no", "all"):
-        write_source(out_dir / "yr_no", read_yr_no(args.lat, args.lon))
+        frames["yr_no"] = read_yr_no(args.lat, args.lon)
+
+    if len(frames) > 1:
+        frames = align_to_common_hours(frames)
+
+    for source_name, df in frames.items():
+        write_source(out_dir / source_name, df)
+        print(f"Zapisano {source_name} w: {out_dir / source_name}")
+        print(f"Zakres {source_name}: {date_range_text(df)}")
 
     print(f"Zapisano dane w katalogu: {out_dir}")
 
 
-def get_ground_truth_dates(out_dir, start_date, end_date):
+def get_ground_truth_dates(out_dir, start_date, end_date, days):
     if start_date and end_date:
         return start_date, end_date
 
-    detected_start, detected_end = detect_common_model_date_range(out_dir)
-    return start_date or detected_start, end_date or detected_end
+    if start_date or end_date:
+        raise ValueError("Podaj oba argumenty: --start-date oraz --end-date.")
 
-
-def detect_common_model_date_range(out_dir):
-    model_files = [
-        out_dir / "aifs" / "temp.csv",
-        out_dir / "graphcast" / "temp.csv",
-    ]
-
-    ranges = []
-    for path in model_files:
-        if not path.exists():
-            continue
-
-        df = pd.read_csv(path)
-        if "time" not in df.columns or df.empty:
-            continue
-
-        times = pd.to_datetime(df["time"])
-        ranges.append((times.min(), times.max()))
-
-    if not ranges:
-        raise ValueError(
-            "Nie podano --start-date/--end-date i nie znaleziono danych modeli "
-            "w aifs/temp.csv oraz graphcast/temp.csv."
-        )
-
-    start = max(item[0] for item in ranges)
-    end = min(item[1] for item in ranges)
-
-    if start > end:
-        raise ValueError(
-            "Pliki modeli nie maja wspolnego zakresu dat. Podaj recznie "
-            "--start-date i --end-date."
-        )
-
-    return start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d")
+    end = date.today() - timedelta(days=1)
+    start = end - timedelta(days=days - 1)
+    return start.isoformat(), end.isoformat()
 
 
 def read_ground_truth(lat, lon, start_date, end_date):
@@ -141,6 +118,44 @@ def write_source(source_dir, df):
     df[["time", "temp"]].to_csv(source_dir / "temp.csv", index=False)
     df[["time", "opady"]].to_csv(source_dir / "opady.csv", index=False)
     df[["time", "wiatr"]].to_csv(source_dir / "wiatr.csv", index=False)
+
+
+def align_to_common_hours(frames):
+    normalized = {
+        source_name: normalize_frame_time(df)
+        for source_name, df in frames.items()
+    }
+
+    common_times = None
+    for df in normalized.values():
+        times = set(df["time"])
+        common_times = times if common_times is None else common_times & times
+
+    if not common_times:
+        ranges = "; ".join(
+            f"{source_name}: {date_range_text(df)}"
+            for source_name, df in normalized.items()
+        )
+        raise ValueError(f"Brak wspolnych godzin do zapisania. Zakresy: {ranges}")
+
+    common_times = sorted(common_times)
+    return {
+        source_name: df[df["time"].isin(common_times)].reset_index(drop=True)
+        for source_name, df in normalized.items()
+    }
+
+
+def normalize_frame_time(df):
+    df = df.copy()
+    df["time"] = pd.to_datetime(df["time"], errors="coerce")
+    df = df.dropna(subset=["time"])
+    df["time"] = df["time"].dt.strftime("%Y-%m-%dT%H:%M")
+    return df.drop_duplicates(subset=["time"]).sort_values("time")
+
+
+def date_range_text(df):
+    times = pd.to_datetime(df["time"])
+    return f"{times.min():%Y-%m-%d %H:%M} - {times.max():%Y-%m-%d %H:%M}"
 
 
 def fetch_historical_open_meteo(lat, lon, start_date, end_date):

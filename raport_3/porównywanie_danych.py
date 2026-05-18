@@ -11,8 +11,14 @@ import pandas as pd
 
 BASE_DIR = Path(__file__).resolve().parent
 
-GROUND_TRUTH_FILE = BASE_DIR / "default_model" / "temp.csv"
-OUTPUT_FILE = BASE_DIR / "wykres_temperatura.png"
+GROUND_TRUTH = {
+    "name": "Ground truth",
+    "key": "ground_truth",
+    "path": BASE_DIR / "default_model" / "temp.csv",
+    "color": "black",
+    "linestyle": "-",
+    "linewidth": 3,
+}
 
 MODEL_SOURCES = [
     {
@@ -45,19 +51,30 @@ MODEL_SOURCES = [
     },
 ]
 
+OUTPUT_FILE = BASE_DIR / "wykres_temperatura.png"
+
 
 def read_temperature(path, source_key):
+    if not path.exists():
+        raise ValueError(f"brak pliku: {path}")
+
     df = pd.read_csv(path)
     expected_columns = {"time", "temp"}
 
     if not expected_columns.issubset(df.columns):
         columns = ", ".join(df.columns)
-        raise ValueError(
-            f"{source_key}: expected columns time,temp in {path}, got: {columns}"
-        )
+        raise ValueError(f"brak kolumn time,temp w {path}; sa: {columns}")
 
-    df = df[["time", "temp"]].rename(columns={"temp": f"temp_{source_key}"})
-    df["time"] = pd.to_datetime(df["time"])
+    value_column = f"temp_{source_key}"
+    df = df[["time", "temp"]].rename(columns={"temp": value_column})
+    df["time"] = pd.to_datetime(df["time"], errors="coerce")
+    df[value_column] = pd.to_numeric(df[value_column], errors="coerce")
+    df = df.dropna(subset=["time", value_column])
+    df = df.drop_duplicates(subset=["time"]).sort_values("time")
+
+    if df.empty:
+        raise ValueError(f"brak poprawnych wierszy w {path}")
+
     return df
 
 
@@ -77,19 +94,30 @@ def przyznaj_punkty(blad):
 
 
 def analyze_source(ground_truth, source_config):
-    source = read_temperature(source_config["path"], source_config["key"])
-    merged = ground_truth.merge(source, on="time")
+    try:
+        source = read_temperature(source_config["path"], source_config["key"])
+    except Exception as error:
+        return {
+            "config": source_config,
+            "has_data": False,
+            "reason": str(error),
+        }
 
+    merged = ground_truth.merge(source, on="time")
     if merged.empty:
         return {
             "config": source_config,
             "source": source,
-            "merged": merged,
             "has_data": False,
+            "reason": (
+                "brak wspolnych godzin "
+                f"(model: {date_range_text(source)}, "
+                f"ground truth: {date_range_text(ground_truth)})"
+            ),
         }
 
-    temp_source_column = f"temp_{source_config['key']}"
-    merged["blad"] = (merged["temp_ground_truth"] - merged[temp_source_column]).abs()
+    source_column = f"temp_{source_config['key']}"
+    merged["blad"] = (merged["temp_ground_truth"] - merged[source_column]).abs()
     merged["punkty"] = merged["blad"].apply(przyznaj_punkty)
 
     points = merged["punkty"].sum()
@@ -110,35 +138,53 @@ def analyze_source(ground_truth, source_config):
 
 
 def print_results(ground_truth, results):
+    available_results = [result for result in results if result["has_data"]]
+    outside_ranking = [
+        result
+        for result in results
+        if not result["has_data"] and "source" in result
+    ]
+    invalid_results = [
+        result
+        for result in results
+        if not result["has_data"] and "source" not in result
+    ]
+    available_results.sort(key=lambda result: (-result["score_percent"], result["rmse"]))
+
     print("\n" + "=" * 52)
     print("RANKING MODELI (TEMPERATURA)")
     print("=" * 52)
     print("Ground truth: default_model")
     print(f"Zakres default_model: {date_range_text(ground_truth)}\n")
 
-    available_results = [result for result in results if result["has_data"]]
-    missing_results = [result for result in results if not result["has_data"]]
-
-    available_results.sort(key=lambda result: (-result["score_percent"], result["rmse"]))
-
-    for index, result in enumerate(available_results, start=1):
-        print(f"{index}. {result['config']['name']}:")
-        print(
-            f"   -> Punkty: {result['points']} / {result['max_points']} "
-            f"({result['score_percent']:.1f}%)"
-        )
-        print(f"   -> RMSE: {result['rmse']:.2f} C (im mniej, tym lepiej)")
-        print(f"   -> Wspolne godziny: {result['hours']}")
-        print(f"   -> Zakres modelu: {date_range_text(result['source'])}")
+    if available_results:
+        for index, result in enumerate(available_results, start=1):
+            print(f"{index}. {result['config']['name']}:")
+            print(
+                f"   -> Punkty: {result['points']} / {result['max_points']} "
+                f"({result['score_percent']:.1f}%)"
+            )
+            print(f"   -> RMSE: {result['rmse']:.2f} C (im mniej, tym lepiej)")
+            print(f"   -> Wspolne godziny: {result['hours']}")
+            print(f"   -> Zakres modelu: {date_range_text(result['source'])}")
+            print("-" * 52)
+    else:
+        print("Ranking punktowy: brak wspolnych godzin z default_model.")
         print("-" * 52)
 
-    if missing_results:
-        print("Brak wspolnych godzin dla:")
-        for result in missing_results:
+    if outside_ranking:
+        print("Na wykresie, poza rankingiem punktowym:")
+        for result in outside_ranking:
             print(
                 f"   -> {result['config']['name']}: "
                 f"{date_range_text(result['source'])}"
             )
+        print("-" * 52)
+
+    if invalid_results:
+        print("Nie wczytano:")
+        for result in invalid_results:
+            print(f"   -> {result['config']['name']}: {result['reason']}")
         print("-" * 52)
 
     print("=" * 52)
@@ -152,25 +198,34 @@ def plot_results(ground_truth, results):
         ground_truth["time"],
         ground_truth["temp_ground_truth"],
         label="Ground truth (default_model)",
-        color="black",
-        linewidth=3,
+        color=GROUND_TRUTH["color"],
+        linestyle=GROUND_TRUTH["linestyle"],
+        linewidth=GROUND_TRUTH["linewidth"],
     )
 
     for result in results:
-        if not result["has_data"]:
+        if "source" not in result:
             continue
 
         config = result["config"]
         source_column = f"temp_{config['key']}"
         plt.plot(
-            result["merged"]["time"],
-            result["merged"][source_column],
+            result["source"]["time"],
+            result["source"][source_column],
             label=config["name"],
             color=config["color"],
             linestyle=config["linestyle"],
         )
 
-    plt.xticks(ground_truth["time"][::24], rotation=45)
+    all_times = [ground_truth["time"]]
+    all_times.extend(
+        result["source"]["time"]
+        for result in results
+        if "source" in result
+    )
+    time_range = pd.concat(all_times)
+    ticks = pd.date_range(time_range.min(), time_range.max(), freq="24h")
+    plt.xticks(ticks, rotation=45)
     plt.title("Porownanie prognoz temperatury dla Warszawy", fontsize=16)
     plt.xlabel("Czas", fontsize=12)
     plt.ylabel("Temperatura (C)", fontsize=12)
@@ -186,7 +241,12 @@ def plot_results(ground_truth, results):
 def main():
     print("Wczytywanie i laczenie danych...")
 
-    ground_truth = read_temperature(GROUND_TRUTH_FILE, "ground_truth")
+    try:
+        ground_truth = read_temperature(GROUND_TRUTH["path"], "ground_truth")
+    except Exception as error:
+        print(f"Nie mozna wczytac ground truth: {error}")
+        return
+
     results = [
         analyze_source(ground_truth, source_config)
         for source_config in MODEL_SOURCES
