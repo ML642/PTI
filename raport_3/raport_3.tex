@@ -400,11 +400,11 @@ modeli klasycznych i modeli AI.
 
 \subsection{Automatyzacja procesu analizy}
 
-W drugim etapie projektu opracowano zautomatyzowany system analizy jakości prognoz meteorologicznych generowanych przez różne źródła danych. Implementację wykonano w języku Python z wykorzystaniem bibliotek \texttt{pandas}, \texttt{numpy} oraz \texttt{matplotlib}. Głównym celem tego etapu było stworzenie jednolitego środowiska umożliwiającego jednoczesne porównanie modeli AIFS, GraphCast, Open-Meteo, yr.no oraz klasycznego modelu GFS względem danych referencyjnych (\textit{ground truth}). :contentReference[oaicite:0]{index=0}
+W drugim etapie projektu opracowano zautomatyzowany system analizy jakości prognoz meteorologicznych generowanych przez różne źródła danych. Implementację wykonano w języku Python z wykorzystaniem bibliotek \texttt{pandas}, \texttt{numpy} oraz \texttt{matplotlib}. Głównym celem tego etapu było stworzenie jednolitego środowiska umożliwiającego jednoczesne porównanie modeli AIFS, GraphCast, Open-Meteo, yr.no oraz klasycznego modelu GFS względem danych referencyjnych (\textit{ground truth}). 
 
-W pierwszej kolejności zaimplementowano procedurę automatycznego wczytywania danych z plików CSV. Każdy model posiadał własny katalog zawierający szeregi czasowe temperatury. Dane referencyjne zostały zdefiniowane jako osobne źródło \texttt{default\_model}, względem którego porównywano wszystkie pozostałe prognozy. Program przed rozpoczęciem analizy weryfikował poprawność struktury danych oraz obecność wymaganych kolumn \texttt{time} i \texttt{temp}. W przypadku braku pliku lub niepoprawnego formatu dane były automatycznie odrzucane z dalszej analizy. :contentReference[oaicite:1]{index=1}
+W pierwszej kolejności zaimplementowano procedurę automatycznego wczytywania danych z plików CSV. Każdy model posiadał własny katalog zawierający szeregi czasowe temperatury. Dane referencyjne zostały zdefiniowane jako osobne źródło \texttt{default\_model}, względem którego porównywano wszystkie pozostałe prognozy. Program przed rozpoczęciem analizy weryfikował poprawność struktury danych oraz obecność wymaganych kolumn \texttt{time} i \texttt{temp}. W przypadku braku pliku lub niepoprawnego formatu dane były automatycznie odrzucane z dalszej analizy. 
 
-Kolejnym krokiem była synchronizacja szeregów czasowych. Wszystkie znaczniki czasu zostały skonwertowane do wspólnego formatu typu \texttt{datetime}, a następnie dane sortowano chronologicznie oraz usuwano duplikaty. Po przygotowaniu danych wykonywano operację \texttt{merge}, która łączyła prognozy modeli z danymi referencyjnymi wyłącznie dla wspólnych godzin pomiarowych. Takie podejście gwarantowało, że porównanie odbywało się dla identycznych momentów czasowych. :contentReference[oaicite:2]{index=2}
+Kolejnym krokiem była synchronizacja szeregów czasowych. Wszystkie znaczniki czasu zostały skonwertowane do wspólnego formatu typu \texttt{datetime}, a następnie dane sortowano chronologicznie oraz usuwano duplikaty. Po przygotowaniu danych wykonywano operację \texttt{merge}, która łączyła prognozy modeli z danymi referencyjnymi wyłącznie dla wspólnych godzin pomiarowych. Takie podejście gwarantowało, że porównanie odbywało się dla identycznych momentów czasowych.
 
 \subsection{Metody oceny jakości prognoz}
 
@@ -423,7 +423,7 @@ Na podstawie błędu bezwzględnego zdefiniowano autorski system punktacji ranki
     \item 0 punktów -- błąd większy niż 3.0°C.
 \end{itemize}
 
-Takie podejście umożliwia ocenę nie tylko średniej jakości modelu, ale również jego stabilności oraz zdolności do utrzymywania niewielkich odchyleń przez dłuższy okres czasu. Implementacja systemu punktowego została zrealizowana jako osobna funkcja przypisująca punkty na podstawie wielkości błędu. :contentReference[oaicite:3]{index=3}
+Takie podejście umożliwia ocenę nie tylko średniej jakości modelu, ale również jego stabilności oraz zdolności do utrzymywania niewielkich odchyleń przez dłuższy okres czasu. Implementacja systemu punktowego została zrealizowana jako osobna funkcja przypisująca punkty na podstawie wielkości błędu. 
 
 Drugim elementem ewaluacji była klasyczna metryka RMSE (\textit{Root Mean Square Error}), czyli pierwiastek błędu średniokwadratowego:
 
@@ -431,17 +431,17 @@ Drugim elementem ewaluacji była klasyczna metryka RMSE (\textit{Root Mean Squar
 RMSE = \sqrt{\frac{1}{n}\sum_{i=1}^{n}(y_i - \hat{y}_i)^2}
 \]
 
-Metryka ta silniej penalizuje duże odchylenia prognozy od wartości rzeczywistych, dzięki czemu pozwala wykrywać modele generujące sporadyczne, lecz bardzo duże błędy. Wartość RMSE obliczano dla całego wspólnego zakresu czasowego pomiędzy modelem a danymi referencyjnymi. :contentReference[oaicite:4]{index=4}
+Metryka ta silniej penalizuje duże odchylenia prognozy od wartości rzeczywistych, dzięki czemu pozwala wykrywać modele generujące sporadyczne, lecz bardzo duże błędy. Wartość RMSE obliczano dla całego wspólnego zakresu czasowego pomiędzy modelem a danymi referencyjnymi. 
 
-Na podstawie uzyskanych wyników tworzony był końcowy ranking modeli. System automatycznie sortował źródła według procentowej skuteczności punktowej, a w przypadku zbliżonych rezultatów dodatkowym kryterium była wartość RMSE. Dla każdego modelu prezentowano liczbę zdobytych punktów, maksymalną możliwą liczbę punktów, procent skuteczności, wartość RMSE oraz liczbę wspólnych godzin uwzględnionych w analizie. :contentReference[oaicite:5]{index=5}
+Na podstawie uzyskanych wyników tworzony był końcowy ranking modeli. System automatycznie sortował źródła według procentowej skuteczności punktowej, a w przypadku zbliżonych rezultatów dodatkowym kryterium była wartość RMSE. Dla każdego modelu prezentowano liczbę zdobytych punktów, maksymalną możliwą liczbę punktów, procent skuteczności, wartość RMSE oraz liczbę wspólnych godzin uwzględnionych w analizie. 
 
 \subsection{Wizualizacja i interpretacja wyników}
 
-Istotnym elementem analizy była również wizualna weryfikacja jakości prognoz. W tym celu opracowano moduł generujący wykres porównawczy przedstawiający przebieg temperatury referencyjnej oraz prognoz wszystkich analizowanych modeli. Dane zostały przedstawione na wspólnym układzie współrzędnych z wykorzystaniem różnych kolorów i stylów linii dla każdego źródła. Krzywa danych referencyjnych została dodatkowo wyróżniona większą grubością linii, co ułatwia ocenę zgodności poszczególnych modeli z rzeczywistym przebiegiem temperatury. :contentReference[oaicite:6]{index=6}
+Istotnym elementem analizy była również wizualna weryfikacja jakości prognoz. W tym celu opracowano moduł generujący wykres porównawczy przedstawiający przebieg temperatury referencyjnej oraz prognoz wszystkich analizowanych modeli. Dane zostały przedstawione na wspólnym układzie współrzędnych z wykorzystaniem różnych kolorów i stylów linii dla każdego źródła. Krzywa danych referencyjnych została dodatkowo wyróżniona większą grubością linii, co ułatwia ocenę zgodności poszczególnych modeli z rzeczywistym przebiegiem temperatury. 
 
 Analiza wizualna pozwala na identyfikację charakterystycznych zachowań modeli, których nie zawsze można jednoznacznie uchwycić wyłącznie przy pomocy pojedynczych metryk liczbowych. Dzięki wykresom możliwe jest określenie, czy dany model poprawnie odwzorowuje dynamikę zmian temperatury, lokalne maksima i minima oraz amplitudę wahań dobowych. Pozwala to również zauważyć zjawiska takie jak wygładzanie sygnału, przesunięcia fazowe, generowanie fałszywych pików czy systematyczne przeszacowanie lub niedoszacowanie temperatury.
 
-Wygenerowane wykresy zapisywano automatycznie do pliku \texttt{wykres\_temperatura.png}, co umożliwia ich bezpośrednie wykorzystanie w dalszej części raportu oraz podczas analizy porównawczej poszczególnych modeli prognostycznych. :contentReference[oaicite:7]{index=7}
+Wygenerowane wykresy zapisywano automatycznie do pliku \texttt{wykres\_temperatura.png}, co umożliwia ich bezpośrednie wykorzystanie w dalszej części raportu oraz podczas analizy porównawczej poszczególnych modeli prognostycznych. 
 
 \subsection{Analiza z wykorzystaniem danych rzeczywistych}
 
