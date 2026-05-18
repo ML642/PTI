@@ -27,7 +27,8 @@ for source_name, model_name in MODELS.items():
             "temperature_2m,"
             "precipitation,"
             "wind_speed_10m"
-        )
+        ),
+        "wind_speed_unit": "ms"
     }
 
     if model_name is not None:
