@@ -393,104 +393,55 @@ RMSE, filtrowanie danych oraz tworzenie wykresów działa identycznie dla
 modeli klasycznych i modeli AI.
 
 \newpage
-\section{Etap 2: Przetwarzanie i analiza danych}
 
-W drugim etapie przeprowadzono przetwarzanie danych oraz ich analizę syntaktyczną.
-
-Dane zapisane w katalogach źródeł zostały wczytane do środowiska MATLAB,
-a następnie połączone po kolumnie \texttt{time}. Dopiero w tym etapie
-oddzielne pliki \texttt{temp.csv}, \texttt{opady.csv} i \texttt{wiatr.csv}
-są składane w jedną tabelę roboczą. Dzięki temu etap pozyskiwania danych
-pozostaje prosty, a etap porównywania może dowolnie wybierać źródła.
-
-Po rozszerzeniu projektu o modele AI analizujemy dwa typy reprezentacji:
-katalogi źródeł klasycznych oraz plik \texttt{weather\_ai\_vectors.csv},
-czyli dane AI sprowadzone do prostych wektorów temperatury, opadów i wiatru.
 
 %--------------------------------------------------
-\subsection{Implementacja w MATLAB}
+\section{Etap 2: Przetwarzanie, analiza i ewaluacja danych}
 
-Kod w MATLAB-ie realizuje etap porządkowania i oceny informacji. Program
-wczytuje trzy typy danych: prognozy klasyczne, dane AI oraz dane rzeczywiste.
-Następnie wszystkie znaczniki czasu są konwertowane do formatu
-\texttt{datetime}, co umożliwia wykonanie złączenia tabel po kolumnie
-\texttt{time}. Po takim dopasowaniu porównywane są wartości odnoszące się do
-tych samych chwil.
+\subsection{Automatyzacja procesu analizy}
 
-W pierwszej części liczony jest błąd dla klasycznego źródła prognozy.
-Następnie program przechodzi po kolejnych modelach AI zapisanych w kolumnie
-\texttt{source}. Każde źródło jest oceniane tym samym wzorem RMSE, dzięki
-czemu porównanie ma charakter formalny i obliczeniowy. Na końcu tworzone są
-wykresy, które pokazują zarówno wartości prognozowane, jak i różnicę między
-prognozą a danymi referencyjnymi.
+W drugim etapie projektu opracowano zautomatyzowany system analizy jakości prognoz meteorologicznych generowanych przez różne źródła danych. Implementację wykonano w języku Python z wykorzystaniem bibliotek \texttt{pandas}, \texttt{numpy} oraz \texttt{matplotlib}. Głównym celem tego etapu było stworzenie jednolitego środowiska umożliwiającego jednoczesne porównanie modeli AIFS, GraphCast, Open-Meteo, yr.no oraz klasycznego modelu GFS względem danych referencyjnych (\textit{ground truth}). :contentReference[oaicite:0]{index=0}
 
-\begin{lstlisting}[language=Matlab]
-model = [
-    wczytaj_zrodlo('open_meteo', 'Open-Meteo');
-    wczytaj_zrodlo('yr_no', 'yr.no')
-];
-ai = readtable('weather_ai_vectors.csv');
-real = readtable('real_data.csv');
+W pierwszej kolejności zaimplementowano procedurę automatycznego wczytywania danych z plików CSV. Każdy model posiadał własny katalog zawierający szeregi czasowe temperatury. Dane referencyjne zostały zdefiniowane jako osobne źródło \texttt{default\_model}, względem którego porównywano wszystkie pozostałe prognozy. Program przed rozpoczęciem analizy weryfikował poprawność struktury danych oraz obecność wymaganych kolumn \texttt{time} i \texttt{temp}. W przypadku braku pliku lub niepoprawnego formatu dane były automatycznie odrzucane z dalszej analizy. :contentReference[oaicite:1]{index=1}
 
-model.source = string(model.source);
-model.time = datetime(model.time);
-ai.source = string(ai.source);
-ai.time = datetime(ai.time);
-real.time = datetime(real.time);
-rmse = @(a,b) sqrt(mean((a - b).^2));
+Kolejnym krokiem była synchronizacja szeregów czasowych. Wszystkie znaczniki czasu zostały skonwertowane do wspólnego formatu typu \texttt{datetime}, a następnie dane sortowano chronologicznie oraz usuwano duplikaty. Po przygotowaniu danych wykonywano operację \texttt{merge}, która łączyła prognozy modeli z danymi referencyjnymi wyłącznie dla wspólnych godzin pomiarowych. Takie podejście gwarantowało, że porównanie odbywało się dla identycznych momentów czasowych. :contentReference[oaicite:2]{index=2}
 
-sources = unique(model.source);
+\subsection{Metody oceny jakości prognoz}
 
-for i = 1:numel(sources)
-    src = sources(i);
-    S = model(model.source == src, :);
-    T = innerjoin(S, real, 'Keys', 'time');
+Ocena jakości prognoz została oparta na dwóch równoległych mechanizmach ewaluacyjnych. Pierwszym z nich był błąd bezwzględny, obliczany jako wartość bezwzględna różnicy pomiędzy temperaturą referencyjną a temperaturą prognozowaną przez dany model:
 
-    rmse_temp = rmse(T.temp, T.temp_real);
-    rmse_wind = rmse(T.wiatr, T.wind_real);
-    rmse_opady = rmse(T.opady, T.precip_real);
+\[
+|T_{ref} - T_{model}|
+\]
 
-    fprintf('RMSE temperatura %s: %.2f\n', src, rmse_temp);
-    fprintf('RMSE wiatr %s: %.2f\n', src, rmse_wind);
-    fprintf('RMSE opady %s: %.2f\n', src, rmse_opady);
-end
+Na podstawie błędu bezwzględnego zdefiniowano autorski system punktacji rankingowej. Dla każdej godziny prognozy model otrzymywał określoną liczbę punktów zależną od wielkości odchylenia od wartości referencyjnej:
 
-ai_sources = unique(ai.source);
+\begin{itemize}
+    \item 3 punkty -- błąd mniejszy lub równy 0.5°C,
+    \item 2 punkty -- błąd mniejszy lub równy 1.5°C,
+    \item 1 punkt -- błąd mniejszy lub równy 3.0°C,
+    \item 0 punktów -- błąd większy niż 3.0°C.
+\end{itemize}
 
-for i = 1:numel(ai_sources)
-    src = ai_sources(i);
+Takie podejście umożliwia ocenę nie tylko średniej jakości modelu, ale również jego stabilności oraz zdolności do utrzymywania niewielkich odchyleń przez dłuższy okres czasu. Implementacja systemu punktowego została zrealizowana jako osobna funkcja przypisująca punkty na podstawie wielkości błędu. :contentReference[oaicite:3]{index=3}
 
-    S = ai(ai.source == src & ai.member == 0, :);
-    T_ai = innerjoin(S, real, 'Keys', 'time');
+Drugim elementem ewaluacji była klasyczna metryka RMSE (\textit{Root Mean Square Error}), czyli pierwiastek błędu średniokwadratowego:
 
-    rmse_temp_ai = rmse(T_ai.temp_c, T_ai.temp_real);
-    rmse_wind_ai = rmse(T_ai.wind_ms, T_ai.wind_real);
-    rmse_precip_ai = rmse(T_ai.precip_mm, T_ai.precip_real);
+\[
+RMSE = \sqrt{\frac{1}{n}\sum_{i=1}^{n}(y_i - \hat{y}_i)^2}
+\]
 
-    fprintf('RMSE temperatura %s: %.2f\n', src, rmse_temp_ai);
-    fprintf('RMSE wiatr %s: %.2f\n', src, rmse_wind_ai);
-    fprintf('RMSE opady %s: %.2f\n', src, rmse_precip_ai);
-end
+Metryka ta silniej penalizuje duże odchylenia prognozy od wartości rzeczywistych, dzięki czemu pozwala wykrywać modele generujące sporadyczne, lecz bardzo duże błędy. Wartość RMSE obliczano dla całego wspólnego zakresu czasowego pomiędzy modelem a danymi referencyjnymi. :contentReference[oaicite:4]{index=4}
 
-function T = wczytaj_zrodlo(folder, source)
-    temp = readtable(fullfile(folder, 'temp.csv'));
-    opady = readtable(fullfile(folder, 'opady.csv'));
-    wiatr = readtable(fullfile(folder, 'wiatr.csv'));
+Na podstawie uzyskanych wyników tworzony był końcowy ranking modeli. System automatycznie sortował źródła według procentowej skuteczności punktowej, a w przypadku zbliżonych rezultatów dodatkowym kryterium była wartość RMSE. Dla każdego modelu prezentowano liczbę zdobytych punktów, maksymalną możliwą liczbę punktów, procent skuteczności, wartość RMSE oraz liczbę wspólnych godzin uwzględnionych w analizie. :contentReference[oaicite:5]{index=5}
 
-    T = innerjoin(temp, opady, 'Keys', 'time');
-    T = innerjoin(T, wiatr, 'Keys', 'time');
-    T.source = repmat(string(source), height(T), 1);
-end
+\subsection{Wizualizacja i interpretacja wyników}
 
-\end{lstlisting}
+Istotnym elementem analizy była również wizualna weryfikacja jakości prognoz. W tym celu opracowano moduł generujący wykres porównawczy przedstawiający przebieg temperatury referencyjnej oraz prognoz wszystkich analizowanych modeli. Dane zostały przedstawione na wspólnym układzie współrzędnych z wykorzystaniem różnych kolorów i stylów linii dla każdego źródła. Krzywa danych referencyjnych została dodatkowo wyróżniona większą grubością linii, co ułatwia ocenę zgodności poszczególnych modeli z rzeczywistym przebiegiem temperatury. :contentReference[oaicite:6]{index=6}
 
-Dodanie danych AI wpływa więc na kod przede wszystkim przez zmianę warstwy
-wejściowej. Nie zmienia się sposób liczenia RMSE ani filtracji, ponieważ
-każdy model AI zostaje wcześniej sprowadzony do kolumn \texttt{temp\_c},
-\texttt{precip\_mm} i \texttt{wind\_ms}. Zamiast pisać oddzielne obliczenia
-dla GraphCast, GenCast i WeatherNext, MATLAB przechodzi po liście wartości
-w kolumnie \texttt{source} i wykonuje ten sam zestaw operacji dla każdego
-źródła.
+Analiza wizualna pozwala na identyfikację charakterystycznych zachowań modeli, których nie zawsze można jednoznacznie uchwycić wyłącznie przy pomocy pojedynczych metryk liczbowych. Dzięki wykresom możliwe jest określenie, czy dany model poprawnie odwzorowuje dynamikę zmian temperatury, lokalne maksima i minima oraz amplitudę wahań dobowych. Pozwala to również zauważyć zjawiska takie jak wygładzanie sygnału, przesunięcia fazowe, generowanie fałszywych pików czy systematyczne przeszacowanie lub niedoszacowanie temperatury.
+
+Wygenerowane wykresy zapisywano automatycznie do pliku \texttt{wykres\_temperatura.png}, co umożliwia ich bezpośrednie wykorzystanie w dalszej części raportu oraz podczas analizy porównawczej poszczególnych modeli prognostycznych. :contentReference[oaicite:7]{index=7}
 
 \subsection{Analiza z wykorzystaniem danych rzeczywistych}
 
@@ -507,42 +458,232 @@ dokładności prognozy.
 %--------------------------------------------------
 \subsection{Wyniki}
 
+\subsubsection{Porównywanie modeli na podstawie przygotowanych plików CSV}
+
+Właściwe porównanie zostało wykonane po etapie pobierania danych. Wszystkie
+źródła zostały sprowadzone do tej samej struktury katalogów:
+\begin{verbatim}
+zrodlo/
+    temp.csv
+    opady.csv
+    wiatr.csv
+\end{verbatim}
+
+Jako punkt odniesienia przyjęto katalog \texttt{default\_model}. W naszym
+programie pełni on rolę danych referencyjnych, czyli tzw. \textit{ground truth}.
+Pozostałe źródła, czyli \texttt{open\_meteo}, \texttt{yr\_no},
+\texttt{gfs}, \texttt{aifs} oraz \texttt{graphcast}, są porównywane z tym
+samym punktem odniesienia.
+
+Przed obliczeniem błędu dane są łączone po kolumnie \texttt{time}. Oznacza to,
+że porównywane są tylko wartości odnoszące się do tej samej godziny. Jest to
+kluczowy element analizy syntaktycznej: program nie interpretuje jeszcze
+znaczenia zjawisk pogodowych, lecz sprawdza zgodność dwóch uporządkowanych
+ciągów liczbowych. W analizowanym przebiegu wszystkie źródła zostały
+wyrównane do zakresu:
+\[
+2026\text{-}05\text{-}18\ 22{:}00
+\quad \text{--} \quad
+2026\text{-}05\text{-}20\ 23{:}00
+\]
+co daje 50 wspólnych godzin.
+
+Do oceny wykorzystano dwie miary. Pierwszą jest błąd RMSE:
+\[
+RMSE = \sqrt{\frac{1}{n}\sum_{i=1}^{n}(x_i - y_i)^2}
+\]
+gdzie $x_i$ oznacza wartość z modelu porównywanego, a $y_i$ wartość
+referencyjną. Drugą miarą jest prosty system punktowy. Dla temperatury i wiatru
+zastosowano progi:
+\[
+3\ pkt \leq 0.5,\qquad
+2\ pkt \leq 1.5,\qquad
+1\ pkt \leq 3.0
+\]
+natomiast dla opadów zastosowano ostrzejsze progi:
+\[
+3\ pkt \leq 0.1,\qquad
+2\ pkt \leq 0.5,\qquad
+1\ pkt \leq 2.0
+\]
+ponieważ opady są mierzone w milimetrach i zwykle mają mniejsze wartości
+liczbowe niż temperatura lub prędkość wiatru.
+
+Poniższy fragment kodu pokazuje najważniejszą część porównywania. Nie jest to
+cały program, ponieważ najistotniejsze są trzy operacje: wczytanie danych,
+dopasowanie ich po czasie oraz obliczenie błędu i punktów.
+
+\begin{lstlisting}[language=Python]
+def przyznaj_punkty(blad):
+    if blad <= 0.5:
+        return 3
+    if blad <= 1.5:
+        return 2
+    if blad <= 3.0:
+        return 1
+    return 0
+
+def analyze_source(ground_truth, source_config):
+    source = read_temperature(
+        source_config["path"],
+        source_config["key"]
+    )
+
+    merged = ground_truth.merge(source, on="time")
+
+    source_column = f"temp_{source_config['key']}"
+    merged["blad"] = (
+        merged["temp_ground_truth"] - merged[source_column]
+    ).abs()
+    merged["punkty"] = merged["blad"].apply(przyznaj_punkty)
+
+    points = merged["punkty"].sum()
+    max_points = len(merged) * 3
+    rmse = np.sqrt((merged["blad"] ** 2).mean())
+
+    return points, max_points, rmse, len(merged)
+\end{lstlisting}
+
+Funkcja \texttt{merge(..., on="time")} odpowiada za dopasowanie danych godzina
+do godziny. Jeżeli jakieś źródło nie ma danej godziny, ta godzina nie jest
+używana w rankingu. W aktualnej wersji skryptu dane zostały jednak wcześniej
+przycięte do wspólnego zakresu, dlatego wszystkie modele mają po 50
+porównywalnych obserwacji.
+
+\subsubsection{Wykresy porównawcze}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{wykres_temperatura.png}
+\caption{Porównanie temperatury dla wszystkich analizowanych modeli.}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{wykres_wiatr.png}
+\caption{Porównanie prędkości wiatru dla wszystkich analizowanych modeli.}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{wykres_opady.png}
+\caption{Porównanie opadów dla wszystkich analizowanych modeli.}
+\end{figure}
+
+\subsubsection{Tabele rankingowe}
+
 \begin{table}[h]
 \centering
-\begin{tabular}{lc}
+\begin{tabular}{lrrrr}
 \toprule
-Parametr & RMSE \\
+Model & Punkty & Wynik [\%] & RMSE [C] & Godziny \\
 \midrule
-Temperatura & X \\
-Temperatura (po filtracji) & Y \\
-Wiatr & Z \\
-Opady & W \\
+Open-Meteo & 150/150 & 100.0 & 0.00 & 50 \\
+GFS & 63/150 & 42.0 & 2.60 & 50 \\
+AIFS & 46/150 & 30.7 & 3.05 & 50 \\
+Yr.no & 43/150 & 28.7 & 3.33 & 50 \\
+GraphCast & 7/150 & 4.7 & 7.25 & 50 \\
 \bottomrule
 \end{tabular}
-\caption{Błąd RMSE przed i po filtracji}
+\caption{Ranking modeli dla temperatury.}
 \end{table}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lrrrr}
+\toprule
+Model & Punkty & Wynik [\%] & RMSE [m/s] & Godziny \\
+\midrule
+Open-Meteo & 150/150 & 100.0 & 0.00 & 50 \\
+GFS & 133/150 & 88.7 & 0.60 & 50 \\
+Yr.no & 125/150 & 83.3 & 0.76 & 50 \\
+AIFS & 120/150 & 80.0 & 0.80 & 50 \\
+GraphCast & 55/150 & 36.7 & 2.47 & 50 \\
+\bottomrule
+\end{tabular}
+\caption{Ranking modeli dla prędkości wiatru.}
+\end{table}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lrrrr}
+\toprule
+Model & Punkty & Wynik [\%] & RMSE [mm] & Godziny \\
+\midrule
+Open-Meteo & 150/150 & 100.0 & 0.00 & 50 \\
+Yr.no & 150/150 & 100.0 & 0.00 & 50 \\
+GFS & 150/150 & 100.0 & 0.02 & 50 \\
+AIFS & 150/150 & 100.0 & 0.06 & 50 \\
+GraphCast & 132/150 & 88.0 & 0.24 & 50 \\
+\bottomrule
+\end{tabular}
+\caption{Ranking modeli dla opadów.}
+\end{table}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lrrp{6cm}}
+\toprule
+Model & Punkty łącznie & Wynik [\%] & Uwagi \\
+\midrule
+Open-Meteo & 450/450 & 100.0 & najlepsza zgodność z punktem odniesienia \\
+GFS & 346/450 & 76.9 & dobre wyniki dla wiatru i opadów \\
+Yr.no & 318/450 & 70.7 & dobre opady, słabsza temperatura \\
+AIFS & 316/450 & 70.2 & dobre opady i wiatr, słabsza temperatura \\
+GraphCast & 194/450 & 43.1 & najsłabszy wynik łączny \\
+\bottomrule
+\end{tabular}
+\caption{Ranking łączny dla temperatury, wiatru i opadów.}
+\end{table}
+
+Wynik Open-Meteo jest równy 100\%, ponieważ dane referencyjne
+\texttt{default\_model} zostały utworzone na podstawie tego samego źródła.
+Ten wynik należy traktować jako kontrolę poprawności działania programu:
+jeżeli źródło porównywane jest identyczne z referencyjnym, błąd powinien być
+równy zero. Dopiero pozostałe modele pokazują rzeczywiste różnice między
+prognozami.
 
 %--------------------------------------------------
 \subsection{Interpretacja}
 
-Filtracja danych przy użyciu średniej ruchomej prowadzi do redukcji
-lokalnych fluktuacji sygnału.
+Otrzymane wyniki pokazują, że sama zgodność struktury danych nie gwarantuje
+zgodności prognoz. Wszystkie modele zostały porównane dla tych samych godzin,
+ale ich wyniki punktowe i RMSE różnią się w zależności od analizowanego
+parametru.
 
-W przypadku temperatury obserwuje się zmniejszenie błędu RMSE
-po zastosowaniu filtracji, co wskazuje na obecność szumu w danych.
+Najlepszy wynik uzyskało Open-Meteo, ponieważ katalog \texttt{default\_model}
+został utworzony na podstawie tego samego źródła. Ten przypadek pełni więc
+funkcję kontroli poprawności obliczeń. Jeżeli dane porównywane są identyczne
+z danymi referencyjnymi, program powinien zwrócić maksymalną liczbę punktów
+oraz RMSE równe zero.
 
-Dla wiatru oraz opadów różnice pozostają większe,
-co wynika z ich bardziej dynamicznego i nieregularnego charakteru.
+Wśród pozostałych modeli relatywnie dobrze wypadł GFS, szczególnie dla wiatru
+i opadów. AIFS oraz yr.no uzyskały podobny wynik łączny, ale różniły się
+rozkładem błędów między parametrami. Najsłabszy wynik łączny uzyskał
+GraphCast, głównie przez duży błąd temperatury i wiatru.
+
+Opady okazały się parametrem, dla którego większość modeli uzyskała wysoką
+punktację. Wynika to z niewielkich wartości opadów w analizowanym przedziale
+czasowym. W takiej sytuacji nawet modele różniące się między sobą mogą
+uzyskać zbliżone wyniki punktowe.
 
 %--------------------------------------------------
 \subsection{Wnioski}
 
-Zastosowane metody przetwarzania pozwalają na poprawę jakości
-reprezentacji danych poprzez redukcję szumu.
+Zastosowany sposób porównywania pozwala automatycznie zestawiać wiele źródeł
+prognozy przy użyciu jednej procedury. Najważniejsze jest wcześniejsze
+wyrównanie danych po czasie, ponieważ bez wspólnych godzin ranking nie miałby
+sensu obliczeniowego.
 
-Jednocześnie wyniki pokazują, że skuteczność metod zależy
-od charakteru analizowanej zmiennej.
+System punktowy jest prosty, ale czytelny. Pozwala szybko zbudować ranking,
+natomiast RMSE daje dodatkową informację o skali błędu. Połączenie obu miar
+sprawia, że wyniki można analizować zarówno jakościowo, jak i liczbowo.
 
-Temperatura jest najlepiej przewidywalna,
-natomiast opady pozostają najbardziej niestabilne.
+Projekt pokazuje, że dane z różnych serwisów i modeli AI można sprowadzić do
+wspólnej reprezentacji syntaktycznej. Po takim ujednoliceniu dalsze
+porównywanie nie zależy już od źródła danych, lecz od samych wartości
+zapisanych w szeregach czasowych.
+
+
 \end{document}
