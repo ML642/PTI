@@ -57,6 +57,7 @@ MODEL_SOURCES = [
         "color": "orange",
         "linestyle": "-",
     },
+<<<<<<< HEAD
     {
         "name": "AIFS Spatial (Random Forest)",
         "key": "random_forest_spatial",
@@ -65,6 +66,8 @@ MODEL_SOURCES = [
         "linestyle": "-",
         "linewidth": 3,
     },
+=======
+>>>>>>> 01c3c019d326d2f025e1b93d51ffd6c48f8b06eb
 ]
 
 OUTPUT_FILE = BASE_DIR / "wykres_temperatura.png"
