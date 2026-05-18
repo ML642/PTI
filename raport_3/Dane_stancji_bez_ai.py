@@ -82,5 +82,6 @@ def normalize_time(value):
     return text[:16]
 
 
+
 if __name__ == "__main__":
     main()
