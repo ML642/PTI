@@ -62,11 +62,22 @@ MODEL_SOURCES = [
         "color": "purple",
         "linestyle": (0, (3, 1, 1, 1)),
     },
+    {
+        "name": "GFS",
+        "key": "gfs",
+        "dir": BASE_DIR / "gfs",
+        "color": "orange",
+        "linestyle": "-",
+    },
 ]
 
 
 def read_metric(path, metric_key, source_key, multiplier=1.0):
-    df = pd.read_csv(path)
+    try:
+        df = pd.read_csv(path)
+    except FileNotFoundError:
+        return pd.DataFrame()
+
     expected_columns = {"time", metric_key}
 
     if not expected_columns.issubset(df.columns):
@@ -83,6 +94,8 @@ def read_metric(path, metric_key, source_key, multiplier=1.0):
 
 
 def date_range_text(df):
+    if df.empty:
+        return "Brak danych"
     return f"{df['time'].min():%Y-%m-%d %H:%M} - {df['time'].max():%Y-%m-%d %H:%M}"
 
 
@@ -104,6 +117,14 @@ def analyze_source_metric(ground_truth, source_config, metric_config):
         metric_config["key"],
         source_config["key"],
     )
+    
+    if source.empty or ground_truth.empty:
+         return {
+            "source": source,
+            "merged": pd.DataFrame(),
+            "has_data": False,
+        }
+        
     merged = ground_truth.merge(source, on="time")
 
     if merged.empty:
@@ -265,6 +286,11 @@ def print_total_ranking(metric_analyses):
 def plot_metric(metric_analysis):
     metric = metric_analysis["metric"]
     ground_truth = metric_analysis["ground_truth"]
+    
+    if ground_truth.empty:
+        print(f"❌ Brak danych Ground Truth dla {metric['name']}, pomijam wykres.")
+        return
+        
     ground_truth_column = f"{metric['key']}_ground_truth"
 
     print(f"Generowanie wykresu: {metric['name']}...")
