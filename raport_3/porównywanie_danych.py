@@ -49,6 +49,13 @@ MODEL_SOURCES = [
         "color": "purple",
         "linestyle": (0, (3, 1, 1, 1)),
     },
+    {
+        "name": "GFS",
+        "key": "gfs",
+        "path": BASE_DIR / "gfs" / "temp.csv",
+        "color": "orange",
+        "linestyle": "-",
+    },
 ]
 
 OUTPUT_FILE = BASE_DIR / "wykres_temperatura.png"

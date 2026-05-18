@@ -20,7 +20,7 @@ def main():
     parser.add_argument("--end-date")
     parser.add_argument(
         "--source",
-        choices=["ground_truth", "open_meteo", "yr_no", "all"],
+        choices=["ground_truth", "open_meteo", "yr_no", "gfs", "all"],
         default="all",
     )
     parser.add_argument("--out-dir", default=BASE_DIR)
@@ -47,6 +47,9 @@ def main():
 
     if args.source in ("yr_no", "all"):
         frames["yr_no"] = read_yr_no(args.lat, args.lon)
+
+    if args.source in ("gfs", "all"):
+        frames["gfs"] = read_gfs_forecast(args.lat, args.lon, args.days)
 
     if len(frames) > 1:
         frames = align_to_common_hours(frames)
@@ -78,6 +81,11 @@ def read_ground_truth(lat, lon, start_date, end_date):
 
 def read_open_meteo_forecast(lat, lon, days):
     data = fetch_open_meteo_forecast(lat, lon, days)
+    return hourly_to_frame(data)
+
+
+def read_gfs_forecast(lat, lon, days):
+    data = fetch_gfs_forecast(lat, lon, days)
     return hourly_to_frame(data)
 
 
@@ -179,6 +187,20 @@ def fetch_open_meteo_forecast(lat, lon, days):
         "hourly": "temperature_2m,precipitation,wind_speed_10m",
         "forecast_days": days,
         "wind_speed_unit": "ms",
+    }
+    url = "https://api.open-meteo.com/v1/forecast?" + urlencode(params)
+    with urlopen(url, timeout=45) as response:
+        return json.loads(response.read().decode("utf-8"))
+
+
+def fetch_gfs_forecast(lat, lon, days):
+    params = {
+        "latitude": lat,
+        "longitude": lon,
+        "hourly": "temperature_2m,precipitation,wind_speed_10m",
+        "forecast_days": days,
+        "wind_speed_unit": "ms",
+        "models": "gfs_seamless",
     }
     url = "https://api.open-meteo.com/v1/forecast?" + urlencode(params)
     with urlopen(url, timeout=45) as response:
