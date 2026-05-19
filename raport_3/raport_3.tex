@@ -37,7 +37,7 @@
 
 \author{
     Maciek Chotkowski \\ Martsin Lazouski \\ Nadia Ziecina \\
-    Michał Kasznia \\ Kasiński Julian \\ Volodymyr Kamenchuk \\ Usevalad Nikalaichuk 
+    Michał Kasznia \\ Julian Kasiński \\ Volodymyr Kamenchuk \\ Usevalad Nikalaichuk 
 }
 
 \date{\today}
@@ -56,8 +56,10 @@
 
 W poprzednim etapie projektu konieczne było sprowadzenie analizowanego problemu do uproszczonej postaci, umożliwiającej dalsze przetwarzanie danych. Ograniczono się do wybranych parametrów meteorologicznych oraz ich reprezentacji w postaci ciągów liczbowych.
 
+\noindent
 Dopiero w niniejszym etapie wprowadzamy konkretne rozwiązanie obliczeniowe. Oznacza to przejście od opisu problemu do jego realizacji w postaci narzędzia przetwarzającego dane.
 
+\noindent
 Celem ćwiczenia jest analiza syntaktyczna danych, polegająca na ich przetwarzaniu i ocenie przy użyciu formalnych kryteriów obliczeniowych.
 
 %--------------------------------------------------
@@ -70,6 +72,7 @@ Na tym etapie nie tworzymy jeszcze rankingu ani jednego wspólnego pliku
 porównawczego. Celem jest jedynie zebranie danych i rozdzielenie ich według
 źródła oraz typu wielkości fizycznej.
 
+\noindent
 Każde źródło danych otrzymuje własny katalog. W katalogu znajdują się trzy
 pliki CSV:
 \begin{verbatim}
@@ -79,11 +82,13 @@ nazwa_zrodla/
     wiatr.csv
 \end{verbatim}
 
+\noindent
 Taki zapis jest zgodny z poziomem syntaktycznym analizy, ponieważ każdy plik
 zawiera prosty ciąg liczbowy jednej cechy. Temperatura, opady i wiatr nie są
 jeszcze interpretowane semantycznie. Są traktowane jako sygnały liczbowe,
 które można później dopasować po czasie i porównać z innymi źródłami.
 
+\noindent
 Wejściem do modułu są:
 \begin{itemize}
     \item współrzędne geograficzne,
@@ -91,6 +96,7 @@ Wejściem do modułu są:
     \item nazwa źródła danych.
 \end{itemize}
 
+\noindent
 Wyjściem są trzy uporządkowane sygnały:
 \[
 T = \{T_1, T_2, \dots, T_n\}, \quad
@@ -98,6 +104,7 @@ P = \{P_1, P_2, \dots, P_n\}, \quad
 W = \{W_1, W_2, \dots, W_n\}
 \]
 
+\noindent
 Dane są zapisywane osobno dla każdego źródła i przekazywane do dalszych
 etapów analizy.
 \newpage
@@ -109,6 +116,7 @@ pola potrzebne w projekcie: czas, temperaturę, opady i prędkość wiatru.
 Następnie zapisuje każdą wielkość do osobnego pliku w katalogu danego
 źródła.
 
+\noindent
 Wynikiem działania kodu nie jest jeden plik zbiorczy. Wynikiem jest katalog
 \texttt{open\_meteo} oraz katalog \texttt{yr\_no}. W każdym z nich znajdują
 się pliki \texttt{temp.csv}, \texttt{opady.csv} oraz \texttt{wiatr.csv}.
@@ -167,6 +175,7 @@ zapisz_zrodlo("yr_no", df_yr)
 W ramach narzędzia pobierane są prognozowane dane meteorologiczne
 dla lokalizacji Warszawa (52.23N, 21.01E).
 
+\noindent
 Uwzględniono następujące parametry:
 \begin{itemize}
     \item temperatura powietrza (°C),
@@ -174,6 +183,7 @@ Uwzględniono następujące parametry:
     \item prędkość wiatru (m/s).
 \end{itemize}
 
+\noindent
 Dane pobierane są z API w formacie JSON, który ma strukturę
 hierarchiczną (zagnieżdżone pola i listy). Poszczególne wartości
 odczytywane są z odpowiednich pól, np.:
@@ -183,6 +193,7 @@ Open-Meteo: hourly -> temperature_2m
 yr.no: properties -> timeseries -> instant -> details
 \end{verbatim}
 
+\noindent
 Po ekstrakcji dane przekształcane są do postaci tabelarycznej
 oraz wektorowej:
 
@@ -190,6 +201,7 @@ oraz wektorowej:
 T(t), \quad P(t), \quad W(t)
 \]
 
+\noindent
 gdzie:
 \begin{itemize}
     \item $T(t)$ – temperatura,
@@ -197,6 +209,7 @@ gdzie:
     \item $W(t)$ – prędkość wiatru.
 \end{itemize}
 
+\noindent
 Ostatecznie dane nie są jeszcze łączone w jeden plik. Każdy parametr jest
 zapisywany osobno w katalogu źródła:
 \begin{verbatim}
@@ -219,6 +232,7 @@ generowane przez modele sztucznej inteligencji dostępne w API Open-Meteo.
 W projekcie użyto modeli GraphCast oraz AIFS, które traktowane są jako
 dodatkowe źródła danych meteorologicznych.
 
+\noindent
 Podobnie jak w przypadku Open-Meteo i yr.no, dane pobierane są w postaci
 szeregów czasowych dla wybranej lokalizacji. Końcowym wynikiem nie jest
 globalna prognoza atmosferyczna, lecz proste wektory wartości:
@@ -232,6 +246,7 @@ precip = [precip_1, precip_2, \dots, precip_n]
 wind = [wind_1, wind_2, \dots, wind_n]
 \]
 
+\noindent
 Modele AI są udostępniane przez Open-Meteo za pomocą parametru
 \texttt{models}. Dzięki temu można pobierać prognozy różnych modeli przy
 użyciu tego samego endpointu API. W projekcie wykorzystano:
@@ -240,6 +255,7 @@ użyciu tego samego endpointu API. W projekcie wykorzystano:
     \item \texttt{ecmwf\_aifs025\_single} -- model AIFS.
 \end{itemize}
 
+\noindent
 Dane pobierane są bezpośrednio z API w formacie JSON, a następnie
 przekształcane do postaci tabelarycznej przy użyciu biblioteki
 \texttt{pandas}. Każde źródło otrzymuje osobny katalog zawierający trzy
@@ -256,6 +272,7 @@ aifs/
     wiatr.csv
 \end{verbatim}
 
+\noindent
 Wszystkie źródła posiadają identyczną strukturę danych, dzięki czemu
 mogą być później analizowane tym samym kodem MATLAB lub Python.
 \newpage
@@ -270,11 +287,13 @@ parametry meteorologiczne:
     \item prędkość wiatru (\texttt{wind\_speed\_10m}).
 \end{itemize}
 
+\noindent
 Po pobraniu dane są zapisywane do tabeli:
 \begin{verbatim}
 time, temp, opady, wiatr
 \end{verbatim}
 
+\noindent
 Każda kolumna reprezentuje jeden sygnał czasowy wykorzystywany później
 w analizie błędów oraz porównaniu modeli.
 
@@ -358,15 +377,19 @@ for source_name, model_name in MODELS.items():
     print(f"Zapisano dane dla: {source_name}")
 \end{lstlisting}
 \newpage
+
+\noindent
 Po zapisaniu danych każdy model AI posiada identyczny układ plików,
 co pozwala później połączyć wszystkie źródła w jedną strukturę
 analityczną.
 
+\noindent
 Tak przygotowane dane mogą zostać następnie wczytane do środowiska MATLAB
 lub Python i połączone z danymi rzeczywistymi oraz prognozami klasycznymi.
 Ujednolicona struktura plików pozwala wykonywać dalszą analizę przy użyciu
 tych samych procedur obliczeniowych niezależnie od źródła prognozy.
 
+\noindent
 W praktyce oznacza to, że modele AI są traktowane identycznie jak pozostałe
 źródła danych meteorologicznych. Możliwe staje się więc bezpośrednie
 porównywanie temperatury, opadów oraz prędkości wiatru pomiędzy różnymi
@@ -378,6 +401,7 @@ Dodanie kolejnego modelu AI polega wyłącznie na dopisaniu nowego wpisu
 do słownika \texttt{MODELS}. Dzięki temu nie ma potrzeby zmiany dalszego
 kodu odpowiedzialnego za analizę danych.
 
+\noindent
 Przykładowo:
 \begin{verbatim}
 MODELS = {
@@ -387,6 +411,7 @@ MODELS = {
 }
 \end{verbatim}
 
+\noindent
 Wpływ na dalszy etap projektu pozostaje więc niewielki, ponieważ każde
 źródło zapisuje dane w tym samym formacie CSV. Dzięki temu obliczanie
 RMSE, filtrowanie danych oraz tworzenie wykresów działa identycznie dla
@@ -402,8 +427,10 @@ modeli klasycznych i modeli AI.
 
 W drugim etapie projektu opracowano zautomatyzowany system analizy jakości prognoz meteorologicznych generowanych przez różne źródła danych. Implementację wykonano w języku Python z wykorzystaniem bibliotek \texttt{pandas}, \texttt{numpy} oraz \texttt{matplotlib}. Głównym celem tego etapu było stworzenie jednolitego środowiska umożliwiającego jednoczesne porównanie modeli AIFS, GraphCast, Open-Meteo, yr.no oraz klasycznego modelu GFS względem danych referencyjnych (\textit{ground truth}). 
 
+\noindent
 W pierwszej kolejności zaimplementowano procedurę automatycznego wczytywania danych z plików CSV. Każdy model posiadał własny katalog zawierający szeregi czasowe temperatury. Dane referencyjne zostały zdefiniowane jako osobne źródło \texttt{default\_model}, względem którego porównywano wszystkie pozostałe prognozy. Program przed rozpoczęciem analizy weryfikował poprawność struktury danych oraz obecność wymaganych kolumn \texttt{time} i \texttt{temp}. W przypadku braku pliku lub niepoprawnego formatu dane były automatycznie odrzucane z dalszej analizy. 
 
+\noindent
 Kolejnym krokiem była synchronizacja szeregów czasowych. Wszystkie znaczniki czasu zostały skonwertowane do wspólnego formatu typu \texttt{datetime}, a następnie dane sortowano chronologicznie oraz usuwano duplikaty. Po przygotowaniu danych wykonywano operację \texttt{merge}, która łączyła prognozy modeli z danymi referencyjnymi wyłącznie dla wspólnych godzin pomiarowych. Takie podejście gwarantowało, że porównanie odbywało się dla identycznych momentów czasowych.
 
 \subsection{Metody oceny jakości prognoz}
@@ -414,6 +441,7 @@ Ocena jakości prognoz została oparta na dwóch równoległych mechanizmach ewa
 |T_{ref} - T_{model}|
 \]
 
+\noindent
 Na podstawie błędu bezwzględnego zdefiniowano autorski system punktacji rankingowej. Dla każdej godziny prognozy model otrzymywał określoną liczbę punktów zależną od wielkości odchylenia od wartości referencyjnej:
 
 \begin{itemize}
@@ -423,24 +451,30 @@ Na podstawie błędu bezwzględnego zdefiniowano autorski system punktacji ranki
     \item 0 punktów -- błąd większy niż 3.0°C.
 \end{itemize}
 
+\noindent
 Takie podejście umożliwia ocenę nie tylko średniej jakości modelu, ale również jego stabilności oraz zdolności do utrzymywania niewielkich odchyleń przez dłuższy okres czasu. Implementacja systemu punktowego została zrealizowana jako osobna funkcja przypisująca punkty na podstawie wielkości błędu. 
 
+\noindent
 Drugim elementem ewaluacji była klasyczna metryka RMSE (\textit{Root Mean Square Error}), czyli pierwiastek błędu średniokwadratowego:
 
 \[
 RMSE = \sqrt{\frac{1}{n}\sum_{i=1}^{n}(y_i - \hat{y}_i)^2}
 \]
 
+\noindent
 Metryka ta silniej penalizuje duże odchylenia prognozy od wartości rzeczywistych, dzięki czemu pozwala wykrywać modele generujące sporadyczne, lecz bardzo duże błędy. Wartość RMSE obliczano dla całego wspólnego zakresu czasowego pomiędzy modelem a danymi referencyjnymi. 
 
+\noindent
 Na podstawie uzyskanych wyników tworzony był końcowy ranking modeli. System automatycznie sortował źródła według procentowej skuteczności punktowej, a w przypadku zbliżonych rezultatów dodatkowym kryterium była wartość RMSE. Dla każdego modelu prezentowano liczbę zdobytych punktów, maksymalną możliwą liczbę punktów, procent skuteczności, wartość RMSE oraz liczbę wspólnych godzin uwzględnionych w analizie. 
 
 \subsection{Wizualizacja i interpretacja wyników}
 
 Istotnym elementem analizy była również wizualna weryfikacja jakości prognoz. W tym celu opracowano moduł generujący wykres porównawczy przedstawiający przebieg temperatury referencyjnej oraz prognoz wszystkich analizowanych modeli. Dane zostały przedstawione na wspólnym układzie współrzędnych z wykorzystaniem różnych kolorów i stylów linii dla każdego źródła. Krzywa danych referencyjnych została dodatkowo wyróżniona większą grubością linii, co ułatwia ocenę zgodności poszczególnych modeli z rzeczywistym przebiegiem temperatury. 
 
+\noindent
 Analiza wizualna pozwala na identyfikację charakterystycznych zachowań modeli, których nie zawsze można jednoznacznie uchwycić wyłącznie przy pomocy pojedynczych metryk liczbowych. Dzięki wykresom możliwe jest określenie, czy dany model poprawnie odwzorowuje dynamikę zmian temperatury, lokalne maksima i minima oraz amplitudę wahań dobowych. Pozwala to również zauważyć zjawiska takie jak wygładzanie sygnału, przesunięcia fazowe, generowanie fałszywych pików czy systematyczne przeszacowanie lub niedoszacowanie temperatury.
 
+\noindent
 Wygenerowane wykresy zapisywano automatycznie do pliku \texttt{wykres\_temperatura.png}, co umożliwia ich bezpośrednie wykorzystanie w dalszej części raportu oraz podczas analizy porównawczej poszczególnych modeli prognostycznych. 
 
 \subsection{Analiza z wykorzystaniem danych rzeczywistych}
@@ -448,9 +482,11 @@ Wygenerowane wykresy zapisywano automatycznie do pliku \texttt{wykres\_temperatu
 Dane prognozowane zostały zestawione z rzeczywistymi pomiarami
 meteorologicznymi zapisanymi w pliku CSV.
 
+\noindent
 Po dopasowaniu danych względem czasu przeprowadzono analizę
 różnic pomiędzy prognozą a rzeczywistością.
 
+\noindent
 Na tej podstawie obliczono błąd RMSE, który stanowi miarę
 dokładności prognozy.
 
@@ -469,12 +505,14 @@ zrodlo/
     wiatr.csv
 \end{verbatim}
 
+\noindent
 Jako punkt odniesienia przyjęto katalog \texttt{default\_model}. W naszym
 programie pełni on rolę danych referencyjnych, czyli tzw. \textit{ground truth}.
 Pozostałe źródła, czyli \texttt{open\_meteo}, \texttt{yr\_no},
 \texttt{gfs}, \texttt{aifs} oraz \texttt{graphcast}, są porównywane z tym
 samym punktem odniesienia.
 
+\noindent
 Przed obliczeniem błędu dane są łączone po kolumnie \texttt{time}. Oznacza to,
 że porównywane są tylko wartości odnoszące się do tej samej godziny. Jest to
 kluczowy element analizy syntaktycznej: program nie interpretuje jeszcze
@@ -488,6 +526,7 @@ wyrównane do zakresu:
 \]
 co daje 50 wspólnych godzin.
 
+\noindent
 Do oceny wykorzystano dwie miary. Pierwszą jest błąd RMSE:
 \[
 RMSE = \sqrt{\frac{1}{n}\sum_{i=1}^{n}(x_i - y_i)^2}
@@ -509,6 +548,7 @@ natomiast dla opadów zastosowano ostrzejsze progi:
 ponieważ opady są mierzone w milimetrach i zwykle mają mniejsze wartości
 liczbowe niż temperatura lub prędkość wiatru.
 
+\noindent
 Poniższy fragment kodu pokazuje najważniejszą część porównywania. Nie jest to
 cały program, ponieważ najistotniejsze są trzy operacje: wczytanie danych,
 dopasowanie ich po czasie oraz obliczenie błędu i punktów.
@@ -544,6 +584,7 @@ def analyze_source(ground_truth, source_config):
     return points, max_points, rmse, len(merged)
 \end{lstlisting}
 
+\noindent
 Funkcja \texttt{merge(..., on="time")} odpowiada za dopasowanie danych godzina
 do godziny. Jeżeli jakieś źródło nie ma danej godziny, ta godzina nie jest
 używana w rankingu. W aktualnej wersji skryptu dane zostały jednak wcześniej
@@ -552,27 +593,28 @@ porównywalnych obserwacji.
 
 \subsubsection{Wykresy porównawcze}
 
-\begin{figure}[h]
+\begin{figure}[!h]
 \centering
 \includegraphics[width=\textwidth]{wykres_temperatura.png}
 \caption{Porównanie temperatury dla wszystkich analizowanych modeli.}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[!h]
 \centering
 \includegraphics[width=\textwidth]{wykres_wiatr.png}
 \caption{Porównanie prędkości wiatru dla wszystkich analizowanych modeli.}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[!h]
 \centering
 \includegraphics[width=\textwidth]{wykres_opady.png}
 \caption{Porównanie opadów dla wszystkich analizowanych modeli.}
 \end{figure}
 
+\clearpage
 \subsubsection{Tabele rankingowe}
 
-\begin{table}[h]
+\begin{table}[!h]
 \centering
 \begin{tabular}{lrrrr}
 \toprule
@@ -588,7 +630,7 @@ GraphCast & 7/150 & 4.7 & 7.25 & 50 \\
 \caption{Ranking modeli dla temperatury.}
 \end{table}
 
-\begin{table}[h]
+\begin{table}[!h]
 \centering
 \begin{tabular}{lrrrr}
 \toprule
@@ -604,7 +646,7 @@ GraphCast & 55/150 & 36.7 & 2.47 & 50 \\
 \caption{Ranking modeli dla prędkości wiatru.}
 \end{table}
 
-\begin{table}[h]
+\begin{table}[!h]
 \centering
 \begin{tabular}{lrrrr}
 \toprule
@@ -620,7 +662,7 @@ GraphCast & 132/150 & 88.0 & 0.24 & 50 \\
 \caption{Ranking modeli dla opadów.}
 \end{table}
 
-\begin{table}[h]
+\begin{table}[h!]
 \centering
 \small
 \begin{tabular}{lrrp{6cm}}
@@ -637,6 +679,7 @@ GraphCast & 194/450 & 43.1 & najsłabszy wynik łączny \\
 \caption{Ranking łączny dla temperatury, wiatru i opadów.}
 \end{table}
 
+\noindent
 Wynik Open-Meteo jest równy 100\%, ponieważ dane referencyjne
 \texttt{default\_model} zostały utworzone na podstawie tego samego źródła.
 Ten wynik należy traktować jako kontrolę poprawności działania programu:
@@ -652,17 +695,20 @@ zgodności prognoz. Wszystkie modele zostały porównane dla tych samych godzin,
 ale ich wyniki punktowe i RMSE różnią się w zależności od analizowanego
 parametru.
 
+\noindent
 Najlepszy wynik uzyskało Open-Meteo, ponieważ katalog \texttt{default\_model}
 został utworzony na podstawie tego samego źródła. Ten przypadek pełni więc
 funkcję kontroli poprawności obliczeń. Jeżeli dane porównywane są identyczne
 z danymi referencyjnymi, program powinien zwrócić maksymalną liczbę punktów
 oraz RMSE równe zero.
 
+\noindent
 Wśród pozostałych modeli relatywnie dobrze wypadł GFS, szczególnie dla wiatru
 i opadów. AIFS oraz yr.no uzyskały podobny wynik łączny, ale różniły się
 rozkładem błędów między parametrami. Najsłabszy wynik łączny uzyskał
 GraphCast, głównie przez duży błąd temperatury i wiatru.
 
+\noindent
 Opady okazały się parametrem, dla którego większość modeli uzyskała wysoką
 punktację. Wynika to z niewielkich wartości opadów w analizowanym przedziale
 czasowym. W takiej sytuacji nawet modele różniące się między sobą mogą
@@ -676,10 +722,12 @@ prognozy przy użyciu jednej procedury. Najważniejsze jest wcześniejsze
 wyrównanie danych po czasie, ponieważ bez wspólnych godzin ranking nie miałby
 sensu obliczeniowego.
 
+\noindent
 System punktowy jest prosty, ale czytelny. Pozwala szybko zbudować ranking,
 natomiast RMSE daje dodatkową informację o skali błędu. Połączenie obu miar
 sprawia, że wyniki można analizować zarówno jakościowo, jak i liczbowo.
 
+\noindent
 Projekt pokazuje, że dane z różnych serwisów i modeli AI można sprowadzić do
 wspólnej reprezentacji syntaktycznej. Po takim ujednoliceniu dalsze
 porównywanie nie zależy już od źródła danych, lecz od samych wartości
@@ -692,8 +740,10 @@ zapisanych w szeregach czasowych.
 
 Po przeprowadzeniu analizy porównawczej gotowych modeli prognostycznych kolejnym etapem projektu było opracowanie własnego modelu predykcyjnego wykorzystującego metody uczenia maszynowego. Celem tego etapu było sprawdzenie, czy model trenowany bezpośrednio na danych meteorologicznych jest w stanie poprawnie odwzorowywać krótkoterminowe zmiany parametrów atmosferycznych oraz konkurować z gotowymi rozwiązaniami prognostycznymi.
 
+\noindent
 Do realizacji tego zadania wykorzystano algorytm Random Forest Regressor dostępny w bibliotece \texttt{scikit-learn}. Random Forest należy do grupy metod zespołowych (\textit{ensemble learning}) i stanowi rozszerzenie klasycznych drzew decyzyjnych. Zamiast pojedynczego drzewa budowany jest cały zbiór niezależnych modeli, których wyniki są następnie uśredniane. Pozwala to znacząco ograniczyć problem przeuczenia (\textit{overfitting}) charakterystyczny dla pojedynczych drzew decyzyjnych.
 
+\noindent
 Algorytm Random Forest został wybrany ze względu na kilka istotnych właściwości. Przede wszystkim dobrze radzi sobie z modelowaniem zależności nieliniowych, które bardzo często występują w meteorologii. Parametry atmosferyczne, takie jak temperatura, wiatr czy opady, zależą jednocześnie od wielu czynników i wykazują skomplikowane relacje czasowe. Dodatkowo model ten nie wymaga silnych założeń matematycznych dotyczących rozkładu danych i dobrze radzi sobie nawet przy częściowo zaszumionych zbiorach.
 
 \subsection{Przygotowanie danych wejściowych}
@@ -708,8 +758,10 @@ Proces budowy modelu rozpoczęto od przygotowania zbioru danych treningowych. Da
     \item ujednolicenie nazw kolumn.
 \end{itemize}
 
+\noindent
 Po oczyszczeniu danych przystąpiono do budowy zbioru cech wejściowych (\textit{features}). Model Random Forest nie analizuje danych w postaci surowego szeregu czasowego, dlatego konieczne było stworzenie dodatkowych zmiennych opisujących aktualny stan atmosfery oraz jego historię.
 
+\noindent
 W modelu wykorzystano następujące grupy cech:
 
 \begin{itemize}
@@ -721,20 +773,26 @@ W modelu wykorzystano następujące grupy cech:
     \item opóźnione wartości parametrów meteorologicznych (\textit{lag features}).
 \end{itemize}
 
+\noindent
 Szczególnie istotne były cechy czasowe. Temperatura i inne parametry meteorologiczne wykazują wyraźną cykliczność dobową, dlatego dodanie informacji o godzinie pomiaru umożliwia modelowi identyfikację regularnych wzorców zmian. Z kolei dzień tygodnia pozwala częściowo uwzględnić efekty sezonowe oraz różnice pomiędzy poszczególnymi dniami.
 
+\noindent
 Duże znaczenie miały również opóźnione wartości parametrów meteorologicznych. W praktyce oznacza to wykorzystanie danych z poprzednich godzin jako dodatkowych cech wejściowych. Jeżeli temperatura w ostatnich kilku godzinach rosła, model może wykorzystać tę informację do przewidywania dalszego trendu. Takie podejście pozwala częściowo odwzorować pamięć szeregu czasowego.
 
+\noindent
 Po przygotowaniu wszystkich cech dane podzielono na zbiór treningowy oraz testowy. Zbiór treningowy wykorzystywano do uczenia modelu, natomiast zbiór testowy służył do niezależnej oceny jakości predykcji. Rozdzielenie danych jest bardzo ważne, ponieważ pozwala sprawdzić, czy model potrafi poprawnie generalizować wiedzę na nowe, wcześniej niewidziane dane.
 
 \subsection{Proces trenowania modelu}
 
 Proces trenowania polegał na budowie wielu niezależnych drzew regresyjnych. Każde drzewo było trenowane na losowo wybranym podzbiorze danych treningowych oraz na losowym podzbiorze cech wejściowych. Mechanizm ten nazywany jest \textit{baggingiem} (\textit{Bootstrap Aggregating}) i stanowi podstawę działania Random Forest.
 
+\noindent
 Każde drzewo decyzyjne tworzy własny zestaw reguł podziału danych. Podczas budowy drzewa algorytm wybiera takie cechy i wartości progowe, które najlepiej redukują błąd predykcji. Przykładowo model może nauczyć się reguły wskazującej, że wysoka temperatura przy jednoczesnym niskim zachmurzeniu zwiększa prawdopodobieństwo dalszego wzrostu temperatury w kolejnych godzinach.
 
+\noindent
 Pojedyncze drzewa są stosunkowo niestabilne i podatne na przeuczenie, jednak połączenie dużej liczby drzew znacząco poprawia jakość predykcji. Wynik końcowy modelu regresyjnego wyznaczany jest jako średnia prognoz generowanych przez wszystkie drzewa należące do lasu.
 
+\noindent
 Podczas eksperymentów analizowano wpływ parametrów modelu na jakość wyników. Szczególną uwagę zwrócono na:
 
 \begin{itemize}
@@ -744,14 +802,17 @@ Podczas eksperymentów analizowano wpływ parametrów modelu na jakość wynikó
     \item poziom losowości procesu uczenia.
 \end{itemize}
 
+\noindent
 Zwiększenie liczby drzew poprawiało stabilność predykcji oraz zmniejszało wariancję modelu, jednak jednocześnie wydłużało czas trenowania. Zbyt głębokie drzewa prowadziły natomiast do nadmiernego dopasowania modelu do danych treningowych.
 
 \subsection{Ocena jakości predykcji}
 
 Po zakończeniu trenowania model został poddany ewaluacji na zbiorze testowym. Jako podstawową miarę jakości wykorzystano wskaźnik RMSE (\textit{Root Mean Square Error}), który określa średnią skalę błędu prognozy. Metryka ta silniej penalizuje duże błędy, dzięki czemu dobrze nadaje się do oceny jakości modeli meteorologicznych.
 
+\noindent
 Oprócz analizy numerycznej przeprowadzono również wizualną ocenę jakości predykcji. W tym celu wygenerowano wykresy przedstawiające przebieg rzeczywistych wartości parametrów meteorologicznych oraz wartości przewidywanych przez model Random Forest.
 
+\noindent
 Analiza wykresów pozwoliła ocenić, czy model poprawnie odwzorowuje:
 
 \begin{itemize}
@@ -761,8 +822,10 @@ Analiza wykresów pozwoliła ocenić, czy model poprawnie odwzorowuje:
     \item krótkookresowe fluktuacje parametrów atmosferycznych.
 \end{itemize}
 
+\noindent
 Uzyskane wyniki wskazują, że model dobrze radzi sobie z odwzorowaniem ogólnego trendu zmian temperatury oraz częściowo poprawnie modeluje zmiany prędkości wiatru. Największe trudności pojawiały się podczas prognozowania opadów, które charakteryzują się wysoką nieregularnością oraz dużą zmiennością czasową.
 
+\noindent
 Pomimo tych ograniczeń Random Forest wykazał stosunkowo dobrą stabilność predykcji i niewielkie odchylenia od danych rzeczywistych. Wyniki te potwierdzają, że algorytmy uczenia maszynowego mogą stanowić skuteczne narzędzie wspomagające krótkoterminowe prognozowanie meteorologiczne.
 
 \newpage
@@ -771,15 +834,15 @@ Pomimo tych ograniczeń Random Forest wykazał stosunkowo dobrą stabilność pr
 
 \begin{itemize}
 
-    \item \textbf{Maciek Chotkowski} -- ?
+    \item \textbf{Maciek Chotkowski} -- wsparcie w opracowaniu wyników oraz dopracowanie raportu
 
     \item \textbf{Martsin Lazouski} -- opracowanie procedur synchronizacji danych czasowych oraz implementacja obliczeń RMSE i systemu punktowej oceny modeli, modeli pozyskiwanie informacji (implemenctacja w Python) , przygotowanie struktury raportu.
 
-    \item \textbf{Nadia Ziecina} -- ?
+    \item \textbf{Nadia Ziecina} -- wsparcie w opracowaniu wyników oraz dopracowanie raportu
 
     \item \textbf{Michał Kasznia} -- przygotowanie dokumentacji projektu
 
-    \item \textbf{Julian Kasiński} -- ?
+    \item \textbf{Julian Kasiński} -- ujednolicenie wyglądu raportu w tym szaty graficznej, rozwijanie koncepcji projektu
 
     \item \textbf{Volodymyr Kamenchuk} -- testowanie poprawności działania systemu, analiza wyników eksperymentów oraz walidacja danych wejściowych,implementacja analizy modeli AI (GraphCast, AIFS) oraz integracja danych pochodzących z różnych źródeł prognostycznych.
 
