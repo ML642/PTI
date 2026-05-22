@@ -20,6 +20,7 @@ GROUND_TRUTH = {
     "linewidth": 3,
 }
 
+# ДОДАНО GFS У ЦЕЙ СПИСОК
 MODEL_SOURCES = [
     {
         "name": "AIFS",
@@ -56,6 +57,20 @@ MODEL_SOURCES = [
         "color": "orange",
         "linestyle": "-",
     },
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+    {
+        "name": "AIFS Spatial (Random Forest)",
+        "key": "random_forest_spatial",
+        "path": BASE_DIR / "random_forest_spatial" / "temp.csv",
+        "color": "magenta", # Яскравий колір, щоб виділити твою роботу
+        "linestyle": "-",
+        "linewidth": 3,
+    },
+=======
+>>>>>>> 01c3c019d326d2f025e1b93d51ffd6c48f8b06eb
+>>>>>>> 301eb397d7ed97a2c6a5ae04bc8fb680020c3c67
 ]
 
 OUTPUT_FILE = BASE_DIR / "wykres_temperatura.png"

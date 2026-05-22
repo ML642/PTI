@@ -20,6 +20,13 @@ def main():
     parser.add_argument("--end-date")
     parser.add_argument(
         "--source",
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+        # ДОДАНО: 'gfs' у список дозволених джерел
+=======
+>>>>>>> 01c3c019d326d2f025e1b93d51ffd6c48f8b06eb
+>>>>>>> 301eb397d7ed97a2c6a5ae04bc8fb680020c3c67
         choices=["ground_truth", "open_meteo", "yr_no", "gfs", "all"],
         default="all",
     )
@@ -48,6 +55,13 @@ def main():
     if args.source in ("yr_no", "all"):
         frames["yr_no"] = read_yr_no(args.lat, args.lon)
 
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+    # ДОДАНО: Логіка для збереження GFS у словник frames
+=======
+>>>>>>> 01c3c019d326d2f025e1b93d51ffd6c48f8b06eb
+>>>>>>> 301eb397d7ed97a2c6a5ae04bc8fb680020c3c67
     if args.source in ("gfs", "all"):
         frames["gfs"] = read_gfs_forecast(args.lat, args.lon, args.days)
 
@@ -84,6 +98,13 @@ def read_open_meteo_forecast(lat, lon, days):
     return hourly_to_frame(data)
 
 
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+# ДОДАНО: Функція для читання GFS
+=======
+>>>>>>> 01c3c019d326d2f025e1b93d51ffd6c48f8b06eb
+>>>>>>> 301eb397d7ed97a2c6a5ae04bc8fb680020c3c67
 def read_gfs_forecast(lat, lon, days):
     data = fetch_gfs_forecast(lat, lon, days)
     return hourly_to_frame(data)
@@ -193,6 +214,13 @@ def fetch_open_meteo_forecast(lat, lon, days):
         return json.loads(response.read().decode("utf-8"))
 
 
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+# ДОДАНО: Функція для завантаження GFS (gfs_seamless)
+=======
+>>>>>>> 01c3c019d326d2f025e1b93d51ffd6c48f8b06eb
+>>>>>>> 301eb397d7ed97a2c6a5ae04bc8fb680020c3c67
 def fetch_gfs_forecast(lat, lon, days):
     params = {
         "latitude": lat,

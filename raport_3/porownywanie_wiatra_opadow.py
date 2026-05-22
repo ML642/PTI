@@ -33,6 +33,13 @@ METRICS = [
     },
 ]
 
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+# ДОДАНО GFS У ЦЕЙ СПИСОК
+=======
+>>>>>>> 01c3c019d326d2f025e1b93d51ffd6c48f8b06eb
+>>>>>>> 301eb397d7ed97a2c6a5ae04bc8fb680020c3c67
 MODEL_SOURCES = [
     {
         "name": "AIFS",
