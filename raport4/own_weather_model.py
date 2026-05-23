@@ -1,14 +1,12 @@
 from __future__ import annotations
 
 import math
-from pathlib import Path
 
 import pandas as pd
 
 from semantic_weather_common import (
     BASE_DIR,
     GROUND_TRUTH_DIR,
-    SOURCES,
     add_semantic_columns,
     critical_mismatch_summary,
     read_metric,
@@ -21,204 +19,204 @@ WEIGHTS_FILE = BASE_DIR / "own_model_weights.csv"
 BACKTEST_FILE = BASE_DIR / "own_model_backtest.csv"
 SEMANTIC_FILE = BASE_DIR / "own_model_semantic.csv"
 
-MODEL_SOURCES = [source for source in SOURCES if source.key != "own_model"]
 METRICS = {
     "temp": {"file": "temp.csv", "min_value": None},
     "opady": {"file": "opady.csv", "min_value": 0.0},
     "wiatr": {"file": "wiatr.csv", "min_value": 0.0},
 }
 
-
-def cap_and_normalize(weights: dict[str, float], cap: float = 0.45) -> dict[str, float]:
-    capped = dict(weights)
-    for _ in range(10):
-        total = sum(capped.values())
-        if total <= 0:
-            equal = 1 / len(capped)
-            return {key: equal for key in capped}
-
-        capped = {key: value / total for key, value in capped.items()}
-        above = {key: value for key, value in capped.items() if value > cap}
-        if not above:
-            return capped
-
-        fixed_mass = len(above) * cap
-        free_keys = [key for key in capped if key not in above]
-        free_mass = sum(capped[key] for key in free_keys)
-        for key in above:
-            capped[key] = cap
-        if free_keys and free_mass > 0:
-            scale = (1 - fixed_mass) / free_mass
-            for key in free_keys:
-                capped[key] *= scale
-
-    total = sum(capped.values())
-    return {key: value / total for key, value in capped.items()}
-
-
-def critical_weighted_error(metric: str, actual: pd.Series, predicted: pd.Series) -> float:
-    error = (actual - predicted).abs()
-
-    if metric == "temp":
-        penalty = 4.0 * ((actual <= 0.0) != (predicted <= 0.0))
-        penalty += 2.0 * ((actual <= -5.0) != (predicted <= -5.0))
-        penalty += 2.0 * ((actual >= 30.0) != (predicted >= 30.0))
-        return float((error + penalty).mean())
-
-    if metric == "opady":
-        penalty = 2.0 * ((actual > 0.1) != (predicted > 0.1))
-        penalty += 4.0 * ((actual > 0.5) != (predicted > 0.5))
-        penalty += 6.0 * ((actual > 2.0) != (predicted > 2.0))
-        return float((error + penalty).mean())
-
-    if metric == "wiatr":
-        penalty = 2.0 * ((actual >= 5.0) != (predicted >= 5.0))
-        penalty += 4.0 * ((actual >= 8.0) != (predicted >= 8.0))
-        return float((error + penalty).mean())
-
-    raise ValueError(f"Unknown metric: {metric}")
+COMPONENT_WEIGHT_CANDIDATES = [
+    {"last": 1.00, "mean3": 0.00, "mean6": 0.00, "season24": 0.00, "trend": 0.00},
+    {"last": 0.60, "mean3": 0.30, "mean6": 0.10, "season24": 0.00, "trend": 0.00},
+    {"last": 0.45, "mean3": 0.25, "mean6": 0.10, "season24": 0.20, "trend": 0.00},
+    {"last": 0.40, "mean3": 0.25, "mean6": 0.15, "season24": 0.15, "trend": 0.05},
+    {"last": 0.55, "mean3": 0.15, "mean6": 0.00, "season24": 0.00, "trend": 0.30},
+    {"last": 0.35, "mean3": 0.35, "mean6": 0.20, "season24": 0.10, "trend": 0.00},
+]
 
 
 def rmse(actual: pd.Series, predicted: pd.Series) -> float:
     return math.sqrt(float(((actual - predicted) ** 2).mean()))
 
 
-def build_metric_frame(metric: str) -> pd.DataFrame:
-    ground_truth = read_metric(
+def critical_negative_points(metric: str, actual: pd.Series, predicted: pd.Series) -> pd.Series:
+    points = pd.Series(0.0, index=actual.index)
+
+    if metric == "temp":
+        points -= 8.0 * ((actual <= 0.0) != (predicted <= 0.0))
+        points -= 4.0 * ((actual <= -5.0) != (predicted <= -5.0))
+        points -= 4.0 * ((actual >= 30.0) != (predicted >= 30.0))
+        return points
+
+    if metric == "opady":
+        points -= 3.0 * ((actual > 0.1) != (predicted > 0.1))
+        points -= 8.0 * ((actual > 0.5) != (predicted > 0.5))
+        points -= 12.0 * ((actual > 2.0) != (predicted > 2.0))
+        return points
+
+    if metric == "wiatr":
+        points -= 5.0 * ((actual >= 5.0) != (predicted >= 5.0))
+        points -= 10.0 * ((actual >= 8.0) != (predicted >= 8.0))
+        return points
+
+    raise ValueError(f"Unknown metric: {metric}")
+
+
+def critical_weighted_error(metric: str, actual: pd.Series, predicted: pd.Series) -> float:
+    error = (actual - predicted).abs()
+    negative_points = critical_negative_points(metric, actual, predicted)
+    return float((error - negative_points).mean())
+
+
+def read_history(metric: str) -> pd.DataFrame:
+    return read_metric(
         GROUND_TRUTH_DIR / METRICS[metric]["file"],
         metric,
         "ground_truth",
-    )
-    frame = ground_truth
-
-    for source in MODEL_SOURCES:
-        try:
-            source_metric = read_metric(source.directory / METRICS[metric]["file"], metric, source.key)
-        except Exception as error:
-            print(f"Pomijam {source.name} dla {metric}: {error}")
-            continue
-        frame = frame.merge(source_metric, on="time", how="inner")
-
-    if frame.empty:
-        raise ValueError(f"Brak wspolnych danych dla metryki {metric}")
-
-    return frame.sort_values("time").reset_index(drop=True)
+    ).reset_index(drop=True)
 
 
-def learn_weights(frame: pd.DataFrame, metric: str, train_size: int) -> dict[str, float]:
-    train = frame.iloc[:train_size]
-    actual = train[f"{metric}_ground_truth"]
-    raw_weights = {}
+def historical_components(values: pd.Series, index: int) -> dict[str, float]:
+    history = values.iloc[:index].dropna()
+    if history.empty:
+        raise ValueError("Historical model needs at least one previous observation.")
 
-    for source in MODEL_SOURCES:
-        column = f"{metric}_{source.key}"
-        if column not in train.columns:
-            continue
-        error = critical_weighted_error(metric, actual, train[column])
-        raw_weights[source.key] = 1.0 / ((error + 0.25) ** 2)
+    last = float(history.iloc[-1])
+    previous = float(history.iloc[-2]) if len(history) >= 2 else last
+    return {
+        "last": last,
+        "mean3": float(history.tail(3).mean()),
+        "mean6": float(history.tail(6).mean()),
+        "season24": float(values.iloc[index - 24]) if index >= 24 else last,
+        "trend": last + (last - previous),
+    }
 
-    return cap_and_normalize(raw_weights)
+
+def predict_from_components(components: dict[str, float], weights: dict[str, float]) -> float:
+    return sum(components[name] * weight for name, weight in weights.items())
 
 
-def apply_critical_corrections(row: pd.Series, predictions: dict[str, float], weights: dict[str, dict[str, float]]) -> dict[str, float]:
-    corrected = dict(predictions)
+def predict_series(frame: pd.DataFrame, metric: str, weights: dict[str, float]) -> pd.DataFrame:
+    value_col = f"{metric}_ground_truth"
+    predictions = []
+
+    for index in range(1, len(frame)):
+        components = historical_components(frame[value_col], index)
+        prediction = predict_from_components(components, weights)
+
+        min_value = METRICS[metric]["min_value"]
+        if min_value is not None:
+            prediction = max(min_value, prediction)
+
+        predictions.append(
+            {
+                "time": frame.loc[index, "time"],
+                metric: prediction,
+            }
+        )
+
+    return pd.DataFrame(predictions)
+
+
+def tune_weights(frame: pd.DataFrame, metric: str, train_size: int) -> dict[str, float]:
+    value_col = f"{metric}_ground_truth"
+    best_weights = COMPONENT_WEIGHT_CANDIDATES[0]
+    best_error = float("inf")
+
+    for candidate in COMPONENT_WEIGHT_CANDIDATES:
+        rows = []
+        for index in range(1, train_size):
+            components = historical_components(frame[value_col], index)
+            prediction = predict_from_components(components, candidate)
+            min_value = METRICS[metric]["min_value"]
+            if min_value is not None:
+                prediction = max(min_value, prediction)
+            rows.append({"actual": frame.loc[index, value_col], "predicted": prediction})
+
+        result = pd.DataFrame(rows)
+        error = critical_weighted_error(metric, result["actual"], result["predicted"])
+        if error < best_error:
+            best_error = error
+            best_weights = candidate
+
+    return best_weights
+
+
+def apply_history_critical_corrections(
+    history: pd.DataFrame,
+    prediction: dict[str, float],
+) -> dict[str, float]:
+    corrected = dict(prediction)
+    recent_temp = history["temp_ground_truth"].tail(3)
+    recent_rain = history["opady_ground_truth"].tail(3)
+    recent_wind = history["wiatr_ground_truth"].tail(3)
 
     if abs(corrected["temp"]) <= 0.8 and corrected["opady"] > 0.1:
-        freezing_weight = sum(
-            weights["temp"].get(source.key, 0.0)
-            for source in MODEL_SOURCES
-            if f"temp_{source.key}" in row and row[f"temp_{source.key}"] <= 0.0
-        )
-        if freezing_weight >= 0.40:
+        freezing_share = float((recent_temp <= 0.0).mean()) if not recent_temp.empty else 0.0
+        if freezing_share >= 0.5:
             corrected["temp"] = min(corrected["temp"], -0.1)
         else:
             corrected["temp"] = max(corrected["temp"], 0.1)
 
-    rain_risk_weight = sum(
-        weights["opady"].get(source.key, 0.0)
-        for source in MODEL_SOURCES
-        if f"opady_{source.key}" in row and row[f"opady_{source.key}"] > 0.5
-    )
-    if 0.35 <= corrected["opady"] <= 0.55 and rain_risk_weight >= 0.40:
+    if 0.35 <= corrected["opady"] <= 0.55 and recent_rain.mean() > 0.5:
         corrected["opady"] = 0.51
 
-    wind_risk_weight = sum(
-        weights["wiatr"].get(source.key, 0.0)
-        for source in MODEL_SOURCES
-        if f"wiatr_{source.key}" in row and row[f"wiatr_{source.key}"] >= 8.0
-    )
-    if 7.4 <= corrected["wiatr"] < 8.0 and wind_risk_weight >= 0.40:
+    if 7.4 <= corrected["wiatr"] < 8.0 and recent_wind.max() >= 8.0:
         corrected["wiatr"] = 8.0
 
     return corrected
 
 
-def predict_metric(frame: pd.DataFrame, metric: str, weights: dict[str, float]) -> pd.Series:
-    prediction = pd.Series(0.0, index=frame.index)
-    used_weight = 0.0
-    for source_key, weight in weights.items():
-        column = f"{metric}_{source_key}"
-        if column in frame.columns:
-            prediction += frame[column] * weight
-            used_weight += weight
-
-    if used_weight == 0:
-        raise ValueError(f"Nie ma wag dla {metric}")
-
-    prediction = prediction / used_weight
-    min_value = METRICS[metric]["min_value"]
-    if min_value is not None:
-        prediction = prediction.clip(lower=min_value)
-    return prediction
-
-
-def main() -> None:
-    OUTPUT_DIR.mkdir(exist_ok=True)
-
-    metric_frames = {metric: build_metric_frame(metric) for metric in METRICS}
-    train_size = max(8, int(len(metric_frames["temp"]) * 0.7))
-    weights = {
-        metric: learn_weights(frame, metric, train_size)
+def build_own_forecast(metric_frames: dict[str, pd.DataFrame], weights: dict[str, dict[str, float]]) -> pd.DataFrame:
+    predictions = {
+        metric: predict_series(frame, metric, weights[metric])
         for metric, frame in metric_frames.items()
     }
 
-    base = metric_frames["temp"][["time"]].copy()
-    for metric, frame in metric_frames.items():
-        prediction = predict_metric(frame, metric, weights[metric])
-        base = base.merge(
-            pd.DataFrame({"time": frame["time"], metric: prediction}),
-            on="time",
-            how="inner",
-        )
+    base = predictions["temp"]
+    for metric in ["opady", "wiatr"]:
+        base = base.merge(predictions[metric], on="time", how="inner")
 
-    wide = base.copy()
-    for metric, frame in metric_frames.items():
-        source_columns = ["time"] + [
-            f"{metric}_{source.key}"
-            for source in MODEL_SOURCES
-            if f"{metric}_{source.key}" in frame.columns
-        ]
-        wide = wide.merge(frame[source_columns], on="time", how="inner")
+    history = read_source(GROUND_TRUTH_DIR, "ground_truth").reset_index(drop=True)
+    base = base.merge(history, on="time", how="inner")
 
     corrected_rows = []
-    for _, row in wide.iterrows():
-        corrected = apply_critical_corrections(
-            row,
+    for _, row in base.iterrows():
+        history_before_row = history[history["time"] < row["time"]]
+        corrected = apply_history_critical_corrections(
+            history_before_row,
             {"temp": row["temp"], "opady": row["opady"], "wiatr": row["wiatr"]},
-            weights,
         )
         corrected_rows.append(corrected)
+
     corrected_df = pd.DataFrame(corrected_rows)
     base[["temp", "opady", "wiatr"]] = corrected_df[["temp", "opady", "wiatr"]]
+    return base[["time", "temp", "opady", "wiatr"]]
 
-    base[["time", "temp"]].to_csv(OUTPUT_DIR / "temp.csv", index=False)
-    base[["time", "opady"]].to_csv(OUTPUT_DIR / "opady.csv", index=False)
-    base[["time", "wiatr"]].to_csv(OUTPUT_DIR / "wiatr.csv", index=False)
+
+def save_outputs(forecast: pd.DataFrame) -> None:
+    OUTPUT_DIR.mkdir(exist_ok=True)
+    forecast[["time", "temp"]].to_csv(OUTPUT_DIR / "temp.csv", index=False)
+    forecast[["time", "opady"]].to_csv(OUTPUT_DIR / "opady.csv", index=False)
+    forecast[["time", "wiatr"]].to_csv(OUTPUT_DIR / "wiatr.csv", index=False)
+
+
+def main() -> None:
+    metric_frames = {metric: read_history(metric) for metric in METRICS}
+    train_size = max(8, int(len(metric_frames["temp"]) * 0.7))
+    test_start_time = metric_frames["temp"].loc[train_size, "time"]
+
+    weights = {
+        metric: tune_weights(frame, metric, train_size)
+        for metric, frame in metric_frames.items()
+    }
+    forecast = build_own_forecast(metric_frames, weights)
+    save_outputs(forecast)
 
     weight_rows = [
-        {"metric": metric, "source": source_key, "weight": weight}
+        {"metric": metric, "component": component, "weight": weight}
         for metric, metric_weights in weights.items()
-        for source_key, weight in metric_weights.items()
+        for component, weight in metric_weights.items()
     ]
     pd.DataFrame(weight_rows).to_csv(WEIGHTS_FILE, index=False)
 
@@ -228,7 +226,7 @@ def main() -> None:
     joined = add_semantic_columns(joined, "ground_truth")
     joined = add_semantic_columns(joined, "own_model")
 
-    test = joined.iloc[train_size:]
+    test = joined[joined["time"] >= test_start_time]
     backtest_rows = []
     for metric in METRICS:
         actual = test[f"{metric}_ground_truth"]
@@ -240,6 +238,9 @@ def main() -> None:
                 "test_hours": len(test),
                 "mae": float((actual - predicted).abs().mean()),
                 "rmse": rmse(actual, predicted),
+                "critical_negative_points": float(
+                    critical_negative_points(metric, actual, predicted).sum()
+                ),
                 "critical_weighted_error": critical_weighted_error(metric, actual, predicted),
             }
         )
@@ -253,15 +254,17 @@ def main() -> None:
             "test_hours": len(test),
             "mae": None,
             "rmse": None,
+            "critical_negative_points": None,
             "critical_weighted_error": None,
             "decision_accuracy_percent": decision_accuracy * 100,
             **critical,
         }
     )
+
     pd.DataFrame(backtest_rows).to_csv(BACKTEST_FILE, index=False)
     joined.to_csv(SEMANTIC_FILE, index=False)
 
-    print("Zapisano prognoze naszego modelu:")
+    print("Zapisano historyczna prognoze naszego modelu:")
     print(f"  {OUTPUT_DIR / 'temp.csv'}")
     print(f"  {OUTPUT_DIR / 'opady.csv'}")
     print(f"  {OUTPUT_DIR / 'wiatr.csv'}")

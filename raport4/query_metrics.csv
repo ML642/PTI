@@ -2,7 +2,7 @@ query_id,query,model,key,hours,retrieved,relevant,tp,fp,fn,precision_percent,rec
 Q1,dobre okno na aktywnosc zewnetrzna,AIFS,aifs,51,51,51,51,0,0,100.0,100.0,100.0,100.0
 Q1,dobre okno na aktywnosc zewnetrzna,Open-Meteo,open_meteo,51,51,51,51,0,0,100.0,100.0,100.0,100.0
 Q1,dobre okno na aktywnosc zewnetrzna,GFS,gfs,51,51,51,51,0,0,100.0,100.0,100.0,100.0
-Q1,dobre okno na aktywnosc zewnetrzna,Nasz model,own_model,51,51,51,51,0,0,100.0,100.0,100.0,100.0
+Q1,dobre okno na aktywnosc zewnetrzna,Nasz model,own_model,50,50,50,50,0,0,100.0,100.0,100.0,100.0
 Q1,dobre okno na aktywnosc zewnetrzna,Yr.no,yr_no,51,47,51,47,0,4,100.0,92.15686274509804,95.91836734693878,92.15686274509804
 Q1,dobre okno na aktywnosc zewnetrzna,GraphCast,graphcast,51,8,51,8,0,43,100.0,15.686274509803921,27.11864406779661,15.686274509803921
 Q2,ryzyko opadow istotnych,AIFS,aifs,51,0,0,0,0,0,0.0,0.0,0.0,100.0
@@ -10,22 +10,22 @@ Q2,ryzyko opadow istotnych,GraphCast,graphcast,51,0,0,0,0,0,0.0,0.0,0.0,100.0
 Q2,ryzyko opadow istotnych,Open-Meteo,open_meteo,51,0,0,0,0,0,0.0,0.0,0.0,100.0
 Q2,ryzyko opadow istotnych,Yr.no,yr_no,51,0,0,0,0,0,0.0,0.0,0.0,100.0
 Q2,ryzyko opadow istotnych,GFS,gfs,51,0,0,0,0,0,0.0,0.0,0.0,100.0
-Q2,ryzyko opadow istotnych,Nasz model,own_model,51,0,0,0,0,0,0.0,0.0,0.0,100.0
+Q2,ryzyko opadow istotnych,Nasz model,own_model,50,0,0,0,0,0,0.0,0.0,0.0,100.0
 Q3,ryzyko wiatru dla uzytkownika,AIFS,aifs,51,0,0,0,0,0,0.0,0.0,0.0,100.0
 Q3,ryzyko wiatru dla uzytkownika,Open-Meteo,open_meteo,51,0,0,0,0,0,0.0,0.0,0.0,100.0
 Q3,ryzyko wiatru dla uzytkownika,Yr.no,yr_no,51,0,0,0,0,0,0.0,0.0,0.0,100.0
 Q3,ryzyko wiatru dla uzytkownika,GFS,gfs,51,0,0,0,0,0,0.0,0.0,0.0,100.0
-Q3,ryzyko wiatru dla uzytkownika,Nasz model,own_model,51,0,0,0,0,0,0.0,0.0,0.0,100.0
+Q3,ryzyko wiatru dla uzytkownika,Nasz model,own_model,50,0,0,0,0,0,0.0,0.0,0.0,100.0
 Q3,ryzyko wiatru dla uzytkownika,GraphCast,graphcast,51,10,0,0,10,0,0.0,0.0,0.0,80.3921568627451
 Q4,warunki niekorzystne,AIFS,aifs,51,0,0,0,0,0,0.0,0.0,0.0,100.0
 Q4,warunki niekorzystne,GraphCast,graphcast,51,0,0,0,0,0,0.0,0.0,0.0,100.0
 Q4,warunki niekorzystne,Open-Meteo,open_meteo,51,0,0,0,0,0,0.0,0.0,0.0,100.0
 Q4,warunki niekorzystne,Yr.no,yr_no,51,0,0,0,0,0,0.0,0.0,0.0,100.0
 Q4,warunki niekorzystne,GFS,gfs,51,0,0,0,0,0,0.0,0.0,0.0,100.0
-Q4,warunki niekorzystne,Nasz model,own_model,51,0,0,0,0,0,0.0,0.0,0.0,100.0
+Q4,warunki niekorzystne,Nasz model,own_model,50,0,0,0,0,0,0.0,0.0,0.0,100.0
 Q5,komfort termiczny,AIFS,aifs,51,51,51,51,0,0,100.0,100.0,100.0,100.0
 Q5,komfort termiczny,Open-Meteo,open_meteo,51,51,51,51,0,0,100.0,100.0,100.0,100.0
 Q5,komfort termiczny,GFS,gfs,51,51,51,51,0,0,100.0,100.0,100.0,100.0
-Q5,komfort termiczny,Nasz model,own_model,51,51,51,51,0,0,100.0,100.0,100.0,100.0
+Q5,komfort termiczny,Nasz model,own_model,50,50,50,50,0,0,100.0,100.0,100.0,100.0
 Q5,komfort termiczny,Yr.no,yr_no,51,47,51,47,0,4,100.0,92.15686274509804,95.91836734693878,92.15686274509804
 Q5,komfort termiczny,GraphCast,graphcast,51,26,51,26,0,25,100.0,50.98039215686274,67.53246753246754,50.98039215686274

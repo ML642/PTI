@@ -1,6 +1,6 @@
 model,key,hours,semantic_similarity_percent,decision_accuracy_percent,temp_label_accuracy_percent,rain_label_accuracy_percent,wind_label_accuracy_percent,adverse_precision_percent,adverse_recall_percent,adverse_f1_percent,critical_reference_cases,critical_predicted_cases,critical_mismatch_cases,critical_mismatch_percent,freezing_boundary_mismatches,snow_or_ice_risk_mismatches,significant_precipitation_mismatches,heavy_precipitation_mismatches,strong_wind_mismatches,thermal_extreme_mismatches
 Open-Meteo,open_meteo,51,100.0,100.0,100.0,100.0,100.0,0.0,0.0,0.0,0,0,0,0.0,0,0,0,0,0,0
-Nasz model,own_model,51,96.86274509803923,100.0,80.3921568627451,100.0,78.43137254901961,0.0,0.0,0.0,0,0,0,0.0,0,0,0,0,0,0
+Nasz model,own_model,50,96.20000000000002,100.0,92.0,100.0,66.0,0.0,0.0,0.0,0,0,0,0.0,0,0,0,0,0,0
 GFS,gfs,51,95.78431372549021,100.0,78.43137254901961,100.0,68.62745098039215,0.0,0.0,0.0,0,0,0,0.0,0,0,0,0,0,0
 AIFS,aifs,51,95.19607843137257,100.0,74.50980392156863,100.0,64.70588235294117,0.0,0.0,0.0,0,0,0,0.0,0,0,0,0,0,0
 Yr.no,yr_no,51,94.2156862745098,92.15686274509804,66.66666666666666,100.0,58.82352941176471,0.0,0.0,0.0,0,0,0,0.0,0,0,0,0,0,0

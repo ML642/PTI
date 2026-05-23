@@ -1,6 +1,6 @@
 model,key,hours,critical_reference_cases,critical_predicted_cases,critical_mismatch_cases,critical_mismatch_percent,freezing_boundary_mismatches,snow_or_ice_risk_mismatches,significant_precipitation_mismatches,heavy_precipitation_mismatches,strong_wind_mismatches,thermal_extreme_mismatches
 Open-Meteo,open_meteo,51,0,0,0,0.0,0,0,0,0,0,0
-Nasz model,own_model,51,0,0,0,0.0,0,0,0,0,0,0
+Nasz model,own_model,50,0,0,0,0.0,0,0,0,0,0,0
 GFS,gfs,51,0,0,0,0.0,0,0,0,0,0,0
 AIFS,aifs,51,0,0,0,0.0,0,0,0,0,0,0
 Yr.no,yr_no,51,0,0,0,0.0,0,0,0,0,0,0

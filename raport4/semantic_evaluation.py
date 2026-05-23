@@ -127,39 +127,29 @@ def plot_decision_accuracy(summary: pd.DataFrame) -> None:
 
 
 def plot_timeline(joined_by_source: dict[str, pd.DataFrame], summary: pd.DataFrame) -> None:
-    decision_to_value = {"zle": 0, "ostroznie": 1, "dobre": 2}
-    top_keys = list(
-        summary.sort_values("semantic_similarity_percent", ascending=False)["key"].head(3)
+    non_reference = summary[summary["key"] != "open_meteo"]
+    selected_keys = list(
+        non_reference.sort_values("semantic_similarity_percent", ascending=False)["key"].head(4)
     )
-    first_key = top_keys[0]
-    base = joined_by_source[first_key]
 
     plt.figure(figsize=(13, 6))
-    plt.step(
-        base["time"],
-        base["decision_ground_truth"].map(decision_to_value),
-        where="post",
-        label="Ground truth",
-        color="black",
-        linewidth=2.5,
-    )
-
-    colors = ["#2f6f73", "#d08c2f", "#6b5ca5"]
-    for color, key in zip(colors, top_keys):
+    colors = ["#2f6f73", "#d08c2f", "#6b5ca5", "#8a8a8a"]
+    for color, key in zip(colors, selected_keys):
         joined = joined_by_source[key]
         model_name = summary.loc[summary["key"] == key, "model"].iloc[0]
-        plt.step(
+        plt.plot(
             joined["time"],
-            joined[f"decision_{key}"].map(decision_to_value),
-            where="post",
+            joined[f"semantic_similarity_{key}"] * 100,
             label=model_name,
-            alpha=0.8,
             color=color,
+            linewidth=2,
+            marker="o",
+            markersize=3,
         )
 
-    plt.yticks([0, 1, 2], ["zle", "ostroznie", "dobre"])
     plt.xlabel("Czas")
-    plt.ylabel("Klasa decyzji")
+    plt.ylabel("Zgodnosc semantyczna w godzinie [%]")
+    plt.ylim(75, 102)
     plt.grid(alpha=0.25)
     plt.legend()
     plt.tight_layout()
