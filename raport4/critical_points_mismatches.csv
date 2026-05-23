@@ -1,0 +1,1 @@
+model_name,time,event,event_name,model,actual_event,predicted_event,temp_ground_truth,opady_ground_truth,wiatr_ground_truth

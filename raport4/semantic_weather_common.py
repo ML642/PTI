@@ -26,6 +26,7 @@ SOURCES = [
     Source("Open-Meteo", "open_meteo", DATA_DIR / "open_meteo"),
     Source("Yr.no", "yr_no", DATA_DIR / "yr_no"),
     Source("GFS", "gfs", DATA_DIR / "gfs"),
+    Source("Nasz model", "own_model", BASE_DIR / "own_model"),
 ]
 
 
@@ -40,6 +41,15 @@ TEMP_LABELS = ["mroz", "zimno", "chlodno", "komfort", "cieplo", "upal"]
 RAIN_LABELS = ["brak_opadu", "slaby_opad", "umiarkowany_opad", "silny_opad"]
 WIND_LABELS = ["cisza", "lekki_wiatr", "wietrznie", "silny_wiatr"]
 DECISION_LABELS = ["zle", "ostroznie", "dobre"]
+
+CRITICAL_EVENTS = {
+    "freezing_boundary": "przejscie przez 0 C",
+    "snow_or_ice_risk": "opad przy temperaturze bliskiej 0 C",
+    "significant_precipitation": "opad istotny",
+    "heavy_precipitation": "opad silny",
+    "strong_wind": "wiatr silny",
+    "thermal_extreme": "temperatura skrajna",
+}
 
 
 def read_metric(path: Path, metric: str, source_key: str) -> pd.DataFrame:
@@ -172,6 +182,75 @@ def semantic_similarity(row: pd.Series, source_key: str) -> float:
     )
     weighted_distance = 0.25 * temp_dist + 0.45 * rain_dist + 0.30 * wind_dist
     return 1.0 - weighted_distance
+
+
+def critical_flags(df: pd.DataFrame, source_key: str) -> pd.DataFrame:
+    temp = df[f"temp_{source_key}"]
+    rain = df[f"opady_{source_key}"]
+    wind = df[f"wiatr_{source_key}"]
+
+    return pd.DataFrame(
+        {
+            "freezing_boundary": temp <= 0.0,
+            "snow_or_ice_risk": (temp <= 0.5) & (rain > 0.1),
+            "significant_precipitation": rain > 0.5,
+            "heavy_precipitation": rain > 2.0,
+            "strong_wind": wind >= 8.0,
+            "thermal_extreme": (temp <= -5.0) | (temp >= 30.0),
+        },
+        index=df.index,
+    )
+
+
+def critical_mismatch_summary(df: pd.DataFrame, source_key: str) -> dict[str, int | float]:
+    actual_flags = critical_flags(df, "ground_truth")
+    predicted_flags = critical_flags(df, source_key)
+    mismatches = actual_flags != predicted_flags
+
+    any_actual = actual_flags.any(axis=1)
+    any_predicted = predicted_flags.any(axis=1)
+    any_mismatch = mismatches.any(axis=1)
+
+    summary: dict[str, int | float] = {
+        "critical_reference_cases": int(any_actual.sum()),
+        "critical_predicted_cases": int(any_predicted.sum()),
+        "critical_mismatch_cases": int(any_mismatch.sum()),
+        "critical_mismatch_percent": float(any_mismatch.mean() * 100),
+    }
+
+    for event_key in CRITICAL_EVENTS:
+        summary[f"{event_key}_mismatches"] = int(mismatches[event_key].sum())
+
+    return summary
+
+
+def critical_mismatch_rows(df: pd.DataFrame, source_key: str) -> pd.DataFrame:
+    actual_flags = critical_flags(df, "ground_truth")
+    predicted_flags = critical_flags(df, source_key)
+    mismatches = actual_flags != predicted_flags
+    rows = []
+
+    for event_key, event_name in CRITICAL_EVENTS.items():
+        event_rows = df.loc[mismatches[event_key]].copy()
+        for index, row in event_rows.iterrows():
+            rows.append(
+                {
+                    "time": row["time"],
+                    "event": event_key,
+                    "event_name": event_name,
+                    "model": source_key,
+                    "actual_event": bool(actual_flags.loc[index, event_key]),
+                    "predicted_event": bool(predicted_flags.loc[index, event_key]),
+                    "temp_ground_truth": row["temp_ground_truth"],
+                    f"temp_{source_key}": row[f"temp_{source_key}"],
+                    "opady_ground_truth": row["opady_ground_truth"],
+                    f"opady_{source_key}": row[f"opady_{source_key}"],
+                    "wiatr_ground_truth": row["wiatr_ground_truth"],
+                    f"wiatr_{source_key}": row[f"wiatr_{source_key}"],
+                }
+            )
+
+    return pd.DataFrame(rows)
 
 
 def binary_metrics(predicted: pd.Series, actual: pd.Series) -> dict[str, float]:

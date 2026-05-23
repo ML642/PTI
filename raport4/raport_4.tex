@@ -152,6 +152,35 @@ i \textit{złe}. Warunki są oznaczane jako złe przy umiarkowanym lub silnym
 opadzie, silnym wietrze, mrozie albo upale. Klasa ostrożnie oznacza sytuacje
 graniczne: zimno, słaby opad albo wiatr odczuwalny.
 
+Ten etap jest realizowany w kodzie przez funkcje mapujące wartości liczbowe na
+deskryptory. Poniżej wklejono najważniejszy fragment z pliku
+\texttt{semantic\_weather\_common.py}. Kod pokazuje, że model nie operuje już
+wyłącznie na liczbach, ale zamienia je na znaczenia używane później w decyzji.
+
+\begin{lstlisting}[language=Python]
+def temp_label(value):
+    if value < 0:
+        return "mroz"
+    if value < 10:
+        return "zimno"
+    if value < 18:
+        return "chlodno"
+    if value < 25:
+        return "komfort"
+    if value < 30:
+        return "cieplo"
+    return "upal"
+
+def decision_label(temp, rain, wind):
+    if temp in {"mroz", "upal"} or rain in {"umiarkowany_opad", "silny_opad"}:
+        return "zle"
+    if wind == "silny_wiatr":
+        return "zle"
+    if temp in {"zimno"} or rain == "slaby_opad" or wind == "wietrznie":
+        return "ostroznie"
+    return "dobre"
+\end{lstlisting}
+
 \section{Miary oceny semantycznej}
 
 Miara syntaktyczna karze każdy błąd liczbowy. Miara semantyczna karze przede
@@ -175,13 +204,235 @@ Dodatkowo liczono:
     \item precyzję, przywołanie, F1 i stopę sukcesu dla zapytań semantycznych.
 \end{itemize}
 
+\section{Punkty krytyczne informacji}
+
+Po pierwszej wersji analizy metoda została zmieniona. Sama zgodność klas
+semantycznych okazała się niewystarczająca, ponieważ niektóre punkty danych są
+ważniejsze od pozostałych. W prognozie pogody istnieją granice, przy których
+niewielki błąd liczbowy powoduje dużą zmianę znaczenia informacji. Przykładem
+jest temperatura \(-0.6^\circ C\) i prognoza \(0.6^\circ C\). Różnica wynosi
+tylko \(1.2^\circ C\), ale po jednej stronie granicy możliwy jest śnieg,
+zamarzanie wody albo oblodzenie, a po drugiej stronie użytkownik może
+interpretować sytuację jako zwykły deszcz lub brak ryzyka zamarzania.
+
+Z tego powodu do analizy dodano osobną warstwę punktów krytycznych. Nie są to
+zwykłe błędy numeryczne, lecz miejsca, w których zmienia się sens komunikatu
+dla odbiorcy.
+
+\begin{table}[h]
+\centering
+\caption{Punkty krytyczne dodane do analizy}
+\begin{tabular}{lll}
+\toprule
+Punkt krytyczny & Warunek & Znaczenie dla użytkownika \\
+\midrule
+Granica zamarzania & \(T \leq 0^\circ C\) & ryzyko lodu, śniegu, śliskiej nawierzchni \\
+Opad przy 0°C & \(T \leq 0.5^\circ C\) i \(P > 0.1\) & możliwy śnieg lub marznący opad \\
+Opad istotny & \(P > 0.5\) mm & zmiana decyzji o aktywności zewnętrznej \\
+Silny opad & \(P > 2.0\) mm & warunki niekorzystne \\
+Silny wiatr & \(W \geq 8.0\) m/s & ryzyko dyskomfortu i ograniczeń bezpieczeństwa \\
+Temperatura skrajna & \(T \leq -5^\circ C\) lub \(T \geq 30^\circ C\) & ryzyko wychłodzenia albo przegrzania \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Dla każdego modelu sprawdzane jest, czy wykrywa tę samą stronę progu
+krytycznego co punkt odniesienia. Jeżeli punkt odniesienia wskazuje mróz, a
+model pokazuje temperaturę dodatnią, taki przypadek otrzymuje większą wagę
+interpretacyjną niż zwykła różnica temperatur wewnątrz tej samej klasy.
+
+Kod tego etapu znajduje się również w pliku
+\texttt{semantic\_weather\_common.py}. Fragment poniżej pokazuje, jakie
+sytuacje są traktowane jako punkty krytyczne. Nie jest to pełny model prognozy,
+tylko dodatkowa warstwa kontroli znaczenia wyniku.
+
+\begin{lstlisting}[language=Python]
+def critical_flags(df, source_key):
+    temp = df[f"temp_{source_key}"]
+    rain = df[f"opady_{source_key}"]
+    wind = df[f"wiatr_{source_key}"]
+
+    return pd.DataFrame({
+        "freezing_boundary": temp <= 0.0,
+        "snow_or_ice_risk": (temp <= 0.5) & (rain > 0.1),
+        "significant_precipitation": rain > 0.5,
+        "heavy_precipitation": rain > 2.0,
+        "strong_wind": wind >= 8.0,
+        "thermal_extreme": (temp <= -5.0) | (temp >= 30.0),
+    }, index=df.index)
+\end{lstlisting}
+
+\section{Własny algorytm przewidywania pogody}
+
+Właściwym celem tej części projektu nie jest tylko porównanie gotowych modeli,
+ale zbudowanie własnego algorytmu prognozowania. Dlatego analiza została
+rozszerzona o model autorski, który łączy kilka źródeł prognozy i dopasowuje
+ich znaczenie do danych referencyjnych oraz punktów krytycznych.
+
+Zaproponowany algorytm można nazwać krytycznie ważonym modelem zespołowym.
+Nie wybiera on jednego najlepszego źródła, lecz tworzy prognozę jako ważoną
+kombinację kilku modeli:
+\[
+\hat{x}_m(t) = \sum_i w_{i,m} x_{i,m}(t),
+\]
+gdzie \(x_{i,m}(t)\) oznacza prognozę źródła \(i\) dla zmiennej \(m\), a
+\(w_{i,m}\) jest wagą tego źródła dla temperatury, opadów albo wiatru.
+
+Wagi nie są takie same dla wszystkich wielkości. Model może ufać jednemu
+źródłu bardziej przy temperaturze, a innemu przy opadach albo wietrze. Dzięki
+temu algorytm jest bardziej elastyczny niż zwykła średnia arytmetyczna.
+
+\subsection{Kroki algorytmu}
+
+Algorytm działa w następujących krokach:
+\begin{enumerate}
+    \item wczytuje prognozy AIFS, GraphCast, Open-Meteo, yr.no i GFS,
+    \item wyrównuje dane po czasie, aby każda godzina miała komplet wartości,
+    \item dzieli dane na część dopasowania i część testową,
+    \item dla każdego źródła liczy błąd ważony krytycznie,
+    \item zamienia błędy na wagi modelu,
+    \item wyznacza prognozę jako średnią ważoną,
+    \item wykonuje korektę przy progach krytycznych, np. \(0^\circ C\), opadzie istotnym i silnym wietrze,
+    \item zapisuje wynik jako nowe źródło danych: \texttt{own\_model}.
+\end{enumerate}
+
+Błąd używany do dopasowania ma postać:
+\[
+E_{i,m} = \frac{1}{n}\sum_t \left(|x_{ref,m}(t)-x_{i,m}(t)| + P_{crit}(t)\right),
+\]
+gdzie \(P_{crit}(t)\) jest dodatkową karą za pomyłkę po niewłaściwej stronie
+progu krytycznego. Przykładowo model jest karany mocniej, jeżeli punkt
+odniesienia pokazuje temperaturę poniżej \(0^\circ C\), a prognoza pokazuje
+temperaturę dodatnią.
+
+Wagi wyznaczane są ze wzoru:
+\[
+w_{i,m} \sim \frac{1}{(E_{i,m}+0.25)^2}.
+\]
+Dodano również ograniczenie maksymalnej wagi jednego źródła do 45\%. Jest to
+ważne, ponieważ w obecnych danych Open-Meteo jest bardzo bliskie punktowi
+odniesienia i bez ograniczenia mogłoby zdominować cały model. Nasz algorytm
+ma być własną prognozą zespołową, a nie kopią jednego źródła.
+
+Poniższy fragment kodu pochodzi z pliku \texttt{own\_weather\_model.py}. To
+jest właściwy fragment uczenia naszego modelu: najpierw liczony jest błąd
+ważony krytycznie, potem błąd jest zamieniany na wagę. Im mniejszy błąd źródła,
+tym większy jego udział w końcowej prognozie.
+
+\begin{lstlisting}[language=Python]
+def learn_weights(frame, metric, train_size):
+    train = frame.iloc[:train_size]
+    actual = train[f"{metric}_ground_truth"]
+    raw_weights = {}
+
+    for source in MODEL_SOURCES:
+        column = f"{metric}_{source.key}"
+        if column not in train.columns:
+            continue
+        error = critical_weighted_error(metric, actual, train[column])
+        raw_weights[source.key] = 1.0 / ((error + 0.25) ** 2)
+
+    return cap_and_normalize(raw_weights)
+\end{lstlisting}
+
+Kolejny fragment pokazuje samo tworzenie prognozy. Dla każdej godziny model
+mnoży prognozę danego źródła przez dopasowaną wagę, sumuje wkłady i otrzymuje
+nową wartość naszej prognozy.
+
+\begin{lstlisting}[language=Python]
+def predict_metric(frame, metric, weights):
+    prediction = pd.Series(0.0, index=frame.index)
+    used_weight = 0.0
+
+    for source_key, weight in weights.items():
+        column = f"{metric}_{source_key}"
+        if column in frame.columns:
+            prediction += frame[column] * weight
+            used_weight += weight
+
+    prediction = prediction / used_weight
+    if METRICS[metric]["min_value"] is not None:
+        prediction = prediction.clip(lower=METRICS[metric]["min_value"])
+    return prediction
+\end{lstlisting}
+
+Ostatni fragment z tego etapu pokazuje korektę przy progach krytycznych.
+Przykładowo, jeżeli prognoza jest bardzo blisko \(0^\circ C\), występuje opad,
+a wystarczająco dużo źródeł wskazuje temperaturę ujemną, model przesuwa wynik
+na stronę mrozu. Chodzi o to, aby nie zgubić znaczenia sytuacji granicznej.
+
+\begin{lstlisting}[language=Python]
+if abs(corrected["temp"]) <= 0.8 and corrected["opady"] > 0.1:
+    freezing_weight = sum(
+        weights["temp"].get(source.key, 0.0)
+        for source in MODEL_SOURCES
+        if row[f"temp_{source.key}"] <= 0.0
+    )
+    if freezing_weight >= 0.40:
+        corrected["temp"] = min(corrected["temp"], -0.1)
+    else:
+        corrected["temp"] = max(corrected["temp"], 0.1)
+\end{lstlisting}
+
+\subsection{Dopasowanie modelu}
+
+Model dopasowano na pierwszych 35 godzinach wspólnego zakresu danych, a
+ostatnie 16 godzin zostawiono jako prosty test. Dopasowanie polegało na
+wyznaczeniu wag osobno dla temperatury, opadów i wiatru.
+
+\begin{table}[h]
+\centering
+\caption{Wagi źródeł po dopasowaniu własnego modelu}
+\begin{tabular}{lrrr}
+\toprule
+Źródło & Temperatura & Opady & Wiatr \\
+\midrule
+AIFS & 0.167 & 0.201 & 0.127 \\
+GraphCast & 0.036 & 0.015 & 0.012 \\
+Open-Meteo & 0.450 & 0.265 & 0.450 \\
+yr.no & 0.142 & 0.265 & 0.158 \\
+GFS & 0.205 & 0.254 & 0.254 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Po dopasowaniu model zapisał trzy pliki wynikowe:
+\begin{verbatim}
+raport4/own_model/temp.csv
+raport4/own_model/opady.csv
+raport4/own_model/wiatr.csv
+\end{verbatim}
+
+W części testowej uzyskano następujące wyniki:
+\begin{table}[h]
+\centering
+\caption{Wyniki testowe własnego modelu}
+\begin{tabular}{lrrr}
+\toprule
+Zmienna & MAE & RMSE & Błąd krytycznie ważony \\
+\midrule
+Temperatura & 1.593 & 1.709 & 1.593 \\
+Opady & 0.011 & 0.014 & 0.011 \\
+Wiatr & 0.306 & 0.360 & 0.306 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Zgodność decyzji użytkownika w części testowej wyniosła 100\%. Trzeba jednak
+pamiętać, że obecne okno danych jest łatwe pogodowo: nie zawiera mrozu, silnego
+opadu ani silnego wiatru. Dlatego najważniejszym elementem modelu nie jest
+sam wynik testu, lecz mechanizm dopasowania wag i dodatkowe kary za błędy przy
+progach krytycznych.
+
 \section{Implementacja}
 
-Dla etapu 4 przygotowano trzy pliki kodu:
+Dla etapu 4 przygotowano pięć plików kodu:
 \begin{itemize}
     \item \texttt{semantic\_weather\_common.py} -- konfiguracja źródeł, wczytywanie CSV, mapowanie wartości na deskryptory i funkcje metryk,
     \item \texttt{semantic\_evaluation.py} -- ranking semantyczny modeli oraz wykresy,
-    \item \texttt{semantic\_search\_tests.py} -- testy wyszukiwania po treści: precyzja, przywołanie, F1 i stopa sukcesu.
+    \item \texttt{semantic\_search\_tests.py} -- testy wyszukiwania po treści: precyzja, przywołanie, F1 i stopa sukcesu,
+    \item \texttt{own\_weather\_model.py} -- własny algorytm prognozowania pogody i dopasowanie wag,
+    \item \texttt{critical\_scenario\_analysis.py} -- scenariusze pokazujące znaczenie progów krytycznych.
 \end{itemize}
 
 Kod wczytuje dane z folderu \texttt{raport\_3}. Ponieważ część plików CSV w
@@ -190,17 +441,8 @@ pomija linie zaczynające się od \texttt{<<<<<<<}, \texttt{=======} i
 \texttt{>>>>>>>}. Nie zmienia to danych źródłowych, ale pozwala wykonać
 analizę mimo niezamkniętego konfliktu.
 
-Najważniejszy fragment mapowania semantycznego:
-\begin{lstlisting}[language=Python]
-def decision_label(temp, rain, wind):
-    if temp in {"mroz", "upal"} or rain in {"umiarkowany_opad", "silny_opad"}:
-        return "zle"
-    if wind == "silny_wiatr":
-        return "zle"
-    if temp in {"zimno"} or rain == "slaby_opad" or wind == "wietrznie":
-        return "ostroznie"
-    return "dobre"
-\end{lstlisting}
+Najważniejsze fragmenty kodu zostały wklejone bezpośrednio przy etapach, których
+dotyczą. Pełne wersje skryptów znajdują się w folderze \texttt{raport4}.
 
 \section{Wyniki rankingu semantycznego}
 
@@ -218,6 +460,7 @@ poprawności procedury, a nie jako niezależny dowód przewagi modelu.
 Model & Godziny & Zgodność sem. [\%] & Zgodność decyzji [\%] & Opad [\%] \\
 \midrule
 Open-Meteo & 51 & 100.0 & 100.0 & 100.0 \\
+Nasz model & 51 & 96.9 & 100.0 & 100.0 \\
 GFS & 51 & 95.8 & 100.0 & 100.0 \\
 AIFS & 51 & 95.2 & 100.0 & 100.0 \\
 Yr.no & 51 & 94.2 & 92.2 & 100.0 \\
@@ -232,16 +475,57 @@ GraphCast & 51 & 82.3 & 15.7 & 64.7 \\
 \caption{Porównanie zgodności semantycznej i zgodności decyzji użytkownika.}
 \end{figure}
 
-Wyniki pokazują, że modele GFS i AIFS mogą mieć błędy wartości liczbowych, ale
-w badanym oknie czasowym nie zmieniają one końcowej decyzji użytkownika.
-GraphCast wypada gorzej, ponieważ częściej przechodzi do innych klas
-temperatury, opadu lub wiatru, co silnie obniża zgodność decyzji.
+Wyniki pokazują, że nasz model uzyskał najwyższą zgodność semantyczną spośród
+modeli, które nie są bezpośrednim punktem odniesienia. Jest to efekt ważenia
+źródeł oraz ograniczenia wpływu słabszych prognoz. Modele GFS i AIFS również
+mogą mieć błędy wartości liczbowych, ale w badanym oknie czasowym nie zmieniają
+one końcowej decyzji użytkownika. GraphCast wypada gorzej, ponieważ częściej
+przechodzi do innych klas temperatury, opadu lub wiatru, co silnie obniża
+zgodność decyzji.
 
 \begin{figure}[h]
 \centering
 \includegraphics[width=\textwidth]{semantic_timeline.png}
 \caption{Przebieg klas decyzyjnych w czasie dla punktu odniesienia i najlepszych modeli.}
 \end{figure}
+
+\section{Analiza punktów krytycznych}
+
+Po rozszerzeniu metody przeliczono osobny raport
+\texttt{critical\_points\_summary.csv}. W aktualnym zbiorze 51 wspólnych godzin
+nie wystąpiły przypadki referencyjne przekraczające progi krytyczne:
+temperatura nie przechodziła przez \(0^\circ C\), nie było opadu przy
+temperaturze bliskiej zera, istotnych opadów, silnego wiatru ani temperatur
+skrajnych. Z tego powodu wszystkie modele mają w tej konkretnej próbce
+\(0\) błędów krytycznych.
+
+Ten wynik nie oznacza jednak, że progi krytyczne są zbędne. Oznacza tylko, że
+badane okno danych było pogodowo łatwe. Dlatego dodano również analizę
+scenariuszową, w której sprawdzono typowe przypadki graniczne.
+
+\begin{table}[h]
+\centering
+\caption{Scenariusze pokazujące znaczenie progów krytycznych}
+\begin{tabular}{p{4.2cm}rrrrp{4.1cm}}
+\toprule
+Scenariusz & \(T_{ref}\) & \(T_m\) & \(P_{ref}\) & \(P_m\) & Zmiana decyzji & Znaczenie \\
+\midrule
+Granica zamarzania i możliwy śnieg & -0.6 & 0.6 & 0.4 & 0.4 & tak & możliwa zmiana: śnieg/lód zamiast deszczu \\
+Pominięty opad istotny & 3.0 & 3.2 & 0.8 & 0.1 & tak & model nie ostrzega przed opadem zmieniającym decyzję \\
+Fałszywy alarm opadowy & 7.0 & 7.1 & 0.0 & 0.7 & tak & model odrzuca dobre okno czasowe \\
+Granica silnego wiatru & 16.0 & 16.0 & 0.0 & 0.0 & tak & mały błąd wiatru zmienia ocenę bezpieczeństwa \\
+Próg upału & 30.2 & 29.4 & 0.0 & 0.0 & tak & mała różnica ukrywa ryzyko przegrzania \\
+Próg mrozu silniejszego & -5.3 & -4.7 & 0.0 & 0.0 & nie & decyzja zostaje zła, ale zmienia się poziom ryzyka \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Scenariusze pokazują, że błąd o podobnej wartości liczbowej może mieć zupełnie
+inny ciężar informacyjny. Różnica \(1^\circ C\) przy temperaturach dodatnich
+często jest mało istotna, ale różnica wokół \(0^\circ C\) może zmienić rodzaj
+opadu, ocenę bezpieczeństwa i zalecenie dla użytkownika. W finalnej wersji
+metody takie przypadki powinny być traktowane jako błędy semantycznie cięższe
+niż zwykłe przesunięcie wewnątrz tej samej klasy.
 
 \section{Testy wyszukiwania semantycznego}
 
@@ -258,6 +542,26 @@ można zadawać zapytania dotyczące znaczenia:
 Dla każdego modelu porównano zbiór godzin zwróconych przez zapytanie ze zbiorem
 godzin referencyjnych. Obliczono precyzję, przywołanie, F1 oraz stopę sukcesu.
 
+Ten etap ma również własny fragment kodu w pliku
+\texttt{semantic\_search\_tests.py}. Poniżej pokazano ideę zapytań: zapytanie
+nie wybiera godzin po surowej temperaturze lub opadzie, tylko po wcześniej
+nadanych deskryptorach i decyzjach.
+
+\begin{lstlisting}[language=Python]
+def query_good_outdoor(df, key):
+    return df[f"decision_{key}"] == "dobre"
+
+def query_rain_risk(df, key):
+    return df[f"rain_label_{key}"].isin(
+        ["umiarkowany_opad", "silny_opad"]
+    )
+
+SEARCH_QUERIES = [
+    ("Q1", "dobre okno na aktywnosc zewnetrzna", query_good_outdoor),
+    ("Q2", "ryzyko opadow istotnych", query_rain_risk),
+]
+\end{lstlisting}
+
 \begin{table}[h]
 \centering
 \caption{Wybrane wyniki testów wyszukiwania}
@@ -268,6 +572,7 @@ Model & Q1 F1 [\%] & Q5 F1 [\%] & Q3 stopa sukcesu [\%] \\
 Open-Meteo & 100.0 & 100.0 & 100.0 \\
 GFS & 100.0 & 100.0 & 100.0 \\
 AIFS & 100.0 & 100.0 & 100.0 \\
+Nasz model & 100.0 & 100.0 & 100.0 \\
 Yr.no & 95.9 & 95.9 & 100.0 \\
 GraphCast & 27.1 & 67.5 & 80.4 \\
 \bottomrule
@@ -304,11 +609,20 @@ odniesienia. W tym etapie oceniamy, czy model zachowuje znaczenie informacji:
 czy wskazuje te same klasy pogody, te same okna czasowe i tę samą decyzję
 użytkownika.
 
-Najlepsze wyniki w obecnym zbiorze osiągają Open-Meteo, GFS i AIFS. Po
-odrzuceniu oczywistego przypadku Open-Meteo jako punktu odniesienia, GFS i AIFS
-są najbardziej użyteczne semantycznie dla przyjętego profilu użytkownika.
-GraphCast wymaga dalszej kontroli, ponieważ jego błędy częściej zmieniają
-klasy znaczeniowe, a więc mogą prowadzić do innej interpretacji sytuacji.
+Najlepsze wyniki w obecnym zbiorze osiąga Open-Meteo, ale jest to przypadek
+szczególny, ponieważ źródło to jest bardzo bliskie przyjętemu punktowi
+odniesienia. Po odrzuceniu tego oczywistego przypadku najwyżej wypada nasz
+własny model. Nie jest on pojedynczym modelem pogodowym, lecz algorytmem
+łączącym kilka źródeł przez wagi dopasowane do danych i do progów krytycznych.
+GFS i AIFS pozostają dobrymi źródłami składowymi, natomiast GraphCast wymaga
+dalszej kontroli, ponieważ jego błędy częściej zmieniają klasy znaczeniowe.
+
+Analiza została zmieniona przez dodanie punktów krytycznych. Dzięki temu
+metoda nie traktuje wszystkich godzin jednakowo: większe znaczenie mają
+momenty przejścia przez \(0^\circ C\), pojawienia się istotnego opadu,
+silnego wiatru albo temperatur skrajnych. Jest to ważne, ponieważ właśnie w
+takich miejscach mały błąd liczbowy może prowadzić do dużej pomyłki
+interpretacyjnej.
 
 Dalsze usprawnienie metody powinno polegać na włączeniu niezależnych pomiarów
 rzeczywistych, zebraniu opinii użytkowników i przetestowaniu zapytań na danych

@@ -13,12 +13,16 @@ from semantic_weather_common import (
     SOURCES,
     add_semantic_columns,
     binary_metrics,
+    critical_mismatch_rows,
+    critical_mismatch_summary,
     read_source,
     semantic_similarity,
 )
 
 
 OUTPUT_SUMMARY = BASE_DIR / "semantic_summary.csv"
+OUTPUT_CRITICAL_SUMMARY = BASE_DIR / "critical_points_summary.csv"
+OUTPUT_CRITICAL_MISMATCHES = BASE_DIR / "critical_points_mismatches.csv"
 OUTPUT_INDEX = BASE_DIR / "semantic_index_preview.csv"
 OUTPUT_DECISION_PLOT = BASE_DIR / "semantic_decision_accuracy.png"
 OUTPUT_TIMELINE = BASE_DIR / "semantic_timeline.png"
@@ -46,6 +50,7 @@ def build_joined_frame(source_key: str, source_dir) -> pd.DataFrame:
 
 def summarize_source(source, joined: pd.DataFrame) -> dict[str, float | str | int]:
     adverse = binary_metrics(joined[f"bad_pred_{source.key}"], joined["bad_ground_truth"])
+    critical = critical_mismatch_summary(joined, source.key)
     return {
         "model": source.name,
         "key": source.key,
@@ -71,6 +76,7 @@ def summarize_source(source, joined: pd.DataFrame) -> dict[str, float | str | in
         "adverse_precision_percent": adverse["precision"] * 100,
         "adverse_recall_percent": adverse["recall"] * 100,
         "adverse_f1_percent": adverse["f1"] * 100,
+        **critical,
     }
 
 
@@ -164,6 +170,7 @@ def plot_timeline(joined_by_source: dict[str, pd.DataFrame], summary: pd.DataFra
 def main() -> None:
     joined_by_source = {}
     summaries = []
+    critical_rows = []
 
     for source in SOURCES:
         try:
@@ -174,6 +181,10 @@ def main() -> None:
 
         joined_by_source[source.key] = joined
         summaries.append(summarize_source(source, joined))
+        source_critical_rows = critical_mismatch_rows(joined, source.key)
+        if not source_critical_rows.empty:
+            source_critical_rows.insert(0, "model_name", source.name)
+            critical_rows.append(source_critical_rows)
 
     if not summaries:
         raise SystemExit("Brak danych do analizy semantycznej.")
@@ -184,12 +195,54 @@ def main() -> None:
         ascending=False,
     )
     summary.to_csv(OUTPUT_SUMMARY, index=False)
+    critical_columns = [
+        "model",
+        "key",
+        "hours",
+        "critical_reference_cases",
+        "critical_predicted_cases",
+        "critical_mismatch_cases",
+        "critical_mismatch_percent",
+        "freezing_boundary_mismatches",
+        "snow_or_ice_risk_mismatches",
+        "significant_precipitation_mismatches",
+        "heavy_precipitation_mismatches",
+        "strong_wind_mismatches",
+        "thermal_extreme_mismatches",
+    ]
+    critical_summary = summary[critical_columns].sort_values(
+        ["critical_mismatch_cases", "critical_mismatch_percent"],
+        ascending=[True, True],
+    )
+    critical_summary.to_csv(OUTPUT_CRITICAL_SUMMARY, index=False)
+    if critical_rows:
+        pd.concat(critical_rows, ignore_index=True).to_csv(
+            OUTPUT_CRITICAL_MISMATCHES,
+            index=False,
+        )
+    else:
+        pd.DataFrame(
+            columns=[
+                "model_name",
+                "time",
+                "event",
+                "event_name",
+                "model",
+                "actual_event",
+                "predicted_event",
+                "temp_ground_truth",
+                "opady_ground_truth",
+                "wiatr_ground_truth",
+            ]
+        ).to_csv(OUTPUT_CRITICAL_MISMATCHES, index=False)
     save_semantic_index_preview()
     plot_decision_accuracy(summary)
     plot_timeline(joined_by_source, summary)
 
     print("Zapisano:")
     print(f"  {OUTPUT_SUMMARY.name}")
+    print(f"  {OUTPUT_CRITICAL_SUMMARY.name}")
+    print(f"  {OUTPUT_CRITICAL_MISMATCHES.name}")
     print(f"  {OUTPUT_INDEX.name}")
     print(f"  {OUTPUT_DECISION_PLOT.name}")
     print(f"  {OUTPUT_TIMELINE.name}")

@@ -65,3 +65,15 @@ Q5,komfort termiczny,GFS,2026-05-18 23:00:00,chlodno,brak_opadu,lekki_wiatr,dobr
 Q5,komfort termiczny,GFS,2026-05-19 00:00:00,chlodno,brak_opadu,lekki_wiatr,dobre
 Q5,komfort termiczny,GFS,2026-05-19 01:00:00,chlodno,brak_opadu,lekki_wiatr,dobre
 Q5,komfort termiczny,GFS,2026-05-19 02:00:00,chlodno,brak_opadu,lekki_wiatr,dobre
+Q1,dobre okno na aktywnosc zewnetrzna,Nasz model,2026-05-18 21:00:00,chlodno,brak_opadu,lekki_wiatr,dobre
+Q1,dobre okno na aktywnosc zewnetrzna,Nasz model,2026-05-18 22:00:00,chlodno,brak_opadu,lekki_wiatr,dobre
+Q1,dobre okno na aktywnosc zewnetrzna,Nasz model,2026-05-18 23:00:00,chlodno,brak_opadu,lekki_wiatr,dobre
+Q1,dobre okno na aktywnosc zewnetrzna,Nasz model,2026-05-19 00:00:00,chlodno,brak_opadu,lekki_wiatr,dobre
+Q1,dobre okno na aktywnosc zewnetrzna,Nasz model,2026-05-19 01:00:00,chlodno,brak_opadu,lekki_wiatr,dobre
+Q1,dobre okno na aktywnosc zewnetrzna,Nasz model,2026-05-19 02:00:00,chlodno,brak_opadu,lekki_wiatr,dobre
+Q5,komfort termiczny,Nasz model,2026-05-18 21:00:00,chlodno,brak_opadu,lekki_wiatr,dobre
+Q5,komfort termiczny,Nasz model,2026-05-18 22:00:00,chlodno,brak_opadu,lekki_wiatr,dobre
+Q5,komfort termiczny,Nasz model,2026-05-18 23:00:00,chlodno,brak_opadu,lekki_wiatr,dobre
+Q5,komfort termiczny,Nasz model,2026-05-19 00:00:00,chlodno,brak_opadu,lekki_wiatr,dobre
+Q5,komfort termiczny,Nasz model,2026-05-19 01:00:00,chlodno,brak_opadu,lekki_wiatr,dobre
+Q5,komfort termiczny,Nasz model,2026-05-19 02:00:00,chlodno,brak_opadu,lekki_wiatr,dobre

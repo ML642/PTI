@@ -1,0 +1,5 @@
+metric,train_hours,test_hours,mae,rmse,critical_weighted_error,decision_accuracy_percent,critical_reference_cases,critical_predicted_cases,critical_mismatch_cases,critical_mismatch_percent,freezing_boundary_mismatches,snow_or_ice_risk_mismatches,significant_precipitation_mismatches,heavy_precipitation_mismatches,strong_wind_mismatches,thermal_extreme_mismatches
+temp,35,16,1.5927494054070783,1.7091789482676245,1.5927494054070783,,,,,,,,,,,
+opady,35,16,0.011105369009862514,0.01436488624698,0.011105369009862514,,,,,,,,,,,
+wiatr,35,16,0.30559277148569275,0.35967201569875645,0.30559277148569275,,,,,,,,,,,
+decision,35,16,,,,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
