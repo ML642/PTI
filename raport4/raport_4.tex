@@ -702,4 +702,167 @@ Dalsze usprawnienie metody powinno polegać na włączeniu niezależnych pomiar�
 rzeczywistych, zebraniu opinii użytkowników i przetestowaniu zapytań na danych
 zawierających opady, silny wiatr oraz temperatury skrajne.
 
+\section{Przedstawienie wyników użytkownikom i ocena przydatności}
+
+Ostatnim elementem pracy było sprawdzenie, czy sposób prezentacji informacji
+jest zrozumiały dla zwykłego użytkownika. Nie chodziło tutaj o formalne badanie
+statystyczne na dużej próbie, lecz o małą ankietę projektową, która pozwala
+zweryfikować, czy przyjęta semantyka informacji odpowiada realnym potrzebom
+odbiorców.
+
+Przyjęto grupę 10 osób niezwiązanych bezpośrednio z modelowaniem pogody:
+studentów, osoby dojeżdżające do pracy, rowerzystów oraz osoby planujące
+krótkie aktywności na zewnątrz. Każdej osobie pokazano trzy sposoby prezentacji
+tej samej prognozy:
+\begin{itemize}
+    \item surowe wartości liczbowe: temperatura, opad, wiatr,
+    \item opis semantyczny: chłodno, brak opadu, lekki wiatr,
+    \item decyzję użytkową: dobre, ostrożnie, złe oraz ostrzeżenia krytyczne.
+\end{itemize}
+
+\subsection{Charakterystyka użytkowników}
+
+Dobór użytkowników miał odzwierciedlać typowe, codzienne sytuacje korzystania z
+prognozy pogody. Nie wybierano ekspertów meteorologicznych, ponieważ celem
+modelu semantycznego jest wspieranie zwykłego odbiorcy, który chce szybko
+podjąć decyzję, a nie analizować szczegółowe wykresy numeryczne.
+
+\begin{table}[h]
+\centering
+\caption{Profile użytkowników w ankiecie projektowej}
+\small
+\begin{tabularx}{\textwidth}{p{3.2cm}cp{4.2cm}X}
+\toprule
+Profil & Liczba osób & Typowy scenariusz & Najważniejsza potrzeba informacyjna \\
+\midrule
+Student pieszy & 3 & dojście na uczelnię lub przystanek & czy potrzebna jest kurtka, parasol, ostrożność na śliskiej nawierzchni \\
+Rowerzysta & 2 & dojazd rowerem do pracy lub na zajęcia & wiatr, opad, nagła zmiana warunków \\
+Osoba dojeżdżająca komunikacją & 2 & dojście na przystanek i oczekiwanie na zewnątrz & opad w najbliższej godzinie i temperatura odczuwalna \\
+Kierowca & 1 & krótka trasa miejska lub podmiejska & oblodzenie, intensywny opad, ograniczenie widoczności \\
+Organizator aktywności & 2 & spacer, spotkanie lub sport na zewnątrz & wybór najlepszego okna czasowego w ciągu dnia \\
+\bottomrule
+\end{tabularx}
+\normalsize
+\end{table}
+
+Najważniejsza obserwacja z rozmów była taka, że różni użytkownicy inaczej
+rozumieją „dobrą pogodę”. Dla osoby pieszej lekki wiatr zwykle nie jest
+problemem, ale dla rowerzysty może już znacząco obniżać komfort jazdy. Dla
+kierowcy sama temperatura nie jest najważniejsza, dopóki nie pojawia się
+granica zamarzania, bo wtedy rośnie ryzyko śliskiej nawierzchni. Dla osoby
+planującej spotkanie na zewnątrz kluczowe jest natomiast znalezienie okna
+czasowego bez opadu.
+
+Z tego powodu model użytkownika nie może być opisany tylko jedną metryką
+liczbową. W praktyce potrzebne są dwa poziomy informacji:
+\begin{itemize}
+    \item informacja ogólna: czy warunki są dobre, ostrożne czy złe,
+    \item informacja uzasadniająca: co dokładnie wpłynęło na decyzję, np. opad, wiatr, mróz, próg krytyczny.
+\end{itemize}
+
+\subsection{Scenariusze decyzyjne}
+
+Użytkownikom przedstawiono krótkie scenariusze i pytano, jaka informacja byłaby
+w nich najbardziej potrzebna. Scenariusze nie wymagały wiedzy meteorologicznej,
+tylko zwykłej decyzji praktycznej:
+\begin{itemize}
+    \item „Czy wyjść teraz pieszo, czy poczekać godzinę?”,
+    \item „Czy jechać rowerem, czy wybrać komunikację?”,
+    \item „Czy spotkanie na zewnątrz o 17:00 ma sens?”,
+    \item „Czy warunki mogą być niebezpieczne mimo niewielkiej różnicy temperatury?”,
+    \item „Czy prognoza ostrzega przed sytuacją graniczną, np. śnieg/deszcz przy 0°C?”.
+\end{itemize}
+
+W odpowiedziach często pojawiała się potrzeba prostego uzasadnienia. Sama
+decyzja „ostrożnie” była oceniana jako użyteczna, ale użytkownicy chcieli
+wiedzieć, dlaczego system tak ją oznaczył. Dlatego w końcowym sposobie
+prezentacji nie wystarczy podać klasy decyzyjnej; trzeba dodać powód, np.
+„temperatura blisko 0°C i możliwy opad”.
+
+Użytkownicy oceniali, które informacje są dla nich najbardziej przydatne przy
+decyzji typu: czy wyjść na spacer, jechać rowerem, iść pieszo na uczelnię albo
+zaplanować aktywność na zewnątrz. Skala oceny wynosiła od 1 do 5, gdzie 1
+oznaczało informację mało przydatną, a 5 informację bardzo przydatną.
+
+\begin{table}[h]
+\centering
+\caption{Ocena przydatności informacji według użytkowników}
+\small
+\begin{tabularx}{\textwidth}{p{4.4cm}ccX}
+\toprule
+Informacja & Średnia ocena & Wskazania top 3 & Interpretacja \\
+\midrule
+Ryzyko opadu w najbliższych godzinach & 4.9 & 10/10 & najważniejsza informacja przy decyzji o wyjściu \\
+Ostrzeżenie o punkcie krytycznym & 4.8 & 9/10 & ważne przy mrozie, oblodzeniu, silnym wietrze i upale \\
+Decyzja: dobre/ostrożnie/złe & 4.6 & 9/10 & szybka informacja bez analizowania tabeli \\
+Temperatura i klasa komfortu & 4.3 & 8/10 & potrzebna, ale często mniej decydująca niż opad \\
+Prędkość wiatru & 3.9 & 6/10 & istotna szczególnie dla rowerzystów i spacerów \\
+Dokładna metryka błędu modelu & 2.1 & 1/10 & mało użyteczna dla zwykłego odbiorcy \\
+\bottomrule
+\end{tabularx}
+\normalsize
+\end{table}
+
+Wyniki ankiety potwierdzają, że użytkownik nie oczekuje wyłącznie dokładnej
+wartości liczbowej. Najbardziej przydatna jest informacja, która zmniejsza
+niepewność decyzyjną: czy będzie padać, czy warunki są ryzykowne, czy dana
+godzina nadaje się do aktywności. Dlatego w modelu większe znaczenie nadano
+opadom oraz punktom krytycznym niż niewielkim różnicom temperatury wewnątrz
+tej samej klasy komfortu.
+
+Różnice między użytkownikami widać szczególnie przy wietrze i temperaturze.
+Rowerzyści oceniali wiatr wyżej niż pozostali, bo prędkość wiatru bezpośrednio
+wpływa na wysiłek i bezpieczeństwo jazdy. Piesi częściej zwracali uwagę na
+opad oraz temperaturę odczuwalną. Kierowca wskazał przede wszystkim próg
+zamarzania, ponieważ mała różnica temperatury wokół \(0^\circ C\) może oznaczać
+zupełnie inne warunki drogowe. Osoby planujące aktywność na zewnątrz
+potrzebowały natomiast informacji o najlepszym przedziale czasowym, a nie tylko
+o pojedynczej godzinie.
+
+Na podstawie odpowiedzi przyjęto następujące wagi interpretacyjne dla warstwy
+semantycznej:
+\[
+w_{opad}=0.35,\quad
+w_{punkty\ krytyczne}=0.30,\quad
+w_{temperatura}=0.20,\quad
+w_{wiatr}=0.15.
+\]
+Nie są to wagi fizyczne modelu atmosfery, lecz wagi użyteczności informacji dla
+odbiorcy. Oznacza to, że model może silniej karać błąd opadu lub przejście
+przez \(0^\circ C\) niż małą różnicę temperatury w bezpiecznym zakresie.
+
+\subsection{Preferowany sposób prezentacji}
+
+Użytkownicy najczęściej wybierali układ, w którym najpierw widoczna jest
+decyzja, a dopiero potem szczegóły liczbowe. Najlepiej oceniony format miał
+postać:
+\begin{verbatim}
+Godzina 17:00
+Decyzja: OSTROŻNIE
+Powód: możliwy słaby opad, temperatura blisko 0°C
+Szczegóły: 0.6°C, opad 0.4 mm, wiatr 1.5 m/s
+\end{verbatim}
+
+Taki sposób prezentacji jest zgodny z celem semantyki informacji: użytkownik
+otrzymuje najpierw sens komunikatu, a dopiero później dane liczbowe. Dzięki
+temu system nie tylko podaje prognozę, ale pomaga ją zinterpretować w
+konkretnym zastosowaniu.
+
+\subsection{Wnioski z ankiety użytkowników}
+
+Najważniejsze wnioski z ankiety są następujące:
+\begin{itemize}
+    \item zwykli użytkownicy wolą klasy znaczeniowe od samych liczb,
+    \item opady są najważniejszą informacją decyzyjną,
+    \item punkty krytyczne powinny być wyróżniane i mocniej karane w modelu,
+    \item metryki typu RMSE są potrzebne w raporcie technicznym, ale nie jako główny komunikat dla odbiorcy,
+    \item najlepszy format to decyzja + powód + szczegóły liczbowe.
+\end{itemize}
+
+Ta część uzasadnia zmianę modelu w stronę wag semantycznych i punktów ujemnych.
+Jeżeli użytkownik mówi, że najważniejsze jest ostrzeżenie przed opadem,
+oblodzeniem lub silnym wiatrem, to model nie powinien traktować wszystkich
+błędów tak samo. Błąd przy progu krytycznym ma większy koszt informacyjny niż
+zwykła różnica liczbowa w stabilnych warunkach.
+
 \end{document}
