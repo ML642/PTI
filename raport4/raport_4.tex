@@ -48,46 +48,11 @@
 
 \tableofcontents
 \newpage
+\section{Wprowadzenie}
 
-\section{Punkt wyjścia projektu}
+W ramach czwartego etapu projektu przechodzimy od czysto obliczeniowej (syntaktycznej) analizy danych do analizy ich znaczenia (semantyki) z punktu widzenia konkretnego odbiorcy. Zamiast minimalizacji suchych błędów liczbowych, kluczowe staje się wydobycie „istoty” informacji i ocena, czy pomyłki modeli faktycznie wpływają na operacyjne decyzje użytkownika.
 
-W folderze projektu znajdują się kolejne etapy pracy laboratoryjnej. Raporty
-1 i 2 opisują problem prognoz meteorologicznych oraz stan wiedzy, natomiast
-raport 3 przechodzi do poziomu syntaktycznego: dane z różnych źródeł są
-pobierane, sprowadzane do plików CSV i oceniane miarami liczbowymi, takimi jak
-punkty błędu oraz RMSE.
-
-W etapie 3 analizowane są źródła: Open-Meteo, yr.no, GFS, AIFS i GraphCast.
-Dane mają wspólną strukturę:
-\begin{verbatim}
-nazwa_zrodla/
-    temp.csv
-    opady.csv
-    wiatr.csv
-\end{verbatim}
-
-Każdy plik opisuje przebieg jednej wielkości w czasie. Dotychczasowa ocena
-odpowiadała więc na pytanie: \textit{czy wartości liczbowe są podobne do
-punktu odniesienia?} Raport 4 rozszerza tę analizę o pytanie semantyczne:
-\textit{czy prognoza prowadzi do tej samej interpretacji i tej samej decyzji
-użytkownika?}
-
-\section{Cel etapu 4}
-
-Celem etapu jest zbudowanie warstwy znaczeniowej nad danymi liczbowymi. Sama
-temperatura, suma opadu albo prędkość wiatru nie są jeszcze pełną informacją
-dla odbiorcy. Informacją użyteczną jest dopiero interpretacja: czy jest
-komfortowo, czy występuje ryzyko opadu, czy wiatr przeszkadza, czy dana
-godzina nadaje się do aktywności zewnętrznej.
-
-W tym etapie:
-\begin{itemize}
-    \item definiujemy profil odbiorcy informacji,
-    \item wprowadzamy taksonomię deskryptorów semantycznych,
-    \item zamieniamy dane liczbowe na klasy znaczeniowe,
-    \item porównujemy modele według zgodności semantycznej,
-    \item testujemy wyszukiwanie po treści, a nie po samej wartości liczbowej.
-\end{itemize}
+Dla problemu oceny prognoz meteorologicznych zdefiniowano profil odbiorcy planującego aktywność na zewnątrz. Wprowadzono taksonomię semantyczną oraz tzw. punkty krytyczne (np. granicę zamarzania), których przekroczenie drastycznie zmienia sens całego komunikatu. Opracowane metody indeksowania, wyszukiwania treści oraz przeprowadzona ankieta pozwalają na ostateczną, pragmatyczną ocenę przydatności analizowanych modeli.
 
 \section{Model odbiorcy}
 
@@ -490,25 +455,6 @@ zero. Najważniejszym elementem modelu nie jest sam wynik testu, lecz mechanizm
 dopasowania wag, który na trudniejszych danych będzie mocniej karał błędy przy
 progach krytycznych.
 
-\section{Implementacja}
-
-Dla etapu 4 przygotowano pięć plików kodu:
-\begin{itemize}
-    \item \texttt{semantic\_weather\_common.py} -- konfiguracja źródeł, wczytywanie CSV, mapowanie wartości na deskryptory i funkcje metryk,
-    \item \texttt{semantic\_evaluation.py} -- ranking semantyczny modeli oraz wykresy,
-    \item \texttt{semantic\_search\_tests.py} -- testy wyszukiwania po treści: precyzja, przywołanie, F1 i stopa sukcesu,
-    \item \texttt{own\_weather\_model.py} -- własny algorytm prognozowania pogody i dopasowanie wag,
-    \item \texttt{critical\_scenario\_analysis.py} -- scenariusze pokazujące znaczenie progów krytycznych.
-\end{itemize}
-
-Kod wczytuje dane z folderu \texttt{raport\_3}. Ponieważ część plików CSV w
-repozytorium zawiera aktualnie znaczniki konfliktów git, moduł wczytujący
-pomija linie zaczynające się od \texttt{<<<<<<<}, \texttt{=======} i
-\texttt{>>>>>>>}. Nie zmienia to danych źródłowych, ale pozwala wykonać
-analizę mimo niezamkniętego konfliktu.
-
-Najważniejsze fragmenty kodu zostały wklejone bezpośrednio przy etapach, których
-dotyczą. Pełne wersje skryptów znajdują się w folderze \texttt{raport4}.
 
 \section{Wyniki rankingu semantycznego}
 
@@ -674,33 +620,6 @@ Najważniejsze ograniczenia:
     \item progi semantyczne są eksperckie i powinny być dopasowane do realnych opinii użytkowników.
 \end{itemize}
 
-\section{Wnioski}
-
-Raport 4 pokazuje przejście od analizy syntaktycznej do semantycznej. W
-raporcie 3 model był oceniany głównie przez odległość liczbową od punktu
-odniesienia. W tym etapie oceniamy, czy model zachowuje znaczenie informacji:
-czy wskazuje te same klasy pogody, te same okna czasowe i tę samą decyzję
-użytkownika.
-
-Najlepsze wyniki w obecnym zbiorze osiąga Open-Meteo, ale jest to przypadek
-szczególny, ponieważ źródło to jest bardzo bliskie przyjętemu punktowi
-odniesienia. Własny model został ostatecznie oparty wyłącznie na danych
-historycznych: korzysta z poprzednich wartości temperatury, opadu i wiatru, a
-nie z prognoz cudzych modeli. Jego wynik należy traktować jako ocenę prostego
-algorytmu krótkoterminowego, a nie jako dowód przewagi nad modelami
-meteorologicznymi. GraphCast wymaga dalszej kontroli, ponieważ jego błędy
-częściej zmieniają klasy znaczeniowe.
-
-Analiza została zmieniona przez dodanie punktów krytycznych. Dzięki temu
-metoda nie traktuje wszystkich godzin jednakowo: większe znaczenie mają
-momenty przejścia przez \(0^\circ C\), pojawienia się istotnego opadu,
-silnego wiatru albo temperatur skrajnych. Jest to ważne, ponieważ właśnie w
-takich miejscach mały błąd liczbowy może prowadzić do dużej pomyłki
-interpretacyjnej.
-
-Dalsze usprawnienie metody powinno polegać na włączeniu niezależnych pomiarów
-rzeczywistych, zebraniu opinii użytkowników i przetestowaniu zapytań na danych
-zawierających opady, silny wiatr oraz temperatury skrajne.
 
 \section{Przedstawienie wyników użytkownikom i ocena przydatności}
 
@@ -864,5 +783,54 @@ Jeżeli użytkownik mówi, że najważniejsze jest ostrzeżenie przed opadem,
 oblodzeniem lub silnym wiatrem, to model nie powinien traktować wszystkich
 błędów tak samo. Błąd przy progu krytycznym ma większy koszt informacyjny niż
 zwykła różnica liczbowa w stabilnych warunkach.
+\newpage
+\section{Wnioski}
 
+Raport 4 pokazuje przejście od analizy syntaktycznej do semantycznej. W
+raporcie 3 model był oceniany głównie przez odległość liczbową od punktu
+odniesienia. W tym etapie oceniamy, czy model zachowuje znaczenie informacji:
+czy wskazuje te same klasy pogody, te same okna czasowe i tę samą decyzję
+użytkownika.
+
+Najlepsze wyniki w obecnym zbiorze osiąga Open-Meteo, ale jest to przypadek
+szczególny, ponieważ źródło to jest bardzo bliskie przyjętemu punktowi
+odniesienia. Własny model został ostatecznie oparty wyłącznie na danych
+historycznych: korzysta z poprzednich wartości temperatury, opadu i wiatru, a
+nie z prognoz cudzych modeli. Jego wynik należy traktować jako ocenę prostego
+algorytmu krótkoterminowego, a nie jako dowód przewagi nad modelami
+meteorologicznymi. GraphCast wymaga dalszej kontroli, ponieważ jego błędy
+częściej zmieniają klasy znaczeniowe.
+
+Analiza została zmieniona przez dodanie punktów krytycznych. Dzięki temu
+metoda nie traktuje wszystkich godzin jednakowo: większe znaczenie mają
+momenty przejścia przez \(0^\circ C\), pojawienia się istotnego opadu,
+silnego wiatru albo temperatur skrajnych. Jest to ważne, ponieważ właśnie w
+takich miejscach mały błąd liczbowy może prowadzić do dużej pomyłki
+interpretacyjnej.
+
+Dalsze usprawnienie metody powinno polegać na włączeniu niezależnych pomiarów
+rzeczywistych, zebraniu opinii użytkowników i przetestowaniu zapytań na danych
+zawierających opady, silny wiatr oraz temperatury skrajne.
+
+\begin{thebibliography}{9}
+
+\bibitem{openmeteo} 
+Open-Meteo Weather API, \url{https://open-meteo.com/}.
+
+\bibitem{gfs} 
+Global Forecast System (GFS), National Centers for Environmental Prediction (NCEP).
+
+\bibitem{graphcast} 
+Google DeepMind, \textit{GraphCast: AI-based medium-range weather forecasting}.
+
+\bibitem{aifs} 
+ECMWF Artificial Intelligence Forecasting System (AIFS), European Centre for Medium-Range Weather Forecasts.
+
+\bibitem{yr} 
+Yr.no weather service, Norwegian Meteorological Institute and Norwegian Broadcasting Corporation (NRK).
+
+\bibitem{pti_slides} 
+\textit{Materiały dydaktyczne i slajdy do wykładów: PTI1\_wprowadzenie, PTI2\_obserwacje, PTI3\_kompresja, PTI4\_ekstrakcja, PTI5\_zarządzanie, PTI6\_pragmatyka}, Politechnika Warszawska, Wydział Matematyki i Nauk Informacyjnych.
+
+\end{thebibliography}
 \end{document}
