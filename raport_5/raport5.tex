@@ -1,0 +1,341 @@
+\documentclass[a4paper,12pt]{article}
+
+% --- Pakiety ---
+\usepackage[polish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[top=2.5cm,bottom=2.5cm,left=3cm,right=3cm]{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{float}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{titlesec}
+
+\titlespacing*{\subsection}{0pt}{12pt}{6pt}
+\setlength{\parindent}{15pt}
+\setlength{\parskip}{6pt}
+\renewcommand{\arraystretch}{1.15}
+\setlength{\tabcolsep}{3pt}
+
+% --- Tytuł ---
+\title{
+    \vspace{1.5cm}
+    \textbf{PODSTAWY TEORII INFORMACJI}\\
+    \vspace{1.5cm}
+    Laboratorium 5\\
+    Eksperyment pragmatyczny i wnioski końcowe\\
+    \vspace{1.5cm}
+    \huge \textbf{Użyteczność prognoz meteorologicznych w decyzjach użytkowników}\\
+    \vspace{1cm}
+}
+
+\author{
+Maciek Chotkowski \\ Martsin Lazouski \\ Nadia Ziecina \\
+Michał Kasznia \\ Kasiński Julian \\ Volodymyr Kamenchuk \\ Usevalad Nikalaichuk
+}
+
+\date{29 maja 2026}
+
+\begin{document}
+
+\maketitle
+\newpage
+
+\tableofcontents
+\newpage
+
+\section{Cel raportu}
+
+Celem raportu jest sprawdzenie, czy nasze narzędzie pogodowe jest użyteczne dla
+różnych użytkowników. W poprzednich raportach ocenialiśmy głównie zgodność
+prognoz z danymi referencyjnymi. W tym etapie interesuje nas coś innego: czy
+prognoza, nawet jeśli jest technicznie poprawna, rzeczywiście pomaga ludziom w
+podjęciu decyzji.
+
+Eksperyment ma dwie części. Najpierw, dnia \textbf{18 maja 2026}, pytamy grupę
+20 osób, co chcą zrobić następnego dnia. Następnie zapisujemy \textbf{naszą
+prognozę} dla dnia \textbf{19 maja 2026} i podejmujemy \textbf{naszą decyzję}:
+czy dana aktywność jest możliwa, niemożliwa albo możliwa warunkowo. Druga część
+polega na tym samym, ale dla prognozy z tygodniowym wyprzedzeniem: dnia
+\textbf{18 maja 2026} pytamy o plany na \textbf{25 maja 2026}. W tej części
+trafność powinna być mniejsza, ponieważ im dalszy horyzont prognozy, tym większa
+niepewność pogody i samego użytkownika.
+
+\section{Pytania ogólne}
+
+Najpierw nie pytaliśmy o jedną konkretną aktywność, tylko o potrzeby
+użytkowników. Użyliśmy prostego zestawu pytań:
+
+\begin{enumerate}
+    \item Co chcesz zrobić jutro na zewnątrz?
+    \item O której godzinie planujesz tę aktywność?
+    \item Które warunki są dla Ciebie najważniejsze: temperatura, opady, wiatr,
+    stan podłoża, bezpieczeństwo, komfort?
+    \item Przy jakich warunkach zrezygnujesz?
+    \item Czy decyzja zależy tylko od Ciebie, czy także od kogoś innego, np.
+    trenera, organizatora, rodzica albo administratora obiektu?
+    \item Czy po wykonaniu lub odwołaniu planu oceniasz prognozę jako użyteczną?
+\end{enumerate}
+
+Takie pytania pozwalają przejść od samej prognozy do modelu użytkownika. Dla
+jednej osoby lekki deszcz jest małym problemem, dla innej oznacza całkowitą
+rezygnację. Dlatego ta sama prognoza może mieć różną wartość praktyczną.
+
+\section{Daty, nasza prognoza i nasza decyzja}
+
+Badanie zapisujemy w konkretnym harmonogramie, żeby później można było wrócić
+do danych i sprawdzić, czy model rzeczywiście pomógł w decyzji.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{p{3.0cm}p{10.0cm}}
+\toprule
+\textbf{Data} & \textbf{Czynność} \\
+\midrule
+18.05.2026 & pytamy 20 osób o plan na następny dzień i ich warunki rezygnacji \\
+18.05.2026 wieczorem & zapisujemy naszą prognozę na 19.05.2026 i naszą decyzję dla każdej osoby \\
+19.05.2026 & sprawdzamy, czy użytkownicy faktycznie mogli wykonać plan \\
+25.05.2026 & sprawdzamy osobny eksperyment: prognozę wykonaną tydzień wcześniej \\
+26.05.2026 & po tygodniu sprawdzamy wybrane pomiary: temperaturę, opady i wiatr \\
+\bottomrule
+\end{tabular}
+\caption{Harmonogram eksperymentu.}
+\end{table}
+
+Nasza prognoza robocza dla Warszawy na 19 maja 2026 była następująca:
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{p{2.0cm}p{2.6cm}p{2.6cm}p{2.4cm}p{4.0cm}}
+\toprule
+\textbf{Godzina} & \textbf{Temperatura} & \textbf{Opady} & \textbf{Wiatr} & \textbf{Nasza decyzja ogólna} \\
+\midrule
+08:00 & około $12^\circ C$ & słaby opad & słaby & aktywności wrażliwe na mokrą nawierzchnię: warunkowo albo nie \\
+12:00 & około $17^\circ C$ & brak opadów & słaby & większość aktywności możliwa \\
+17:00 & około $19^\circ C$ & brak opadów & słaby & sport i spacer możliwe, ale stan podłoża trzeba sprawdzić osobno \\
+20:00 & około $17^\circ C$ & brak opadów & słaby & aktywności krótkie możliwe, decyzja zależy od użytkownika \\
+\bottomrule
+\end{tabular}
+\caption{Nasza prognoza i decyzja ogólna dla dnia 19.05.2026.}
+\end{table}
+
+Już na tym etapie widać problem pragmatyczny. Pogoda po południu wygląda
+dobrze, więc model może powiedzieć: ,,gra albo spacer są możliwe''. Jednak stan
+boiska, wcześniejsze opady, zdrowie zawodnika albo decyzja trenera nie wynikają
+bezpośrednio z samej prognozy.
+
+\section{Grupa badana}
+
+W eksperymencie uwzględniono 20 osób z różnymi potrzebami. Nie chodziło o to,
+aby uzyskać statystycznie pełną próbę, ale żeby pokazać różne typy sytuacji, w
+których prognoza pogody jest wykorzystywana.
+
+\begin{table}[H]
+\centering
+\scriptsize
+\begin{tabular}{p{0.8cm}p{2.6cm}p{3.4cm}p{4.2cm}p{2.5cm}}
+\toprule
+\textbf{Nr} & \textbf{Grupa} & \textbf{Plan} & \textbf{Najważniejsze warunki} & \textbf{Kto decyduje?} \\
+\midrule
+1 & piłkarz & trening na boisku & opady, stan murawy, kontuzje & trener i zawodnik \\
+2 & piłkarz & mecz amatorski & opady, wiatr, dostępność boiska & organizator \\
+3 & biegacz & trening 10 km & temperatura, opady, wiatr & użytkownik \\
+4 & rowerzysta & dojazd do pracy & opady, wiatr, bezpieczeństwo & użytkownik \\
+5 & rodzic & spacer z dzieckiem & temperatura, opady, wiatr & rodzic \\
+6 & uczeń & droga do szkoły & opady, temperatura & rodzic i uczeń \\
+7 & student & przejście między zajęciami & opady, komfort & użytkownik \\
+8 & pracownik budowy & praca na zewnątrz & deszcz, wiatr, bezpieczeństwo & kierownik \\
+9 & ogrodnik & prace w ogrodzie & opady, wilgotność podłoża & użytkownik \\
+10 & fotograf & zdjęcia plenerowe & opady, zachmurzenie, światło & klient i fotograf \\
+11 & kierowca & dłuższa trasa & opady, śliskość, widoczność & użytkownik \\
+12 & kurier & dostawy rowerowe & deszcz, wiatr, czas & firma i użytkownik \\
+13 & trener & zajęcia sportowe & opady, bezpieczeństwo grupy & trener \\
+14 & właściciel psa & spacer & opady, temperatura & użytkownik \\
+15 & senior & wyjście do sklepu & śliskość, wiatr, temperatura & użytkownik \\
+16 & organizator & małe wydarzenie plenerowe & opady, wiatr, komfort grupy & organizator \\
+17 & turysta & krótka wycieczka & opady, wiatr, temperatura & grupa \\
+18 & operator drona & lot testowy & wiatr, opady, widoczność & użytkownik \\
+19 & pracownik kawiarni & ogródek zewnętrzny & opady, temperatura, wiatr & właściciel \\
+20 & osoba po urazie & lekki trening & śliskość, opady, ryzyko kontuzji & użytkownik \\
+\bottomrule
+\end{tabular}
+\caption{Przykładowa grupa 20 osób o różnych potrzebach pogodowych.}
+\end{table}
+
+\section{Przewidywanie i odpowiedzi po fakcie}
+
+Dla każdej osoby zapisaliśmy datę aktywności, naszą decyzję oraz późniejszą
+odpowiedź użytkownika. Odpowiedź ,,warunkowo'' oznaczała, że aktywność jest
+możliwa, ale istnieje ryzyko albo trzeba zmienić plan.
+
+\begin{table}[H]
+\centering
+\scriptsize
+\begin{tabular}{p{0.8cm}p{2.0cm}p{2.7cm}p{2.0cm}p{2.0cm}p{4.0cm}}
+\toprule
+\textbf{Nr} & \textbf{Godz.} & \textbf{Plan} & \textbf{Nasza decyzja} & \textbf{Faktycznie} & \textbf{Interpretacja} \\
+\midrule
+1 & 17:00 & trening piłkarski & warunkowo & tak & trener zdecydował, że zajęcia się odbędą mimo mokrej murawy \\
+2 & 18:00 & mecz amatorski & warunkowo & nie & administrator zamknął boisko po wcześniejszych opadach \\
+3 & 12:00 & bieganie & tak & tak & lekki wiatr nie miał większego znaczenia \\
+4 & 08:00 & rower do pracy & warunkowo & nie & użytkownik uznał mokrą nawierzchnię za zbyt ryzykowną \\
+5 & 08:00 & spacer z dzieckiem & nie & nie & poranny opad był wystarczającym powodem rezygnacji \\
+6 & 08:00 & droga do szkoły & tak & tak & prognoza wystarczyła do przygotowania ubioru \\
+7 & 12:00 & przejście między zajęciami & tak & tak & aktywność była krótka, więc pogoda nie przeszkodziła \\
+8 & 08:00 & praca budowlana & nie & nie & kierownik odwołał część pracy ze względów bezpieczeństwa \\
+9 & 17:00 & ogród & warunkowo & nie & podłoże było zbyt mokre, czego model nie przewidział dokładnie \\
+10 & 17:00 & zdjęcia & tak & nie & brak opadów nie wystarczył, bo problemem było światło i zachmurzenie \\
+11 & 12:00 & trasa autem & tak & tak & warunki były akceptowalne \\
+12 & 12:00 & dostawy rowerowe & warunkowo & tak & firma wymagała realizacji, użytkownik dostosował ubiór \\
+13 & 17:00 & zajęcia sportowe & warunkowo & tak & trener zaakceptował ryzyko i zmienił intensywność zajęć \\
+14 & 20:00 & spacer z psem & tak & tak & użytkownik zaakceptował lekko mokre warunki \\
+15 & 08:00 & wyjście seniora & warunkowo & nie & osoba zrezygnowała przez obawę przed śliską nawierzchnią \\
+16 & 17:00 & wydarzenie plenerowe & warunkowo & nie & organizator odwołał wydarzenie z powodu ryzyka dla grupy \\
+17 & 12:00 & wycieczka & warunkowo & tak & grupa skróciła trasę \\
+18 & 17:00 & lot dronem & tak & tak & wiatr był słaby, więc próba była możliwa \\
+19 & 20:00 & ogródek kawiarni & warunkowo & nie & właściciel uznał, że będzie za mało klientów \\
+20 & 17:00 & lekki trening po urazie & warunkowo & nie & indywidualne ryzyko kontuzji było ważniejsze niż sama pogoda \\
+\bottomrule
+\end{tabular}
+\caption{Nasza decyzja i odpowiedź użytkownika dla dnia 19.05.2026.}
+\end{table}
+
+\section{Kontrola pomiarów po tygodniu}
+
+Po tygodniu warto sprawdzić kilka konkretnych pomiarów, a nie tylko polegać na
+odpowiedziach użytkowników. Dlatego dla dnia 19.05.2026 zapisujemy wybrane
+godziny i parametry do późniejszej kontroli.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{p{2.4cm}p{2.4cm}p{2.4cm}p{2.4cm}p{4.0cm}}
+\toprule
+\textbf{Godzina} & \textbf{Temperatura} & \textbf{Opady} & \textbf{Wiatr} & \textbf{Znaczenie dla decyzji} \\
+\midrule
+08:00 & $12.0^\circ C$ & 0.3 mm & 1.5 m/s & mokra nawierzchnia mogła zmienić decyzję rowerzysty i seniora \\
+12:00 & $16.9^\circ C$ & 0.0 mm & 1.1 m/s & dobre warunki dla krótkich aktywności \\
+17:00 & $18.6^\circ C$ & 0.0 mm & 1.7 m/s & pogoda dobra, ale stan boiska i organizacja nadal istotne \\
+20:00 & $16.9^\circ C$ & 0.0 mm & 1.9 m/s & sama pogoda nie tłumaczy rezygnacji kawiarni \\
+\bottomrule
+\end{tabular}
+\caption{Wybrane pomiary do kontroli po tygodniu.}
+\end{table}
+
+Ta kontrola jest ważna, bo oddziela dwa rodzaje błędów. Pierwszy to błąd
+prognozy pogody, np. źle przewidziany deszcz. Drugi to błąd użyteczności, gdy
+pogoda została przewidziana poprawnie, ale decyzja użytkownika zależała od
+czegoś innego.
+
+\section{Osobny eksperyment: prognoza za tydzień}
+
+Drugi eksperyment wykonujemy dla dłuższego horyzontu czasowego. Dnia
+\textbf{18.05.2026} pytamy te same osoby o plany na \textbf{25.05.2026}, czyli
+na tydzień później. Nasza prognoza nie jest już traktowana tak pewnie jak
+prognoza jednodniowa. Przy prognozie tygodniowej model może jeszcze wskazać
+ogólny trend, ale trudniej przewidzieć konkretną godzinę opadu, stan boiska,
+siłę wiatru i decyzje organizacyjne.
+
+Nasza decyzja dla prognozy tygodniowej była więc ostrożniejsza. Częściej
+używaliśmy odpowiedzi \textbf{warunkowo}, ponieważ przy takim horyzoncie nie da
+się uczciwie obiecać, że warunki będą dokładnie takie jak w prognozie.
+
+\begin{table}[H]
+\centering
+\scriptsize
+\begin{tabular}{p{0.8cm}p{2.8cm}p{2.2cm}p{2.2cm}p{5.0cm}}
+\toprule
+\textbf{Nr} & \textbf{Plan na 25.05} & \textbf{Nasza decyzja 18.05} & \textbf{Faktycznie} & \textbf{Dlaczego wynik się zmienił?} \\
+\midrule
+1 & trening piłkarski & warunkowo & nie & boisko było zajęte, a trener zmienił plan zajęć \\
+2 & mecz amatorski & warunkowo & tak & pogoda była gorsza niż oczekiwano, ale organizator nie odwołał meczu \\
+3 & bieganie & tak & nie & użytkownik zrezygnował z powodów prywatnych, niezależnych od pogody \\
+4 & rower do pracy & warunkowo & tak & opad przesunął się na inną godzinę niż przewidywano \\
+5 & spacer z dzieckiem & warunkowo & nie & pojawił się silniejszy wiatr i rodzic uznał spacer za niekomfortowy \\
+8 & praca budowlana & warunkowo & nie & decyzję podjął kierownik po sprawdzeniu warunków rano \\
+10 & zdjęcia plenerowe & warunkowo & nie & problemem było zachmurzenie i światło, a nie sama temperatura \\
+13 & zajęcia sportowe & warunkowo & tak & trener przeniósł zajęcia na późniejszą godzinę \\
+16 & wydarzenie plenerowe & warunkowo & nie & organizator odwołał wydarzenie ze względu na ryzyko dla grupy \\
+18 & lot dronem & nie & nie & w tym przypadku ostrożna decyzja była trafna, bo wiatr nadal był ryzykowny \\
+\bottomrule
+\end{tabular}
+\caption{Przykładowe wyniki eksperymentu dla prognozy z tygodniowym wyprzedzeniem.}
+\end{table}
+
+W tym eksperymencie trafność jest wyraźnie mniejsza. Dla prognozy na następny
+dzień większość decyzji była przynajmniej częściowo użyteczna, bo warunki
+pogodowe nie zdążyły się mocno zmienić. Dla prognozy tygodniowej pojawia się
+więcej błędów: zmienia się godzina opadów, użytkownik zmienia plan, trener
+przesuwa zajęcia, organizator odwołuje wydarzenie albo stan boiska okazuje się
+inny niż zakładaliśmy.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{p{4.0cm}p{3.0cm}p{6.0cm}}
+\toprule
+\textbf{Horyzont prognozy} & \textbf{Trafność decyzji} & \textbf{Interpretacja} \\
+\midrule
+1 dzień & około 65--70\% & prognoza jest dość użyteczna, bo warunki i plany użytkowników są jeszcze stabilne \\
+7 dni & około 40--50\% & trafność spada, bo rośnie niepewność pogody, organizacji i zachowania użytkowników \\
+\bottomrule
+\end{tabular}
+\caption{Porównanie trafności dla prognozy jednodniowej i tygodniowej.}
+\end{table}
+
+Ten eksperyment pokazuje ważną rzecz: niższa trafność po tygodniu nie oznacza,
+że narzędzie jest bezużyteczne. Oznacza tylko, że decyzja powinna być mniej
+kategoryczna. Przy horyzoncie tygodniowym narzędzie powinno mówić raczej:
+,,wstępnie wygląda dobrze'', ,,ryzyko jest podwyższone'' albo ,,sprawdź ponownie
+dzień wcześniej''. Wtedy prognoza nadal wspiera planowanie, ale nie udaje
+pewności, której w rzeczywistości nie ma.
+
+\section{Interpretacja eksperymentu}
+
+Wyniki obu eksperymentów pokazują, że prognoza może być teoretycznie poprawna,
+ale jej użyteczność zależy od użytkownika oraz od horyzontu czasowego.
+Najciekawsze są przypadki, w których kilka osób otrzymało podobną prognozę, ale
+podjęło różne decyzje. Dla piłkarza trening mógł się odbyć, jeżeli trener
+zaakceptował warunki. Dla innego zawodnika podobna pogoda nie wystarczyła,
+ponieważ boisko zostało zamknięte.
+
+To oznacza, że model pogodowy nie odpowiada wprost na pytanie: ,,czy na pewno
+zrobię to jutro?''. Odpowiada raczej: ,,czy pogoda wygląda na wystarczającą do
+tej aktywności?''. Między tymi pytaniami istnieje duża różnica.
+
+Decyzję można zapisać jako:
+\[
+D = f(W, U, O, L)
+\]
+gdzie $W$ oznacza pogodę, $U$ użytkownika, $O$ organizację, a $L$ czynniki
+losowe. Nasze narzędzie najlepiej przewiduje $W$, częściowo może uwzględnić
+$U$, ale nigdy nie przewidzi w pełni $O$ i $L$.
+
+\section{Wnioski z całego projektu}
+
+Raport 1 pokazał, że różne modele pogodowe potrafią dawać różne wyniki i trzeba
+je porównywać za pomocą metryk błędu. Raport 2 wprowadził model użytkownika i
+pokazał, że informacja jest wartościowa dopiero wtedy, gdy wspiera decyzję.
+Raport 3 zbudował techniczną część projektu: pobieranie danych, wspólny format
+CSV i porównywanie źródeł. Raport 4 przesunął projekt w stronę własnego modelu
+i interpretacji wyników.
+
+Raport 5 pokazuje ograniczenie całego podejścia. Nawet jeśli prognoza jest
+poprawna, użyteczność narzędzia zależy od wielu rzeczy poza pogodą: zdrowia,
+obowiązków, decyzji trenera, decyzji administratora, stanu boiska, decyzji
+organizatora albo indywidualnej tolerancji na ryzyko. Osobny eksperyment z
+prognozą tygodniową pokazuje dodatkowo, że wraz z wydłużeniem horyzontu spada
+trafność decyzji.
+
+Końcowy wniosek jest taki, że nasze narzędzie może wspierać decyzje, ale nie
+może ich całkowicie zastąpić. Prognoza jest jednym z elementów decyzji, ale nie
+całą decyzją. Dlatego najlepszy system nie powinien tylko mówić ,,tak'' albo
+,,nie'', ale także pokazywać ryzyko, warunki i możliwe ograniczenia. Właśnie w
+tym sensie użyteczność prognozy zależy od użytkownika.
+
+\end{document}
