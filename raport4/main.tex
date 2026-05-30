@@ -52,6 +52,7 @@
 
 W ramach czwartego etapu projektu przechodzimy od czysto obliczeniowej (syntaktycznej) analizy danych do analizy ich znaczenia (semantyki) z punktu widzenia konkretnego odbiorcy. Zamiast minimalizacji suchych błędów liczbowych, kluczowe staje się wydobycie „istoty” informacji i ocena, czy pomyłki modeli faktycznie wpływają na operacyjne decyzje użytkownika.
 
+\noindent
 Dla problemu oceny prognoz meteorologicznych zdefiniowano profil odbiorcy planującego aktywność na zewnątrz. Wprowadzono taksonomię semantyczną oraz tzw. punkty krytyczne (np. granicę zamarzania), których przekroczenie drastycznie zmienia sens całego komunikatu. Opracowane metody indeksowania, wyszukiwania treści oraz przeprowadzona ankieta pozwalają na ostateczną, pragmatyczną ocenę przydatności analizowanych modeli.
 
 \section{Model odbiorcy}
@@ -65,6 +66,7 @@ Czy w danej godzinie warunki są dobre, wymagają ostrożności, czy są
 niekorzystne?
 \end{quote}
 
+\noindent
 Dla tego profilu największą wagę mają opady i wiatr, ponieważ bezpośrednio
 wpływają na decyzję o wyjściu. Temperatura jest istotna, ale niewielki błąd
 temperatury rzadko zmienia decyzję, jeżeli nadal mieści się w tej samej klasie
@@ -79,6 +81,7 @@ atrybuty liczbowe:
 \]
 gdzie \(T_t\) oznacza temperaturę, \(P_t\) opad, a \(W_t\) prędkość wiatru.
 
+\noindent
 Na tej podstawie tworzony jest opis znaczeniowy:
 \[
     d_t = (c_T, c_P, c_W, c_D),
@@ -86,7 +89,7 @@ Na tej podstawie tworzony jest opis znaczeniowy:
 gdzie \(c_T\), \(c_P\), \(c_W\) są deskryptorami temperatury, opadu i wiatru,
 a \(c_D\) jest końcową klasą decyzyjną.
 
-\begin{table}[h]
+\begin{table}[!h]
 \centering
 \caption{Przyjęte deskryptory semantyczne}
 \begin{tabular}{lll}
@@ -113,11 +116,13 @@ Wiatr & \(W \geq 8.0\) m/s & silny wiatr \\
 \end{tabular}
 \end{table}
 
+\noindent
 Końcowa klasa decyzyjna ma trzy wartości: \textit{dobre}, \textit{ostrożnie}
 i \textit{złe}. Warunki są oznaczane jako złe przy umiarkowanym lub silnym
 opadzie, silnym wietrze, mrozie albo upale. Klasa ostrożnie oznacza sytuacje
 graniczne: zimno, słaby opad albo wiatr odczuwalny.
 
+\noindent
 Ten etap jest realizowany w kodzie przez funkcje mapujące wartości liczbowe na
 deskryptory. Poniżej wklejono najważniejszy fragment z pliku
 \texttt{semantic\_weather\_common.py}. Kod pokazuje, że model nie operuje już
@@ -149,12 +154,14 @@ def decision_label(temp, rain, wind):
 
 \section{Miary oceny semantycznej}
 
+\noindent
 Miara syntaktyczna karze każdy błąd liczbowy. Miara semantyczna karze przede
 wszystkim zmianę znaczenia. Przykładowo różnica temperatury z \(19^\circ C\)
 na \(20^\circ C\) jest błędem liczbowym, ale nie zmienia interpretacji
 użytkownika. Różnica z \(17.8^\circ C\) na \(18.2^\circ C\) może natomiast
 zmienić klasę z chłodno na komfort.
 
+\noindent
 Dla każdej godziny obliczono ważoną zgodność semantyczną:
 \[
 S = 1 - (0.25 d_T + 0.45 d_P + 0.30 d_W),
@@ -163,6 +170,7 @@ gdzie \(d_T\), \(d_P\), \(d_W\) są znormalizowanymi odległościami między
 klasami temperatury, opadu i wiatru. Waga opadu jest największa, ponieważ dla
 przyjętego użytkownika opad najsilniej wpływa na decyzję.
 
+\noindent
 Dodatkowo liczono:
 \begin{itemize}
     \item zgodność końcowej decyzji użytkownika,
@@ -181,9 +189,38 @@ tylko \(1.2^\circ C\), ale po jednej stronie granicy możliwy jest śnieg,
 zamarzanie wody albo oblodzenie, a po drugiej stronie użytkownik może
 interpretować sytuację jako zwykły deszcz lub brak ryzyka zamarzania.
 
+\noindent
 Z tego powodu do analizy dodano osobną warstwę punktów krytycznych. Nie są to
 zwykłe błędy numeryczne, lecz miejsca, w których zmienia się sens komunikatu
 dla odbiorcy.
+
+\noindent
+Dla każdego modelu sprawdzane jest, czy wykrywa tę samą stronę progu
+krytycznego co punkt odniesienia. Jeżeli punkt odniesienia wskazuje mróz, a
+model pokazuje temperaturę dodatnią, taki przypadek otrzymuje większą wagę
+interpretacyjną niż zwykła różnica temperatur wewnątrz tej samej klasy.
+
+\noindent
+Kod tego etapu znajduje się również w pliku
+\texttt{semantic\_weather\_common.py}. Fragment poniżej pokazuje, jakie
+sytuacje są traktowane jako punkty krytyczne. Nie jest to pełny model prognozy,
+tylko dodatkowa warstwa kontroli znaczenia wyniku.
+
+\begin{lstlisting}[language=Python]
+def critical_flags(df, source_key):
+    temp = df[f"temp_{source_key}"]
+    rain = df[f"opady_{source_key}"]
+    wind = df[f"wiatr_{source_key}"]
+
+    return pd.DataFrame({
+        "freezing_boundary": temp <= 0.0,
+        "snow_or_ice_risk": (temp <= 0.5) & (rain > 0.1),
+        "significant_precipitation": rain > 0.5,
+        "heavy_precipitation": rain > 2.0,
+        "strong_wind": wind >= 8.0,
+        "thermal_extreme": (temp <= -5.0) | (temp >= 30.0),
+    }, index=df.index)
+\end{lstlisting}
 
 \begin{table}[h]
 \centering
@@ -206,32 +243,6 @@ Temperatura skrajna & \(T \leq -5^\circ C\) lub \(T \geq 30^\circ C\) & ryzyko w
 \normalsize
 \end{table}
 
-Dla każdego modelu sprawdzane jest, czy wykrywa tę samą stronę progu
-krytycznego co punkt odniesienia. Jeżeli punkt odniesienia wskazuje mróz, a
-model pokazuje temperaturę dodatnią, taki przypadek otrzymuje większą wagę
-interpretacyjną niż zwykła różnica temperatur wewnątrz tej samej klasy.
-
-Kod tego etapu znajduje się również w pliku
-\texttt{semantic\_weather\_common.py}. Fragment poniżej pokazuje, jakie
-sytuacje są traktowane jako punkty krytyczne. Nie jest to pełny model prognozy,
-tylko dodatkowa warstwa kontroli znaczenia wyniku.
-
-\begin{lstlisting}[language=Python]
-def critical_flags(df, source_key):
-    temp = df[f"temp_{source_key}"]
-    rain = df[f"opady_{source_key}"]
-    wind = df[f"wiatr_{source_key}"]
-
-    return pd.DataFrame({
-        "freezing_boundary": temp <= 0.0,
-        "snow_or_ice_risk": (temp <= 0.5) & (rain > 0.1),
-        "significant_precipitation": rain > 0.5,
-        "heavy_precipitation": rain > 2.0,
-        "strong_wind": wind >= 8.0,
-        "thermal_extreme": (temp <= -5.0) | (temp >= 30.0),
-    }, index=df.index)
-\end{lstlisting}
-
 \section{Własny algorytm przewidywania pogody}
 
 Właściwym celem tej części projektu nie jest tylko porównanie gotowych modeli,
@@ -241,6 +252,7 @@ Oznacza to, że model nie korzysta z prognoz AIFS, GFS, GraphCast, yr.no ani
 Open-Meteo jako wejścia. Dla każdej godziny wykorzystuje tylko wcześniejsze
 wartości tego samego szeregu czasowego.
 
+\noindent
 Zaproponowany algorytm można nazwać historycznym modelem autoregresyjnym z
 korektą punktów krytycznych. Nie próbuje on opisywać pełnej fizyki atmosfery.
 Jego zadaniem jest krótkoterminowe przewidywanie następnej wartości na
@@ -266,6 +278,7 @@ Algorytm działa w następujących krokach:
     \item zapisuje wynik jako nowe źródło danych: \texttt{own\_model}.
 \end{enumerate}
 
+\noindent
 Błąd używany do dopasowania ma postać semantyczną:
 \[
 E_{m} = \frac{1}{n}\sum_t \left(|x_m(t)-\hat{x}_m(t)| - N_{crit}(t)\right),
@@ -278,6 +291,7 @@ Przykładowo prognoza \(0.6^\circ C\) przy rzeczywistej temperaturze
 \(-0.6^\circ C\) dostaje więcej punktów ujemnych niż zwykły błąd \(1.2^\circ C\)
 daleko od granicy zamarzania.
 
+\noindent
 To jest główna zmiana względem zwykłego modelu historycznego: wagi nie są
 dobierane tylko po to, aby liczby były jak najbliżej, lecz po to, aby zachować
 znaczenie prognozy. Innymi słowy, strojenie wag ma charakter semantyczny.
@@ -302,6 +316,7 @@ Wiatr & pomylenie silnego wiatru \(8.0\) m/s & \(-10\) \\
 \normalsize
 \end{table}
 
+\noindent
 Prognoza jednej zmiennej jest liczona jako:
 \[
 \hat{x}_m(t) =
@@ -315,6 +330,7 @@ Jeżeli wartość z poprzedniej doby nie jest jeszcze dostępna, model zastępuj
 ostatnią znaną obserwacją. Dla opadu i wiatru wynik jest dodatkowo ograniczany
 od dołu do zera, ponieważ wartości ujemne nie mają sensu fizycznego.
 
+\noindent
 Poniższy fragment kodu pochodzi z pliku \texttt{own\_weather\_model.py}. To
 jest właściwy fragment budowania cech historycznych. Widać, że wejściem są
 tylko wcześniejsze obserwacje tej samej zmiennej.
@@ -334,6 +350,7 @@ def historical_components(values, index):
     }
 \end{lstlisting}
 
+\noindent
 Kolejny fragment pokazuje dopasowanie wag. Model sprawdza kilka prostych
 kombinacji składników historycznych i wybiera tę, która na części uczącej ma
 najmniejszy błąd krytycznie ważony.
@@ -388,6 +405,7 @@ def tune_weights(frame, metric, train_size):
     return best_weights
 \end{lstlisting}
 
+\noindent
 Ostatni fragment z tego etapu pokazuje korektę przy progach krytycznych.
 Przykładowo, jeżeli prognoza jest bardzo blisko \(0^\circ C\), występuje opad,
 a ostatnie obserwacje wskazują ujemną temperaturę, model przesuwa wynik na
@@ -426,6 +444,7 @@ Trend krótkoterminowy & 0.300 & 0.000 & 0.000 \\
 \end{tabular}
 \end{table}
 
+\noindent
 Po dopasowaniu model zapisał trzy pliki wynikowe:
 \begin{verbatim}
 raport4/own_model/temp.csv
@@ -433,6 +452,7 @@ raport4/own_model/opady.csv
 raport4/own_model/wiatr.csv
 \end{verbatim}
 
+\noindent
 W części testowej uzyskano następujące wyniki:
 \begin{table}[h]
 \centering
@@ -448,6 +468,7 @@ Wiatr & 0.511 & 0.617 & 0.000 & 0.511 \\
 \end{tabular}
 \end{table}
 
+\noindent
 Zgodność decyzji użytkownika w części testowej wyniosła 100\%. Trzeba jednak
 pamiętać, że obecne okno danych jest łatwe pogodowo: nie zawiera mrozu, silnego
 opadu ani silnego wiatru. Dlatego w tej próbce suma punktów ujemnych wynosi
@@ -487,6 +508,7 @@ GraphCast & 51 & 82.3 & 15.7 & 64.7 \\
 \caption{Porównanie zgodności semantycznej i zgodności decyzji użytkownika.}
 \end{figure}
 
+\noindent
 Wyniki pokazują, że historyczny model własny daje wysoką zgodność semantyczną,
 ale należy interpretować ją ostrożnie. Model przewiduje krótki horyzont na
 podstawie najbliższej historii, dlatego w spokojnym pogodowo okresie może
@@ -496,12 +518,13 @@ z inną informacją wejściową. GraphCast wypada gorzej, ponieważ częściej
 przechodzi do innych klas temperatury, opadu lub wiatru, co silnie obniża
 zgodność decyzji.
 
-\begin{figure}[h]
+\begin{figure}[!h]
 \centering
 \includegraphics[width=\textwidth]{semantic_timeline.png}
 \caption{Godzinowa zgodność semantyczna wybranych modeli względem punktu odniesienia.}
 \end{figure}
 
+\noindent
 Poprzednia wersja tego wykresu przedstawiała klasy decyzyjne w czasie. W tej
 próbce większość decyzji była taka sama, więc wykres wyglądał podejrzanie
 płasko. Obecna wersja pokazuje godzinową zgodność semantyczną i celowo pomija
@@ -517,6 +540,7 @@ temperaturze bliskiej zera, istotnych opadów, silnego wiatru ani temperatur
 skrajnych. Z tego powodu wszystkie modele mają w tej konkretnej próbce
 \(0\) błędów krytycznych.
 
+\noindent
 Ten wynik nie oznacza jednak, że progi krytyczne są zbędne. Oznacza tylko, że
 badane okno danych było pogodowo łatwe. Dlatego dodano również analizę
 scenariuszową, w której sprawdzono typowe przypadki graniczne.
@@ -538,6 +562,7 @@ Próg mrozu silniejszego & -5.3 & -4.7 & 0.0 & 0.0 & nie & decyzja zostaje zła,
 \end{tabular}
 \end{table}
 
+\noindent
 Scenariusze pokazują, że błąd o podobnej wartości liczbowej może mieć zupełnie
 inny ciężar informacyjny. Różnica \(1^\circ C\) przy temperaturach dodatnich
 często jest mało istotna, ale różnica wokół \(0^\circ C\) może zmienić rodzaj
@@ -557,9 +582,11 @@ można zadawać zapytania dotyczące znaczenia:
     \item Q5: komfort termiczny.
 \end{itemize}
 
+\noindent
 Dla każdego modelu porównano zbiór godzin zwróconych przez zapytanie ze zbiorem
 godzin referencyjnych. Obliczono precyzję, przywołanie, F1 oraz stopę sukcesu.
 
+\noindent
 Ten etap ma również własny fragment kodu w pliku
 \texttt{semantic\_search\_tests.py}. Poniżej pokazano ideę zapytań: zapytanie
 nie wybiera godzin po surowej temperaturze lub opadzie, tylko po wcześniej
@@ -597,6 +624,7 @@ GraphCast & 27.1 & 67.5 & 80.4 \\
 \end{tabular}
 \end{table}
 
+\noindent
 W badanym zakresie nie wystąpiły referencyjne godziny z istotnym opadem ani
 złymi warunkami. Z tego powodu precyzja i przywołanie dla zapytań Q2 i Q4 nie
 są diagnostyczne: brak trafień może oznaczać poprawne zachowanie systemu, ale
@@ -611,6 +639,7 @@ analizować tabel temperatur, opadów i wiatru, ponieważ otrzymuje klasy
 znaczeniowe oraz końcową decyzję. Jest to zgodne z celem etapu 4: uzyskać
 reprezentatywny opis istoty informacji w konkretnym zastosowaniu.
 
+\noindent
 Najważniejsze ograniczenia:
 \begin{itemize}
     \item punkt odniesienia nie jest niezależną stacją pomiarową, lecz jednym z modeli,
@@ -629,6 +658,7 @@ statystyczne na dużej próbie, lecz o małą ankietę projektową, która pozwa
 zweryfikować, czy przyjęta semantyka informacji odpowiada realnym potrzebom
 odbiorców.
 
+\noindent
 Przyjęto grupę 10 osób niezwiązanych bezpośrednio z modelowaniem pogody:
 studentów, osoby dojeżdżające do pracy, rowerzystów oraz osoby planujące
 krótkie aktywności na zewnątrz. Każdej osobie pokazano trzy sposoby prezentacji
@@ -664,6 +694,7 @@ Organizator aktywności & 2 & spacer, spotkanie lub sport na zewnątrz & wybór 
 \normalsize
 \end{table}
 
+\noindent
 Najważniejsza obserwacja z rozmów była taka, że różni użytkownicy inaczej
 rozumieją „dobrą pogodę”. Dla osoby pieszej lekki wiatr zwykle nie jest
 problemem, ale dla rowerzysty może już znacząco obniżać komfort jazdy. Dla
@@ -672,6 +703,7 @@ granica zamarzania, bo wtedy rośnie ryzyko śliskiej nawierzchni. Dla osoby
 planującej spotkanie na zewnątrz kluczowe jest natomiast znalezienie okna
 czasowego bez opadu.
 
+\noindent
 Z tego powodu model użytkownika nie może być opisany tylko jedną metryką
 liczbową. W praktyce potrzebne są dwa poziomy informacji:
 \begin{itemize}
@@ -692,12 +724,14 @@ tylko zwykłej decyzji praktycznej:
     \item „Czy prognoza ostrzega przed sytuacją graniczną, np. śnieg/deszcz przy 0°C?”.
 \end{itemize}
 
+\noindent
 W odpowiedziach często pojawiała się potrzeba prostego uzasadnienia. Sama
 decyzja „ostrożnie” była oceniana jako użyteczna, ale użytkownicy chcieli
 wiedzieć, dlaczego system tak ją oznaczył. Dlatego w końcowym sposobie
 prezentacji nie wystarczy podać klasy decyzyjnej; trzeba dodać powód, np.
 „temperatura blisko 0°C i możliwy opad”.
 
+\noindent
 Użytkownicy oceniali, które informacje są dla nich najbardziej przydatne przy
 decyzji typu: czy wyjść na spacer, jechać rowerem, iść pieszo na uczelnię albo
 zaplanować aktywność na zewnątrz. Skala oceny wynosiła od 1 do 5, gdzie 1
@@ -722,6 +756,7 @@ Dokładna metryka błędu modelu & 2.1 & 1/10 & mało użyteczna dla zwykłego o
 \normalsize
 \end{table}
 
+\noindent
 Wyniki ankiety potwierdzają, że użytkownik nie oczekuje wyłącznie dokładnej
 wartości liczbowej. Najbardziej przydatna jest informacja, która zmniejsza
 niepewność decyzyjną: czy będzie padać, czy warunki są ryzykowne, czy dana
@@ -729,6 +764,7 @@ godzina nadaje się do aktywności. Dlatego w modelu większe znaczenie nadano
 opadom oraz punktom krytycznym niż niewielkim różnicom temperatury wewnątrz
 tej samej klasy komfortu.
 
+\noindent
 Różnice między użytkownikami widać szczególnie przy wietrze i temperaturze.
 Rowerzyści oceniali wiatr wyżej niż pozostali, bo prędkość wiatru bezpośrednio
 wpływa na wysiłek i bezpieczeństwo jazdy. Piesi częściej zwracali uwagę na
@@ -738,6 +774,7 @@ zupełnie inne warunki drogowe. Osoby planujące aktywność na zewnątrz
 potrzebowały natomiast informacji o najlepszym przedziale czasowym, a nie tylko
 o pojedynczej godzinie.
 
+\noindent
 Na podstawie odpowiedzi przyjęto następujące wagi interpretacyjne dla warstwy
 semantycznej:
 \[
@@ -762,6 +799,7 @@ Powód: możliwy słaby opad, temperatura blisko 0°C
 Szczegóły: 0.6°C, opad 0.4 mm, wiatr 1.5 m/s
 \end{verbatim}
 
+\noindent
 Taki sposób prezentacji jest zgodny z celem semantyki informacji: użytkownik
 otrzymuje najpierw sens komunikatu, a dopiero później dane liczbowe. Dzięki
 temu system nie tylko podaje prognozę, ale pomaga ją zinterpretować w
@@ -778,6 +816,7 @@ Najważniejsze wnioski z ankiety są następujące:
     \item najlepszy format to decyzja + powód + szczegóły liczbowe.
 \end{itemize}
 
+\noindent
 Ta część uzasadnia zmianę modelu w stronę wag semantycznych i punktów ujemnych.
 Jeżeli użytkownik mówi, że najważniejsze jest ostrzeżenie przed opadem,
 oblodzeniem lub silnym wiatrem, to model nie powinien traktować wszystkich
@@ -792,6 +831,7 @@ odniesienia. W tym etapie oceniamy, czy model zachowuje znaczenie informacji:
 czy wskazuje te same klasy pogody, te same okna czasowe i tę samą decyzję
 użytkownika.
 
+\noindent
 Najlepsze wyniki w obecnym zbiorze osiąga Open-Meteo, ale jest to przypadek
 szczególny, ponieważ źródło to jest bardzo bliskie przyjętemu punktowi
 odniesienia. Własny model został ostatecznie oparty wyłącznie na danych
@@ -801,6 +841,7 @@ algorytmu krótkoterminowego, a nie jako dowód przewagi nad modelami
 meteorologicznymi. GraphCast wymaga dalszej kontroli, ponieważ jego błędy
 częściej zmieniają klasy znaczeniowe.
 
+\noindent
 Analiza została zmieniona przez dodanie punktów krytycznych. Dzięki temu
 metoda nie traktuje wszystkich godzin jednakowo: większe znaczenie mają
 momenty przejścia przez \(0^\circ C\), pojawienia się istotnego opadu,
@@ -808,6 +849,7 @@ silnego wiatru albo temperatur skrajnych. Jest to ważne, ponieważ właśnie w
 takich miejscach mały błąd liczbowy może prowadzić do dużej pomyłki
 interpretacyjnej.
 
+\noindent
 Dalsze usprawnienie metody powinno polegać na włączeniu niezależnych pomiarów
 rzeczywistych, zebraniu opinii użytkowników i przetestowaniu zapytań na danych
 zawierających opady, silny wiatr oraz temperatury skrajne.
