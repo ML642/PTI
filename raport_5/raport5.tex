@@ -47,7 +47,9 @@ Michał Kasznia \\ Kasiński Julian \\ Volodymyr Kamenchuk \\ Usevalad Nikalaich
 \tableofcontents
 \newpage
 
-\section{Cel raportu}
+\section{Eksperyment}
+
+\subsection{Cel raportu}
 
 Celem raportu jest sprawdzenie, czy prognoza przygotowana przez nasz model może
 pomóc w podjęciu prostej decyzji: wykonać aktywność na zewnątrz, przełożyć ją
@@ -60,7 +62,7 @@ prognozę z jednodniowym wyprzedzeniem, czyli prognozę na jutro. Następnie dla
 każdej z 9 osób zapisujemy prognozę naszego modelu oraz decyzję wynikającą z tej
 prognozy.
 
-\section{Opis eksperymentu}
+\subsection{Opis eksperymentu}
 
 Eksperyment powtarzamy trzy razy. Schemat jest zawsze taki sam:
 
@@ -77,7 +79,7 @@ Decyzja \textbf{nie} oznacza, że opady, wiatr albo temperatura wyraźnie
 utrudniają wykonanie planu. Decyzja \textbf{warunkowo} oznacza, że aktywność jest
 możliwa, ale lepiej skrócić czas, zmienić godzinę albo zachować ostrożność.
 
-\section{Grupa badana}
+\subsection{Grupa badana}
 
 W badaniu bierzemy pod uwagę 9 osób wykonujących różne aktywności na zewnątrz.
 Każda osoba ma inne wymagania pogodowe, dlatego ta sama prognoza może prowadzić
@@ -104,7 +106,7 @@ do różnych decyzji.
 \caption{Grupa 9 osób biorących udział w eksperymencie.}
 \end{table}
 
-\section{Wybrane terminy}
+\subsection{Wybrane terminy}
 
 Do eksperymentu wybrano trzy terminy z podanego zakresu. W tabeli zapisano dzień,
 w którym sprawdzamy prognozę, oraz dzień, którego dotyczy prognoza.
@@ -124,7 +126,7 @@ Termin 3 & 04.06.2026 & 05.06.2026 & nasz model pogodowy \\
 \caption{Trzy terminy badania z zakresu 24.05--05.06.}
 \end{table}
 
-\section{Zasady podejmowania decyzji}
+\subsection{Zasady podejmowania decyzji}
 
 Decyzję dla każdej osoby tworzymy na podstawie trzech parametrów z naszego
 modelu:
@@ -140,7 +142,7 @@ a temperatura umiarkowana, decyzja jest pozytywna. Jeżeli pojawiają się opady
 albo silniejszy wiatr, decyzja może być warunkowa. Jeżeli warunki wyraźnie
 utrudniają aktywność, zapisujemy decyzję negatywną.
 
-\section{Termin 1: prognoza z 24.05.2026 na 25.05.2026}
+\subsection{Termin 1: prognoza z 24.05.2026 na 25.05.2026}
 
 W pierwszym terminie nasz model przewidział dobre warunki pogodowe. Temperatura
 wynosi około $18^\circ C$, opady są bardzo małe, a wiatr jest słaby. Dlatego
@@ -167,7 +169,7 @@ większość aktywności może zostać wykonana.
 \caption{Prognoza naszego modelu i decyzje dla terminu 1.}
 \end{table}
 
-\section{Termin 2: prognoza z 29.05.2026 na 30.05.2026}
+\subsection{Termin 2: prognoza z 29.05.2026 na 30.05.2026}
 
 W drugim terminie model przewidział gorszą pogodę. Temperatura wynosi około
 $15^\circ C$, pojawiają się opady, a wiatr jest umiarkowany. W takim przypadku
@@ -194,7 +196,7 @@ część aktywności jest możliwa tylko warunkowo, a część lepiej odwołać.
 \caption{Prognoza naszego modelu i decyzje dla terminu 2.}
 \end{table}
 
-\section{Termin 3: prognoza z 04.06.2026 na 05.06.2026}
+\subsection{Termin 3: prognoza z 04.06.2026 na 05.06.2026}
 
 W trzecim terminie model przewidział wysoką temperaturę, prawie brak opadów i
 silniejszy wiatr. Brak deszczu pomaga w większości aktywności, ale wiatr
@@ -221,7 +223,7 @@ powoduje ograniczenia dla rowerzysty, tenisistów i ogrodnika.
 \caption{Prognoza naszego modelu i decyzje dla terminu 3.}
 \end{table}
 
-\section{Porównanie po tygodniu}
+\subsection{Porównanie po tygodniu}
 
 Po trzecim terminie wykonujemy dodatkowe porównanie dla prognozy z tygodniowym
 wyprzedzeniem. Chodzi o to, żeby sprawdzić, czy nasz program jest równie
@@ -276,7 +278,9 @@ wiarygodność na poziomie około $44.44\%$. Wynik jest wyraźnie gorszy niż dl
 jednodniowej, ponieważ w dłuższym czasie łatwiej zmieniają się opady, wiatr i
 temperatura.
 
-\section{Porównanie decyzji}
+\section{Analiza}
+
+\subsection{Porównanie decyzji}
 
 Po zestawieniu trzech terminów widać, że decyzja zmienia się razem z warunkami z
 naszego modelu. Najlepsze warunki wystąpiły 25.05.2026, dlatego wszystkie
@@ -304,7 +308,7 @@ tenisista 2 & tak & tak & warunkowo \\
 \caption{Porównanie decyzji w trzech wybranych terminach.}
 \end{table}
 
-\section{Ciekawa obserwacja}
+\subsection{Ciekawa obserwacja}
 
 Podczas porównywania wyników pojawiła się ciekawa obserwacja. Dla tej samej
 prognozy pogody różni użytkownicy nie zawsze otrzymują taki sam wynik końcowy.
@@ -376,7 +380,7 @@ rzeczywistym. Dopiero wtedy można policzyć, ile razy program rzeczywiście pom
 w dobrej decyzji, a ile razy jego decyzja nie zgadzała się z tym, co wydarzyło
 się później.
 
-\section{Wiarygodność programu}
+\subsection{Wiarygodność programu}
 
 Po wykonaniu aktywności porównujemy decyzję programu z tym, co faktycznie się
 wydarzyło. Dzięki temu nie oceniamy tylko tego, czy pogoda wyglądała dobrze, ale
@@ -471,7 +475,7 @@ prognoza za tydzień & 4 & 9 & około $44.44\%$ \\
 \caption{Porównanie wiarygodności prognozy jednodniowej i tygodniowej.}
 \end{table}
 
-\section{Analiza i wnioski}
+\subsection{Analiza wyników}
 
 Wyniki procentowe pokazują, że program najlepiej działa przy krótkim horyzoncie
 czasowym. Dla prognozy na jutro uzyskał 21 punktów na 27 możliwych, czyli około
@@ -518,8 +522,111 @@ wykonać aktywność. Im więcej czynników zewnętrznych, takich jak nawierzchn
 trener, stan boiska albo organizacja zajęć, tym trudniej uzyskać pełną zgodność
 między decyzją programu a rzeczywistym wynikiem.
 
-\section{Podsumowanie całej pracy}
 
-W całym projekcie przechodziliśmy od prostego porównania prognoz pogody z danymi rzeczywistymi do praktycznej oceny, czy program pogodowy pomaga użytkownikowi podjąć decyzję. W pierwszych raportach zebraliśmy dane, porównaliśmy modele za pomocą miar błędu takich jak ME, MAE i RMSE, sprawdziliśmy wpływ korekcji bias oraz uśredniania modeli, a później opisaliśmy prognozę jako informację syntaktyczną, semantyczną i pragmatyczną. Następnie przygotowaliśmy skrypty do pobierania i porównywania danych z różnych źródeł, takich jak Open-Meteo, yr.no, GFS, GraphCast i AIFS, zapisaliśmy je we wspólnym formacie CSV, wykonaliśmy wykresy temperatury, opadów i wiatru oraz zbudowaliśmy prosty własny model oparty na danych pogodowych. W kolejnym etapie skupiliśmy się na znaczeniu prognozy, punktach krytycznych i tym, czy mały błąd liczbowy zmienia decyzję użytkownika. Ostatecznie w raporcie 5 sprawdziliśmy program w praktyce: dla 9 osób i kilku terminów zapisaliśmy prognozę, decyzję programu i wynik rzeczywisty, dzięki czemu policzyliśmy wiarygodność prognozy jednodniowej na poziomie około $77.78\%$ oraz prognozy tygodniowej na poziomie około $44.44\%$. Najważniejszy wniosek z całej pracy jest taki, że dobra prognoza nie polega tylko na dokładnych liczbach, ponieważ na końcową decyzję wpływają także użytkownik, środowisko aktywności, nawierzchnia, trener, organizacja zajęć i horyzont czasowy prognozy.
+\newpage
+\section{Wnioski z projektu}
+
+Cały projekt pokazał przejście od prostego porównywania danych pogodowych do
+praktycznej oceny decyzji użytkownika. Na początku najważniejsze było pytanie,
+czy modele meteorologiczne są zgodne z danymi rzeczywistymi. Później zaczęliśmy
+pytać nie tylko o dokładność liczbową, ale też o znaczenie prognozy i jej wpływ
+na decyzję. Dzięki temu ostatni raport nie jest już tylko sprawdzeniem pogody,
+ale próbą oceny, czy program rzeczywiście pomaga człowiekowi wybrać działanie.
+
+\begin{itemize}
+    \item \textbf{Od danych do modelu:} w raportach 1--4 stopniowo budowaliśmy
+    podstawę całego projektu. W raporcie 1 porównywaliśmy prognozy z danymi
+    rzeczywistymi za pomocą ME, MAE i RMSE oraz sprawdzaliśmy, czy korekcja bias
+    i uśrednianie modeli poprawiają wynik. W raporcie 2 potraktowaliśmy prognozę
+    jako informację syntaktyczną, semantyczną i pragmatyczną, czyli zaczęliśmy
+    odróżniać poprawny zapis danych od ich znaczenia dla użytkownika. Raport 3
+    był częścią techniczną: pobieraliśmy dane z Open-Meteo, yr.no, GFS,
+    GraphCast i AIFS, zapisywaliśmy je w CSV oraz tworzyliśmy wykresy
+    temperatury, opadów i wiatru. Raport 4 rozwinął tę pracę przez analizę
+    semantyczną, punkty krytyczne i własny algorytm oceny pogody.
+
+    \item \textbf{Od modelu do decyzji:} raport 5 sprawdził, czy wcześniejsze
+    etapy mają sens w praktyce. Dla 9 osób zapisaliśmy prognozę, decyzję programu
+    i wynik rzeczywisty. Prognoza jednodniowa osiągnęła wiarygodność około
+    $77.78\%$, natomiast prognoza tygodniowa tylko około $44.44\%$. Pokazuje to,
+    że im dalszy horyzont prognozy, tym trudniej o trafną decyzję. Najważniejszy
+    wniosek jest jednak szerszy: dobra prognoza nie polega tylko na dokładnych
+    liczbach. Na wynik wpływają też użytkownik, środowisko aktywności,
+    nawierzchnia, trener, organizacja zajęć i możliwość samodzielnego podjęcia
+    decyzji. Program pogodowy może więc wspierać decyzję, ale nie zawsze może ją
+    całkowicie zastąpić.
+\end{itemize}
+
+Patrząc na cały projekt, najważniejsze było połączenie trzech perspektyw:
+matematycznej, technicznej i praktycznej. Perspektywa matematyczna pozwoliła
+mierzyć błędy i porównywać modele w sposób obiektywny. Perspektywa techniczna
+pozwoliła zebrać dane, zapisać je w jednym formacie i zbudować własne narzędzia.
+Perspektywa praktyczna pokazała natomiast, że użytkownik nie podejmuje decyzji
+na podstawie samej tabeli z pogodą. Interesuje go to, czy może wykonać konkretną
+aktywność w konkretnym miejscu i czasie.
+
+Ostatecznie projekt pokazuje, że prognoza pogody jest wartościowa dopiero wtedy,
+gdy zostanie powiązana z sytuacją użytkownika. Ta sama temperatura, ten sam wiatr
+i ten sam opad mogą oznaczać coś innego dla piłkarza, tenisisty, rowerzysty albo
+osoby idącej na spacer. Dlatego najlepszy program pogodowy powinien nie tylko
+podawać dane meteorologiczne, ale także pomagać je interpretować. Właśnie taki
+kierunek rozwoju wynika z całej pracy: od prostego pomiaru błędu do systemu,
+który wspiera realną decyzję.
+
+\begin{thebibliography}{99}
+
+\bibitem{raport1}
+Raport 1, \textit{Podstawowa ocena wiarygodności prognoz meteorologicznych},
+metryki błędu, korekcja bias oraz uśrednianie modeli.
+
+\bibitem{raport2}
+Raport 2, \textit{Informacja w prognozach meteorologicznych},
+poziom syntaktyczny, semantyczny i pragmatyczny oraz model użytkownika.
+
+\bibitem{raport3}
+Raport 3, \textit{Pozyskiwanie, przetwarzanie i porównywanie danych pogodowych},
+wspólny format CSV, wykresy oraz porównanie modeli pogodowych.
+
+\bibitem{raport4}
+Raport 4, \textit{Semantyczna ocena prognozy i własny algorytm pogodowy},
+punkty krytyczne, klasy znaczeniowe oraz ocena decyzji użytkownika.
+
+\bibitem{openmeteo}
+Open-Meteo Weather API, \url{https://open-meteo.com/}.
+
+\bibitem{yr}
+Yr.no weather service, Norwegian Meteorological Institute,
+\url{https://www.yr.no/}.
+
+\bibitem{gfs}
+Global Forecast System (GFS), National Centers for Environmental Prediction.
+
+\bibitem{graphcast}
+Google DeepMind, \textit{GraphCast: AI-based medium-range weather forecasting}.
+
+\bibitem{aifs}
+ECMWF Artificial Intelligence Forecasting System (AIFS), European Centre for
+Medium-Range Weather Forecasts.
+
+\bibitem{python}
+Dokumentacja bibliotek Python: \texttt{pandas}, \texttt{numpy},
+\texttt{matplotlib}, \texttt{scikit-learn}.
+
+\end{thebibliography}
+
+\section*{Podział pracy w zespole}
+
+\begin{itemize}
+    \item Maciek Chotkowski -- opracowanie eksperymentu praktycznego, opis decyzji użytkowników i końcowa redakcja raportu.
+    \item Martsin Lazouski -- analiza danych pogodowych, zestawienie prognoz i przygotowanie części dotyczącej wiarygodności.
+    \item Nadia Ziecina -- opracowanie grupy badanej, opis użytkowników oraz interpretacja różnic między aktywnościami.
+    \item Michał Kasznia -- przygotowanie tabel, wyników procentowych i porównania prognozy jednodniowej z tygodniową.
+    \item Julian Kasiński -- opis wcześniejszych etapów projektu oraz powiązanie raportu 5 z raportami 1--4.
+    \item Volodymyr Kamenchuk -- wsparcie w analizie modeli pogodowych, źródeł danych i części technicznej.
+    \item Usevalad Nikalaichuk -- sprawdzenie spójności raportu, formatowanie w \LaTeX{} i uzupełnienie referencji.
+\end{itemize}
+
+Pozostałe elementy, takie jak wybór końcowych wniosków, interpretacja wyników i
+ostateczne poprawki, zostały wykonane wspólnie przez cały zespół.
 
 \end{document}
