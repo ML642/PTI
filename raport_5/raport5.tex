@@ -57,18 +57,19 @@ albo zrezygnować. Interesuje nas decyzja wynikająca bezpośrednio z danych
 pogodowych: temperatury, opadów i wiatru.
 
 Badanie wykonujemy w trzech losowo wybranych terminach z zakresu od
-\textbf{24.05.2026} do \textbf{05.06.2026}. W każdym terminie sprawdzamy
-prognozę z jednodniowym wyprzedzeniem, czyli prognozę na jutro. Następnie dla
-każdej z 9 osób zapisujemy prognozę naszego modelu oraz decyzję wynikającą z tej
-prognozy.
+\textbf{24.05.2026} do \textbf{05.06.2026}. Sprawdzamy prognozy dla różnych
+horyzontów czasowych: w części głównej są to prognozy krótkoterminowe, a
+dodatkowo porównujemy prognozę oddaloną o tydzień. Następnie dla każdej z 9 osób
+zapisujemy prognozę naszego modelu oraz decyzję wynikającą z tej prognozy.
 
 \subsection{Opis eksperymentu}
 
-Eksperyment powtarzamy trzy razy. Schemat jest zawsze taki sam:
+W części głównej eksperyment powtarzamy trzy razy, a później dodajemy porównanie
+dla dłuższego horyzontu prognozy. Schemat jest zawsze taki sam:
 
 \begin{enumerate}
-    \item wybieramy dzień sprawdzenia prognozy,
-    \item nasz model podaje prognozę na następny dzień,
+    \item wybieramy dzień sprawdzenia prognozy oraz dzień, którego dotyczy prognoza,
+    \item nasz model podaje prognozę dla wybranego horyzontu czasowego,
     \item zapisujemy temperaturę, opady i wiatr,
     \item pytamy 9 osób o planowaną aktywność,
     \item na podstawie prognozy zapisujemy decyzję: tak, nie albo warunkowo.
@@ -79,6 +80,7 @@ Decyzja \textbf{nie} oznacza, że opady, wiatr albo temperatura wyraźnie
 utrudniają wykonanie planu. Decyzja \textbf{warunkowo} oznacza, że aktywność jest
 możliwa, ale lepiej skrócić czas, zmienić godzinę albo zachować ostrożność.
 
+\newpage
 \subsection{Grupa badana}
 
 W badaniu bierzemy pod uwagę 9 osób wykonujących różne aktywności na zewnątrz.
@@ -116,7 +118,7 @@ w którym sprawdzamy prognozę, oraz dzień, którego dotyczy prognoza.
 \small
 \begin{tabular}{p{2.5cm}p{3.5cm}p{3.5cm}p{4.0cm}}
 \toprule
-\textbf{Termin} & \textbf{Dzień sprawdzenia} & \textbf{Prognoza na} & \textbf{Źródło danych} \\
+\textbf{Termin} & \textbf{\shortstack{Dzień\\sprawdzenia}} & \textbf{\shortstack{Prognoza\\na}} & \textbf{\shortstack{Źródło\\danych}} \\
 \midrule
 Termin 1 & 24.05.2026 & 25.05.2026 & nasz model pogodowy \\
 Termin 2 & 29.05.2026 & 30.05.2026 & nasz model pogodowy \\
@@ -157,7 +159,7 @@ większość aktywności może zostać wykonana.
 \midrule
 1 & piłkarz 1 & trening & $18^\circ C$ & 0.1 mm & 2.0 m/s & tak & dobre warunki do treningu \\
 2 & piłkarz 2 & gra w piłkę & $18^\circ C$ & 0.1 mm & 2.0 m/s & tak & opady są zbyt małe, żeby przeszkadzać \\
-3 & tenisista 1 & tenis & $18^\circ C$ & 0.1 mm & 2.0 m/s & tak & kort powinien pozostać suchy \\
+3 & tenisista 1 & tenis & $18^\circ C$ & 0.1 mm & 2.0 m/s & tak & opady nie powinny przeszkadzać na korcie \\
 4 & spacerowicz & spacer & $18^\circ C$ & 0.1 mm & 2.0 m/s & tak & temperatura jest komfortowa \\
 5 & rowerzysta & rower & $18^\circ C$ & 0.1 mm & 2.0 m/s & tak & wiatr i opady są małe \\
 6 & biegacz & bieganie & $18^\circ C$ & 0.1 mm & 2.0 m/s & tak & dobre warunki do biegu \\
@@ -168,7 +170,7 @@ większość aktywności może zostać wykonana.
 \end{tabular}
 \caption{Prognoza naszego modelu i decyzje dla terminu 1.}
 \end{table}
-
+\newpage
 \subsection{Termin 2: prognoza z 29.05.2026 na 30.05.2026}
 
 W drugim terminie model przewidział gorszą pogodę. Temperatura wynosi około
@@ -190,7 +192,7 @@ część aktywności jest możliwa tylko warunkowo, a część lepiej odwołać.
 6 & biegacz & bieganie & $15^\circ C$ & 2.4 mm & 4.6 m/s & warunkowo & można skrócić trening \\
 7 & właściciel psa & spacer z psem & $15^\circ C$ & 2.4 mm & 4.6 m/s & warunkowo & spacer lepiej skrócić \\
 8 & ogrodnik & ogród & $15^\circ C$ & 2.4 mm & 4.6 m/s & nie & mokre podłoże utrudnia pracę \\
-9 & tenisista 2 & tenis & $15^\circ C$ & 2.4 mm & 4.6 m/s & tak & twardy kort szybciej wysycha \\
+9 & tenisista 2 & tenis & $15^\circ C$ & 2.4 mm & 4.6 m/s & tak & twardy kort jest mniej wrażliwy na opady \\
 \bottomrule
 \end{tabular}
 \caption{Prognoza naszego modelu i decyzje dla terminu 2.}
@@ -198,9 +200,10 @@ część aktywności jest możliwa tylko warunkowo, a część lepiej odwołać.
 
 \subsection{Termin 3: prognoza z 04.06.2026 na 05.06.2026}
 
-W trzecim terminie model przewidział wysoką temperaturę, prawie brak opadów i
-silniejszy wiatr. Brak deszczu pomaga w większości aktywności, ale wiatr
-powoduje ograniczenia dla rowerzysty, tenisistów i ogrodnika.
+W trzecim terminie model przewidział wysoką temperaturę, małą ilość opadów i
+wiatr narastający w ciągu dnia. Niewielkie opady nie przeszkadzają w większości
+aktywności, ale średni wiatr dochodzący do około 6.5 m/s oraz porywy do około
+10.9 m/s powodują ograniczenia dla rowerzysty, tenisistów i ogrodnika.
 
 \begin{table}[H]
 \centering
@@ -209,15 +212,15 @@ powoduje ograniczenia dla rowerzysty, tenisistów i ogrodnika.
 \toprule
 \textbf{Nr} & \textbf{Osoba} & \textbf{Aktywność} & \textbf{Temp.} & \textbf{Opady} & \textbf{Wiatr} & \textbf{Decyzja} & \textbf{Uzasadnienie} \\
 \midrule
-1 & piłkarz 1 & trening & $24^\circ C$ & 0.2 mm & 6.0 m/s & tak & brak opadów, temperatura dobra \\
-2 & piłkarz 2 & gra w piłkę & $24^\circ C$ & 0.2 mm & 6.0 m/s & warunkowo & wiatr może utrudniać grę \\
-3 & tenisista 1 & tenis & $24^\circ C$ & 0.2 mm & 6.0 m/s & warunkowo & wiatr może zmieniać tor piłki \\
-4 & spacerowicz & spacer & $24^\circ C$ & 0.2 mm & 6.0 m/s & tak & spacer jest możliwy \\
-5 & rowerzysta & rower & $24^\circ C$ & 0.2 mm & 6.0 m/s & warunkowo & silniejszy wiatr wymaga ostrożności \\
-6 & biegacz & bieganie & $24^\circ C$ & 0.2 mm & 6.0 m/s & warunkowo & lepiej biec spokojniej albo krócej \\
-7 & właściciel psa & spacer z psem & $24^\circ C$ & 0.2 mm & 6.0 m/s & tak & krótki spacer jest bezpieczny \\
-8 & ogrodnik & ogród & $24^\circ C$ & 0.2 mm & 6.0 m/s & warunkowo & wiatr może utrudniać część prac \\
-9 & tenisista 2 & tenis & $24^\circ C$ & 0.2 mm & 6.0 m/s & warunkowo & gra możliwa, ale wiatr przeszkadza \\
+1 & piłkarz 1 & trening & $27^\circ C$ & 0.4 mm & 6.5 m/s & tak & małe opady, temperatura dobra \\
+2 & piłkarz 2 & gra w piłkę & $27^\circ C$ & 0.4 mm & 6.5 m/s & warunkowo & wiatr może utrudniać grę \\
+3 & tenisista 1 & tenis & $27^\circ C$ & 0.4 mm & 6.5 m/s & warunkowo & wiatr może zmieniać tor piłki \\
+4 & spacerowicz & spacer & $27^\circ C$ & 0.4 mm & 6.5 m/s & tak & spacer jest możliwy \\
+5 & rowerzysta & rower & $27^\circ C$ & 0.4 mm & 6.5 m/s & warunkowo & silniejszy wiatr wymaga ostrożności \\
+6 & biegacz & bieganie & $27^\circ C$ & 0.4 mm & 6.5 m/s & warunkowo & lepiej biec spokojniej albo krócej \\
+7 & właściciel psa & spacer z psem & $27^\circ C$ & 0.4 mm & 6.5 m/s & tak & krótki spacer jest bezpieczny \\
+8 & ogrodnik & ogród & $27^\circ C$ & 0.4 mm & 6.5 m/s & warunkowo & wiatr może utrudniać część prac \\
+9 & tenisista 2 & tenis & $27^\circ C$ & 0.4 mm & 6.5 m/s & warunkowo & gra możliwa, ale wiatr przeszkadza \\
 \bottomrule
 \end{tabular}
 \caption{Prognoza naszego modelu i decyzje dla terminu 3.}
@@ -239,7 +242,7 @@ faktycznie wyszło dla tych aktywności.
 \small
 \begin{tabular}{p{3.5cm}p{3.5cm}p{2.5cm}p{2.0cm}p{2.0cm}}
 \toprule
-\textbf{Dzień prognozy} & \textbf{Prognoza na} & \textbf{Temperatura} & \textbf{Opady} & \textbf{Wiatr} \\
+\textbf{\shortstack{Dzień\\prognozy}} & \textbf{\shortstack{Prognoza\\na}} & \textbf{Temperatura} & \textbf{Opady} & \textbf{Wiatr} \\
 \midrule
 29.05.2026 & 05.06.2026 & $20^\circ C$ & 1.8 mm & 3.5 m/s \\
 \bottomrule
@@ -250,14 +253,14 @@ faktycznie wyszło dla tych aktywności.
 Prognoza tygodniowa była mniej dokładna niż prognoza z dnia poprzedniego. Program
 przewidział opady i słabszy wiatr, dlatego część decyzji była bardziej ostrożna.
 Po tygodniu okazało się jednak, że rzeczywiste warunki były inne: było cieplej,
-opady były mniejsze, ale wiatr był silniejszy.
+opady były mniejsze, ale wiatr był silniejszy i miał wyraźne porywy.
 
 \begin{table}[H]
 \centering
 \scriptsize
 \begin{tabular}{p{0.6cm}p{2.2cm}p{2.6cm}p{2.5cm}p{2.2cm}p{1.4cm}}
 \toprule
-\textbf{Nr} & \textbf{Osoba} & \textbf{Aktywność} & \textbf{Decyzja programu} & \textbf{Faktycznie} & \textbf{Punkty} \\
+\textbf{Nr} & \textbf{Osoba} & \textbf{Aktywność} & \textbf{\shortstack{Decyzja\\programu}} & \textbf{Faktycznie} & \textbf{Punkty} \\
 \midrule
 1 & piłkarz 1 & trening & warunkowo & tak & 0.5 \\
 2 & piłkarz 2 & gra w piłkę & nie & tak & 0 \\
@@ -284,8 +287,8 @@ temperatura.
 
 Po zestawieniu trzech terminów widać, że decyzja zmienia się razem z warunkami z
 naszego modelu. Najlepsze warunki wystąpiły 25.05.2026, dlatego wszystkie
-aktywności otrzymały decyzję pozytywną. Najtrudniejsze warunki wystąpiły
-30.05.2026, ponieważ model przewidział opady i mocniejszy wiatr.
+aktywności otrzymały decyzję pozytywną. Największe opady wystąpiły
+30.05.2026, dlatego ta data miała najwięcej decyzji ostrożnych i negatywnych.
 
 \begin{table}[H]
 \centering
@@ -308,6 +311,7 @@ tenisista 2 & tak & tak & warunkowo \\
 \caption{Porównanie decyzji w trzech wybranych terminach.}
 \end{table}
 
+\newpage 
 \subsection{Ciekawa obserwacja}
 
 Podczas porównywania wyników pojawiła się ciekawa obserwacja. Dla tej samej
@@ -327,14 +331,14 @@ decyzja trenera.
 \scriptsize
 \begin{tabular}{p{1.8cm}p{2.0cm}p{2.4cm}p{2.1cm}p{2.5cm}p{2.0cm}}
 \toprule
-\textbf{Data} & \textbf{Grupa} & \textbf{Prognoza} & \textbf{Decyzja programu} & \textbf{Decyzja na treningu} & \textbf{Faktycznie} \\
+\textbf{Data} & \textbf{Grupa} & \textbf{Prognoza} & \textbf{\shortstack{Decyzja\\programu}} & \textbf{\shortstack{Decyzja na\\treningu}} & \textbf{Faktycznie} \\
 \midrule
 25.05.2026 & piłkarz 1 & $18^\circ C$, 0.1 mm, 2.0 m/s & tak & trening bez zmian & tak \\
 25.05.2026 & piłkarz 2 & $18^\circ C$, 0.1 mm, 2.0 m/s & tak & trening odwołany & nie \\
 30.05.2026 & tenisista 1 & $15^\circ C$, 2.4 mm, 4.6 m/s & nie & kort ziemny zamknięty & nie \\
 30.05.2026 & tenisista 2 & $15^\circ C$, 2.4 mm, 4.6 m/s & tak & gra na korcie twardym & tak \\
-05.06.2026 & piłkarz 2 & $24^\circ C$, 0.2 mm, 6.0 m/s & warunkowo & trening skrócony & tak \\
-05.06.2026 & tenisista 2 & $24^\circ C$, 0.2 mm, 6.0 m/s & warunkowo & trening techniczny & tak \\
+05.06.2026 & piłkarz 2 & $27^\circ C$, 0.4 mm, 6.5 m/s & warunkowo & trening skrócony & tak \\
+05.06.2026 & tenisista 2 & $27^\circ C$, 0.4 mm, 6.5 m/s & warunkowo & trening techniczny & tak \\
 \bottomrule
 \end{tabular}
 \caption{Dodatkowe porównanie piłkarzy i tenisistów w grupach treningowych.}
@@ -352,7 +356,7 @@ na korcie twardym.
 \small
 \begin{tabular}{p{4.0cm}p{3.0cm}p{3.0cm}p{3.0cm}}
 \toprule
-\textbf{Zakres obserwacji} & \textbf{Liczba przypadków} & \textbf{Zdobyte punkty} & \textbf{Wynik} \\
+\textbf{\shortstack{Zakres\\obserwacji}} & \textbf{\shortstack{Liczba\\przypadków}} & \textbf{\shortstack{Zdobyte\\punkty}} & \textbf{Wynik} \\
 \midrule
 piłkarze i tenisiści w grupach & 6 & 4 & około $66.67\%$ \\
 przypadki zgodne z decyzją programu & 3 & 3 & $100\%$ \\
@@ -404,7 +408,7 @@ mniejszy, dlatego odejmujemy tylko pół punktu.
 \scriptsize
 \begin{tabular}{p{2.0cm}p{2.3cm}p{2.4cm}p{2.4cm}p{1.4cm}}
 \toprule
-\textbf{Data} & \textbf{Osoba} & \textbf{Decyzja programu} & \textbf{Faktycznie} & \textbf{Punkty} \\
+\textbf{Data} & \textbf{Osoba} & \textbf{\shortstack{Decyzja\\programu}} & \textbf{Faktycznie} & \textbf{Punkty} \\
 \midrule
 25.05.2026 & piłkarz 1 & tak & tak & 1 \\
 25.05.2026 & piłkarz 2 & tak & nie & 0 \\
@@ -445,7 +449,7 @@ mniejszy, dlatego odejmujemy tylko pół punktu.
 \small
 \begin{tabular}{p{3.0cm}p{3.0cm}p{3.5cm}p{3.0cm}}
 \toprule
-\textbf{Data} & \textbf{Zdobyte punkty} & \textbf{Maksymalna liczba punktów} & \textbf{Wiarygodność} \\
+\textbf{Data} & \textbf{\shortstack{Zdobyte\\punkty}} & \textbf{\shortstack{Maksymalna\\liczba punktów}} & \textbf{Wiarygodność} \\
 \midrule
 25.05.2026 & 7.5 & 9 & około $83.33\%$ \\
 30.05.2026 & 6.5 & 9 & około $72.22\%$ \\
@@ -466,7 +470,7 @@ wynosi około $77.78\%$.
 \small
 \begin{tabular}{p{4.0cm}p{3.0cm}p{3.0cm}p{3.0cm}}
 \toprule
-\textbf{Rodzaj prognozy} & \textbf{Zdobyte punkty} & \textbf{Maksimum} & \textbf{Wiarygodność} \\
+\textbf{\shortstack{Rodzaj\\prognozy}} & \textbf{\shortstack{Zdobyte\\punkty}} & \textbf{Maksimum} & \textbf{Wiarygodność} \\
 \midrule
 prognoza na jutro & 21 & 27 & około $77.78\%$ \\
 prognoza za tydzień & 4 & 9 & około $44.44\%$ \\
