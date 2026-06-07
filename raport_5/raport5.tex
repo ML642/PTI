@@ -34,7 +34,7 @@
 
 \author{
 Maciek Chotkowski \\ Martsin Lazouski \\ Nadia Ziecina \\
-Michał Kasznia \\ Kasiński Julian \\ Volodymyr Kamenchuk \\ Usevalad Nikalaichuk
+Michał Kasznia \\ Julian Kasiński \\ Volodymyr Kamenchuk \\ Usevalad Nikalaichuk
 }
 
 \date{}
@@ -56,6 +56,7 @@ pomóc w podjęciu prostej decyzji: wykonać aktywność na zewnątrz, przełoż
 albo zrezygnować. Interesuje nas decyzja wynikająca bezpośrednio z danych
 pogodowych: temperatury, opadów i wiatru.
 
+\noindent
 Badanie wykonujemy w trzech losowo wybranych terminach z zakresu od
 \textbf{24.05.2026} do \textbf{05.06.2026}. Sprawdzamy prognozy dla różnych
 horyzontów czasowych: w części głównej są to prognozy krótkoterminowe, a
@@ -75,6 +76,7 @@ dla dłuższego horyzontu prognozy. Schemat jest zawsze taki sam:
     \item na podstawie prognozy zapisujemy decyzję: tak, nie albo warunkowo.
 \end{enumerate}
 
+\noindent
 Decyzja \textbf{tak} oznacza, że warunki są odpowiednie dla danej aktywności.
 Decyzja \textbf{nie} oznacza, że opady, wiatr albo temperatura wyraźnie
 utrudniają wykonanie planu. Decyzja \textbf{warunkowo} oznacza, że aktywność jest
@@ -94,14 +96,14 @@ do różnych decyzji.
 \toprule
 \textbf{Nr} & \textbf{Osoba} & \textbf{Aktywność} & \textbf{Najważniejsze warunki} \\
 \midrule
-1 & piłkarz 1 & trening piłkarski & opady, temperatura, wiatr \\
-2 & piłkarz 2 & gra w piłkę & opady, mokra nawierzchnia, wiatr \\
-3 & tenisista 1 & gra w tenisa na korcie ziemnym & opady, mokry kort, wiatr \\
-4 & spacerowicz & spacer & temperatura, opady, komfort \\
-5 & rowerzysta & jazda rowerem & opady, wiatr, bezpieczeństwo \\
-6 & biegacz & trening biegowy & temperatura, opady, wiatr \\
-7 & właściciel psa & spacer z psem & opady, temperatura, długość spaceru \\
-8 & ogrodnik & prace w ogrodzie & opady, wilgotność podłoża, wiatr \\
+1 & piłkarz 1 & trening piłkarski & opady, temperatura, wiatr \\[12pt]
+2 & piłkarz 2 & gra w piłkę & opady, mokra nawierzchnia, wiatr \\[12pt]
+3 & tenisista 1 & gra w tenisa na korcie ziemnym & opady, mokry kort, wiatr \\[12pt]
+4 & spacerowicz & spacer & temperatura, opady, komfort \\[12pt]
+5 & rowerzysta & jazda rowerem & opady, wiatr, bezpieczeństwo \\[12pt]
+6 & biegacz & trening biegowy & temperatura, opady, wiatr \\[12pt]
+7 & właściciel psa & spacer z psem & opady, temperatura, długość spaceru \\[12pt]
+8 & ogrodnik & prace w ogrodzie & opady, wilgotność podłoża, wiatr \\[12pt]
 9 & tenisista 2 & gra w tenisa na korcie twardym & opady, wiatr, sucha nawierzchnia \\
 \bottomrule
 \end{tabular}
@@ -139,6 +141,7 @@ modelu:
     \item \textbf{wiatr} -- silniejszy wiatr utrudnia sport, jazdę rowerem i tenis.
 \end{itemize}
 
+\noindent
 Przyjęliśmy prostą interpretację. Jeżeli opady są bliskie zeru, wiatr jest słaby,
 a temperatura umiarkowana, decyzja jest pozytywna. Jeżeli pojawiają się opady
 albo silniejszy wiatr, decyzja może być warunkowa. Jeżeli warunki wyraźnie
@@ -157,14 +160,14 @@ większość aktywności może zostać wykonana.
 \toprule
 \textbf{Nr} & \textbf{Osoba} & \textbf{Aktywność} & \textbf{Temp.} & \textbf{Opady} & \textbf{Wiatr} & \textbf{Decyzja} & \textbf{Uzasadnienie} \\
 \midrule
-1 & piłkarz 1 & trening & $18^\circ C$ & 0.1 mm & 2.0 m/s & tak & dobre warunki do treningu \\
-2 & piłkarz 2 & gra w piłkę & $18^\circ C$ & 0.1 mm & 2.0 m/s & tak & opady są zbyt małe, żeby przeszkadzać \\
-3 & tenisista 1 & tenis & $18^\circ C$ & 0.1 mm & 2.0 m/s & tak & opady nie powinny przeszkadzać na korcie \\
-4 & spacerowicz & spacer & $18^\circ C$ & 0.1 mm & 2.0 m/s & tak & temperatura jest komfortowa \\
-5 & rowerzysta & rower & $18^\circ C$ & 0.1 mm & 2.0 m/s & tak & wiatr i opady są małe \\
-6 & biegacz & bieganie & $18^\circ C$ & 0.1 mm & 2.0 m/s & tak & dobre warunki do biegu \\
-7 & właściciel psa & spacer z psem & $18^\circ C$ & 0.1 mm & 2.0 m/s & tak & spacer bez większych ograniczeń \\
-8 & ogrodnik & ogród & $18^\circ C$ & 0.1 mm & 2.0 m/s & tak & można wykonać prace w ogrodzie \\
+1 & piłkarz 1 & trening & $18^\circ C$ & 0.1 mm & 2.0 m/s & tak & dobre warunki do treningu \\[12pt]
+2 & piłkarz 2 & gra w piłkę & $18^\circ C$ & 0.1 mm & 2.0 m/s & tak & opady są zbyt małe, żeby przeszkadzać \\[12pt]
+3 & tenisista 1 & tenis & $18^\circ C$ & 0.1 mm & 2.0 m/s & tak & opady nie powinny przeszkadzać na korcie \\[12pt]
+4 & spacerowicz & spacer & $18^\circ C$ & 0.1 mm & 2.0 m/s & tak & temperatura jest komfortowa \\[12pt]
+5 & rowerzysta & rower & $18^\circ C$ & 0.1 mm & 2.0 m/s & tak & wiatr i opady są małe \\[12pt]
+6 & biegacz & bieganie & $18^\circ C$ & 0.1 mm & 2.0 m/s & tak & dobre warunki do biegu \\[12pt]
+7 & właściciel psa & spacer z psem & $18^\circ C$ & 0.1 mm & 2.0 m/s & tak & spacer bez większych ograniczeń \\[12pt]
+8 & ogrodnik & ogród & $18^\circ C$ & 0.1 mm & 2.0 m/s & tak & można wykonać prace w ogrodzie \\[12pt]
 9 & tenisista 2 & tenis & $18^\circ C$ & 0.1 mm & 2.0 m/s & tak & twardy kort pozwala grać \\
 \bottomrule
 \end{tabular}
@@ -184,14 +187,14 @@ część aktywności jest możliwa tylko warunkowo, a część lepiej odwołać.
 \toprule
 \textbf{Nr} & \textbf{Osoba} & \textbf{Aktywność} & \textbf{Temp.} & \textbf{Opady} & \textbf{Wiatr} & \textbf{Decyzja} & \textbf{Uzasadnienie} \\
 \midrule
-1 & piłkarz 1 & trening & $15^\circ C$ & 2.4 mm & 4.6 m/s & warunkowo & trening możliwy, ale warunki są gorsze \\
-2 & piłkarz 2 & gra w piłkę & $15^\circ C$ & 2.4 mm & 4.6 m/s & warunkowo & mokra nawierzchnia może przeszkadzać \\
-3 & tenisista 1 & tenis & $15^\circ C$ & 2.4 mm & 4.6 m/s & nie & kort ziemny jest zbyt mokry \\
-4 & spacerowicz & spacer & $15^\circ C$ & 2.4 mm & 4.6 m/s & warunkowo & krótki spacer jest możliwy \\
-5 & rowerzysta & rower & $15^\circ C$ & 2.4 mm & 4.6 m/s & nie & deszcz i wiatr obniżają bezpieczeństwo \\
-6 & biegacz & bieganie & $15^\circ C$ & 2.4 mm & 4.6 m/s & warunkowo & można skrócić trening \\
-7 & właściciel psa & spacer z psem & $15^\circ C$ & 2.4 mm & 4.6 m/s & warunkowo & spacer lepiej skrócić \\
-8 & ogrodnik & ogród & $15^\circ C$ & 2.4 mm & 4.6 m/s & nie & mokre podłoże utrudnia pracę \\
+1 & piłkarz 1 & trening & $15^\circ C$ & 2.4 mm & 4.6 m/s & warunkowo & trening możliwy, ale warunki są gorsze \\[12pt]
+2 & piłkarz 2 & gra w piłkę & $15^\circ C$ & 2.4 mm & 4.6 m/s & warunkowo & mokra nawierzchnia może przeszkadzać \\[12pt]
+3 & tenisista 1 & tenis & $15^\circ C$ & 2.4 mm & 4.6 m/s & nie & kort ziemny jest zbyt mokry \\[12pt]
+4 & spacerowicz & spacer & $15^\circ C$ & 2.4 mm & 4.6 m/s & warunkowo & krótki spacer jest możliwy \\[12pt]
+5 & rowerzysta & rower & $15^\circ C$ & 2.4 mm & 4.6 m/s & nie & deszcz i wiatr obniżają bezpieczeństwo \\[12pt]
+6 & biegacz & bieganie & $15^\circ C$ & 2.4 mm & 4.6 m/s & warunkowo & można skrócić trening \\[12pt]
+7 & właściciel psa & spacer z psem & $15^\circ C$ & 2.4 mm & 4.6 m/s & warunkowo & spacer lepiej skrócić \\[12pt]
+8 & ogrodnik & ogród & $15^\circ C$ & 2.4 mm & 4.6 m/s & nie & mokre podłoże utrudnia pracę \\[12pt]
 9 & tenisista 2 & tenis & $15^\circ C$ & 2.4 mm & 4.6 m/s & tak & twardy kort jest mniej wrażliwy na opady \\
 \bottomrule
 \end{tabular}
@@ -212,14 +215,14 @@ aktywności, ale średni wiatr dochodzący do około 6.5 m/s oraz porywy do oko�
 \toprule
 \textbf{Nr} & \textbf{Osoba} & \textbf{Aktywność} & \textbf{Temp.} & \textbf{Opady} & \textbf{Wiatr} & \textbf{Decyzja} & \textbf{Uzasadnienie} \\
 \midrule
-1 & piłkarz 1 & trening & $27^\circ C$ & 0.4 mm & 6.5 m/s & tak & małe opady, temperatura dobra \\
-2 & piłkarz 2 & gra w piłkę & $27^\circ C$ & 0.4 mm & 6.5 m/s & warunkowo & wiatr może utrudniać grę \\
-3 & tenisista 1 & tenis & $27^\circ C$ & 0.4 mm & 6.5 m/s & warunkowo & wiatr może zmieniać tor piłki \\
-4 & spacerowicz & spacer & $27^\circ C$ & 0.4 mm & 6.5 m/s & tak & spacer jest możliwy \\
-5 & rowerzysta & rower & $27^\circ C$ & 0.4 mm & 6.5 m/s & warunkowo & silniejszy wiatr wymaga ostrożności \\
-6 & biegacz & bieganie & $27^\circ C$ & 0.4 mm & 6.5 m/s & warunkowo & lepiej biec spokojniej albo krócej \\
-7 & właściciel psa & spacer z psem & $27^\circ C$ & 0.4 mm & 6.5 m/s & tak & krótki spacer jest bezpieczny \\
-8 & ogrodnik & ogród & $27^\circ C$ & 0.4 mm & 6.5 m/s & warunkowo & wiatr może utrudniać część prac \\
+1 & piłkarz 1 & trening & $27^\circ C$ & 0.4 mm & 6.5 m/s & tak & małe opady, temperatura dobra \\[12pt]
+2 & piłkarz 2 & gra w piłkę & $27^\circ C$ & 0.4 mm & 6.5 m/s & warunkowo & wiatr może utrudniać grę \\[12pt]
+3 & tenisista 1 & tenis & $27^\circ C$ & 0.4 mm & 6.5 m/s & warunkowo & wiatr może zmieniać tor piłki \\[12pt]
+4 & spacerowicz & spacer & $27^\circ C$ & 0.4 mm & 6.5 m/s & tak & spacer jest możliwy \\[12pt]
+5 & rowerzysta & rower & $27^\circ C$ & 0.4 mm & 6.5 m/s & warunkowo & silniejszy wiatr wymaga ostrożności \\[12pt]
+6 & biegacz & bieganie & $27^\circ C$ & 0.4 mm & 6.5 m/s & warunkowo & lepiej biec spokojniej albo krócej \\[12pt]
+7 & właściciel psa & spacer z psem & $27^\circ C$ & 0.4 mm & 6.5 m/s & tak & krótki spacer jest bezpieczny \\[12pt]
+8 & ogrodnik & ogród & $27^\circ C$ & 0.4 mm & 6.5 m/s & warunkowo & wiatr może utrudniać część prac \\[12pt]
 9 & tenisista 2 & tenis & $27^\circ C$ & 0.4 mm & 6.5 m/s & warunkowo & gra możliwa, ale wiatr przeszkadza \\
 \bottomrule
 \end{tabular}
@@ -233,6 +236,7 @@ wyprzedzeniem. Chodzi o to, żeby sprawdzić, czy nasz program jest równie
 wiarygodny, gdy nie przewiduje pogody na jutro, tylko na dzień oddalony o tydzień.
 Do porównania używamy tych samych 9 użytkowników.
 
+\noindent
 W tym przypadku program wykonał prognozę dnia \textbf{29.05.2026} na dzień
 \textbf{05.06.2026}. Po tygodniu porównujemy decyzje programu z tym, co
 faktycznie wyszło dla tych aktywności.
@@ -250,6 +254,7 @@ faktycznie wyszło dla tych aktywności.
 \caption{Prognoza tygodniowa naszego modelu.}
 \end{table}
 
+\noindent
 Prognoza tygodniowa była mniej dokładna niż prognoza z dnia poprzedniego. Program
 przewidział opady i słabszy wiatr, dlatego część decyzji była bardziej ostrożna.
 Po tygodniu okazało się jednak, że rzeczywiste warunki były inne: było cieplej,
@@ -276,6 +281,7 @@ opady były mniejsze, ale wiatr był silniejszy i miał wyraźne porywy.
 \caption{Porównanie prognozy tygodniowej z rzeczywistym wynikiem.}
 \end{table}
 
+\noindent
 Dla prognozy tygodniowej program zdobył 4 punkty na 9 możliwych. Oznacza to
 wiarygodność na poziomie około $44.44\%$. Wynik jest wyraźnie gorszy niż dla prognozy
 jednodniowej, ponieważ w dłuższym czasie łatwiej zmieniają się opady, wiatr i
@@ -319,6 +325,7 @@ prognozy pogody różni użytkownicy nie zawsze otrzymują taki sam wynik końco
 Najlepiej widać to wtedy, gdy skupimy się tylko na piłkarzach i tenisistach,
 czyli osobach, które często ćwiczą według planu grupowego.
 
+\noindent
 W takim przypadku prognoza pogody jest tylko jednym elementem decyzji. Program
 może wskazać, że warunki są dobre, ale trening nadal może się nie odbyć. Może też
 być odwrotnie: program oznacza sytuację jako warunkową, a zajęcia są wykonane w
@@ -333,17 +340,18 @@ decyzja trenera.
 \toprule
 \textbf{Data} & \textbf{Grupa} & \textbf{Prognoza} & \textbf{\shortstack{Decyzja\\programu}} & \textbf{\shortstack{Decyzja na\\treningu}} & \textbf{Faktycznie} \\
 \midrule
-25.05.2026 & piłkarz 1 & $18^\circ C$, 0.1 mm, 2.0 m/s & tak & trening bez zmian & tak \\
-25.05.2026 & piłkarz 2 & $18^\circ C$, 0.1 mm, 2.0 m/s & tak & trening odwołany & nie \\
-30.05.2026 & tenisista 1 & $15^\circ C$, 2.4 mm, 4.6 m/s & nie & kort ziemny zamknięty & nie \\
-30.05.2026 & tenisista 2 & $15^\circ C$, 2.4 mm, 4.6 m/s & tak & gra na korcie twardym & tak \\
-05.06.2026 & piłkarz 2 & $27^\circ C$, 0.4 mm, 6.5 m/s & warunkowo & trening skrócony & tak \\
+25.05.2026 & piłkarz 1 & $18^\circ C$, 0.1 mm, 2.0 m/s & tak & trening bez zmian & tak \\[12pt]
+25.05.2026 & piłkarz 2 & $18^\circ C$, 0.1 mm, 2.0 m/s & tak & trening odwołany & nie \\[12pt]
+30.05.2026 & tenisista 1 & $15^\circ C$, 2.4 mm, 4.6 m/s & nie & kort ziemny zamknięty & nie \\[12pt]
+30.05.2026 & tenisista 2 & $15^\circ C$, 2.4 mm, 4.6 m/s & tak & gra na korcie twardym & tak \\[12pt]
+05.06.2026 & piłkarz 2 & $27^\circ C$, 0.4 mm, 6.5 m/s & warunkowo & trening skrócony & tak \\[12pt]
 05.06.2026 & tenisista 2 & $27^\circ C$, 0.4 mm, 6.5 m/s & warunkowo & trening techniczny & tak \\
 \bottomrule
 \end{tabular}
 \caption{Dodatkowe porównanie piłkarzy i tenisistów w grupach treningowych.}
 \end{table}
 
+\noindent
 W tabeli widać, że dwie osoby mogą mieć taką samą prognozę, ale inny wynik.
 Dnia 25.05.2026 obaj piłkarze mieli bardzo dobre warunki pogodowe. Program dla
 obu wskazał decyzję \textbf{tak}, jednak piłkarz 1 trenował, a piłkarz 2 nie.
@@ -366,18 +374,21 @@ przypadki zmienione przez organizację zajęć & 3 & 1 & około $33.33\%$ \\
 \caption{Wyniki dodatkowej obserwacji dla grup treningowych.}
 \end{table}
 
+\noindent
 W tej dodatkowej obserwacji program zdobył 4 punkty na 6 możliwych, czyli około
 $66.67\%$. Wynik jest niższy niż ogólny wynik prognozy jednodniowej. Pokazuje to,
 że przy sportach grupowych sama pogoda nie zamyka całego problemu. Piłkarz albo
 tenisista może być gotowy do aktywności, ale gdy zajęcia są prowadzone w grupie,
 dużo zależy od trenera, planu treningu i warunków miejsca.
 
+\noindent
 Ta obserwacja prowadzi do pytania, co jeszcze znajduje się pod prognozowaniem
 pogody w praktycznym użyciu. Temperatura, opady i wiatr są podstawą decyzji, ale
 nie opisują całej sytuacji. Znaczenie może mieć miejsce aktywności, rodzaj
 nawierzchni, dokładna godzina wykonania planu, sprzęt, przygotowanie użytkownika,
 stan podłoża oraz indywidualna tolerancja ryzyka.
 
+\noindent
 Dlatego w dalszej ocenie programu nie wystarczy sprawdzić, czy sama prognoza
 brzmiała rozsądnie. Trzeba jeszcze porównać decyzję programu z wynikiem
 rzeczywistym. Dopiero wtedy można policzyć, ile razy program rzeczywiście pomógł
@@ -390,6 +401,7 @@ Po wykonaniu aktywności porównujemy decyzję programu z tym, co faktycznie si�
 wydarzyło. Dzięki temu nie oceniamy tylko tego, czy pogoda wyglądała dobrze, ale
 sprawdzamy procentową wiarygodność naszego programu.
 
+\noindent
 Przyjmujemy, że każda decyzja jest warta 1 punkt:
 
 \begin{itemize}
@@ -398,6 +410,7 @@ Przyjmujemy, że każda decyzja jest warta 1 punkt:
     \item jeśli jedna z odpowiedzi była \textbf{warunkowo}, a druga \textbf{tak} albo \textbf{nie}, program dostaje 0.5 punktu.
 \end{itemize}
 
+\noindent
 Na przykład jeżeli program powiedział \textbf{nie}, a faktycznie aktywność się
 odbyła, to jest to pełna pomyłka i program traci cały punkt. Jeżeli program
 powiedział \textbf{warunkowo}, a faktycznie aktywność się odbyła, to błąd jest
@@ -461,6 +474,7 @@ Razem & 21.0 & 27 & około $77.78\%$ \\
 \caption{Procentowa wiarygodność programu.}
 \end{table}
 
+\noindent
 Według przyjętej punktacji nasz program zdobył 21 punktów na 27 możliwych dla
 prognozy jednodniowej. Oznacza to, że jego wiarygodność w tym eksperymencie
 wynosi około $77.78\%$.
@@ -486,6 +500,7 @@ czasowym. Dla prognozy na jutro uzyskał 21 punktów na 27 możliwych, czyli oko
 $77.78\%$. Oznacza to, że w większości przypadków decyzja programu była zgodna z
 rzeczywistym wynikiem albo tylko częściowo się od niego różniła.
 
+\noindent
 Dużo słabszy wynik pojawił się przy prognozie tygodniowej. Program zdobył 4
 punkty na 9 możliwych, czyli około $44.44\%$. Taki spadek jest zrozumiały,
 ponieważ przy prognozie za tydzień trudniej poprawnie przewidzieć dokładne
@@ -499,20 +514,22 @@ kortu albo nawierzchni.
 \toprule
 \textbf{Część badania} & \textbf{Wynik} & \textbf{Interpretacja} \\
 \midrule
-prognoza na jutro & około $77.78\%$ & program jest dość wiarygodny przy krótkim terminie \\
-prognoza za tydzień & około $44.44\%$ & wiarygodność mocno spada przy dłuższym czasie \\
+prognoza na jutro & około $77.78\%$ & program jest dość wiarygodny przy krótkim terminie \\[12pt]
+prognoza za tydzień & około $44.44\%$ & wiarygodność mocno spada przy dłuższym czasie \\[12pt]
 grupy treningowe & około $66.67\%$ & pogoda pomaga w decyzji, ale nie opisuje całej sytuacji \\
 \bottomrule
 \end{tabular}
 \caption{Interpretacja najważniejszych wyników procentowych.}
 \end{table}
 
+\noindent
 Największy wpływ na decyzje miały opady. Gdy opady były bardzo małe, prawie
 wszystkie aktywności były możliwe. Gdy model przewidział 2.4 mm opadów, decyzje
 dla tenisisty 1, rowerzysty i ogrodnika stały się negatywne. Jednocześnie
 tenisista 2 mógł zagrać, ponieważ grał na mniej wrażliwej nawierzchni. To
 pokazuje, że środowisko aktywności może zmienić znaczenie tej samej prognozy.
 
+\noindent
 Ważne jest też to, że decyzja nie zawsze zależy tylko od osoby wykonującej
 aktywność. Przy piłce nożnej albo tenisie w grupie duże znaczenie może mieć
 trener, prowadzący zajęcia albo osoba odpowiedzialna za obiekt. Taka osoba może
@@ -520,6 +537,7 @@ odwołać trening, skrócić go albo zmienić jego formę, nawet jeśli sam uży
 chciałby ćwiczyć. Dlatego program pogodowy może dobrze ocenić warunki
 meteorologiczne, ale nie zawsze przewidzi końcową decyzję organizacyjną.
 
+\noindent
 Z tego wynika, że wiarygodność programu zależy od dwóch rzeczy. Pierwsza to
 dokładność samej prognozy pogody. Druga to środowisko, w którym użytkownik chce
 wykonać aktywność. Im więcej czynników zewnętrznych, takich jak nawierzchnia,
@@ -561,6 +579,7 @@ ale próbą oceny, czy program rzeczywiście pomaga człowiekowi wybrać działa
     całkowicie zastąpić.
 \end{itemize}
 
+\noindent
 Patrząc na cały projekt, najważniejsze było połączenie trzech perspektyw:
 matematycznej, technicznej i praktycznej. Perspektywa matematyczna pozwoliła
 mierzyć błędy i porównywać modele w sposób obiektywny. Perspektywa techniczna
@@ -569,6 +588,7 @@ Perspektywa praktyczna pokazała natomiast, że użytkownik nie podejmuje decyzj
 na podstawie samej tabeli z pogodą. Interesuje go to, czy może wykonać konkretną
 aktywność w konkretnym miejscu i czasie.
 
+\noindent
 Ostatecznie projekt pokazuje, że prognoza pogody jest wartościowa dopiero wtedy,
 gdy zostanie powiązana z sytuacją użytkownika. Ta sama temperatura, ten sam wiatr
 i ten sam opad mogą oznaczać coś innego dla piłkarza, tenisisty, rowerzysty albo
@@ -630,6 +650,7 @@ Dokumentacja bibliotek Python: \texttt{pandas}, \texttt{numpy},
     \item Usevalad Nikalaichuk -- sprawdzenie spójności raportu, formatowanie w \LaTeX{} i uzupełnienie referencji.
 \end{itemize}
 
+\noindent
 Pozostałe elementy, takie jak wybór końcowych wniosków, interpretacja wyników i
 ostateczne poprawki, zostały wykonane wspólnie przez cały zespół.
 
